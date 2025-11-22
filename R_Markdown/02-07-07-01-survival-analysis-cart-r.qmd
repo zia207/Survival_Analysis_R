@@ -1,9 +1,7 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_07_01_survival_analysis_cart_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_07_01_survival_analysis_cart_python.ipynb)
 :::
 
 # 7.1  Survival Trees {.unnumbered}
@@ -800,7 +798,7 @@ plot(ctree_model)
 Survival CART provides a powerful, interpretable way to model censored time-to-event data using decision trees. By leveraging the `rpart` package in R, you can fit survival trees, visualize them, and evaluate their performance effectively. This approach is particularly useful in medical research for risk stratification and understanding variable importance in survival outcomes. This notebook serves as a starting point for applying Survival CART in your analyses. This is basic step; for more advanced applications, consider exploring ensemble methods like Random Survival Forests or Gradient Boosted Survival Trees.
 
 
-## Resorces
+## Resources
 
 - Therneau, T. M., & Grambsch, P. M. (2000). *Modeling Survival Data: Extending the Cox Model*. Springer.
 - Ishwaran, H., et al. (2008). Random survival forests. *The Annals of Applied Statistics*.

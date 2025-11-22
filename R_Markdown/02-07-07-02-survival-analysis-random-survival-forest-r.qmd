@@ -1,9 +1,7 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_07_01_survival_analysis_random_survival_forest_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_07_01_survival_analysis_random_survival_forest_python.ipynb)
 :::
 
 
@@ -1397,7 +1395,7 @@ p3+p4
 
 A Survival Forest is a powerful, non-parametric machine learning model for survival analysis, extending Random Forests to handle time-to-event data with censoring.It builds multiple decision trees using survival-specific splitting criteria, aggregates their predictions, and outputs survival probabilities or hazard functions. It’s widely used in fields like medicine and engineering but requires computational resources and careful tuning. This tutorial demonstrated how to implement Survival Forests in R using the `randomForestSRC`, `ranger`, and `DynForest` packages, covering data preparation, model fitting, evaluation metrics (C-index, Brier Score, CRPS), variable importance, and visualization techniques. This help researchers and practitioners effectively apply Survival Forests to their survival analysis tasks. 
 
-## References
+## Resources
 
 1. Ishwaran, H., et al. (2008). Random survival forests. *The Annals of Applied Statistics*, 2(3), 841–860. DOI: 10.1214/08-AOAS169.
 

@@ -1,9 +1,7 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_python.ipynb)
 :::
 
 # 1. Nonparametric Survival Analysis {.unnumbered}
@@ -130,3 +128,24 @@ These methods estimate the survival function (S(t) = P(T \> t), the probability 
 ## Summary and Conclusion
 
 Non-parametric survival methods — especially **Kaplan-Meier** — are foundational tools in survival analysis. They offer intuitive, assumption-free estimates of survival probabilities and form the basis for hypothesis testing (e.g., log-rank test) and more advanced modeling (e.g., semi-parametric Cox models). Understanding these methods is essential for any survival data analysis. The next sections will demonstrate how to implement these methods in R, both manually and using the {survival} package.
+
+
+## Resources
+
+1. **Klein & Moeschberger — *Survival Analysis***
+   Excellent treatment of Kaplan–Meier, Nelson–Aalen, and log-rank tests.
+
+2. **Collett — *Modelling Survival Data in Medical Research***
+   Clear, applied introduction to nonparametric estimators.
+
+3. **Hosmer, Lemeshow & May — *Applied Survival Analysis***
+   Practical guide to KM curves, comparisons, and assumptions.
+
+4. **Therneau’s *survival* Package Documentation (R)**
+   Concise explanations of KM and NA estimators with examples.
+
+5. **Penn State STAT 507 Lecture Notes**
+   Free, easy-to-follow notes covering KM, NA, and nonparametric tests.
+
+
+

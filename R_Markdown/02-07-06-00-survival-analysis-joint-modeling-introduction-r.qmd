@@ -1,9 +1,7 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_00_survival_analysis_joint_models_introduction_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_00_survival_analysis_joint_models_introduction_python.ipynb)
 :::
 
 # 6.  Joint Modeling in Survival Analysis {.unnumbered}
@@ -157,13 +155,19 @@ What drives risk?
 
 
 
-
-
 ## Summary and Conclusion
 
 Joint models provide a robust framework for analyzing complex datasets where longitudinal measurements and time-to-event outcomes are interrelated. By capturing the dependency between these two data types, joint models enhance our understanding of disease progression, improve prediction accuracy, and facilitate better decision-making in clinical and research settings. As computational methods and software continue to advance, joint modeling is becoming increasingly accessible and widely used across various fields. 
 
 ## Resources
 
-- Rizopoulos, D. (2012). *Joint Models for Longitudinal and Time-to-Event Data*. Chapman & Hall.
-- `JMbayes2` package vignette: [https://drizopoulos.github.io/JMbayes2/](https://drizopoulos.github.io/JMbayes2/)
+1. Rizopoulos, D. (2012). *Joint Models for Longitudinal and Time-to-Event Data*. Chapman & Hall.
+
+2. Robert Elashoff, Gang Li & Ning Li — Joint Modeling of Longitudinal and Time-to-Event Data. Covers many extensions: missing data, competing risks, multivariate longitudinal outcomes, EM and Bayesian estimation. 
+Routledge
+
+3. Handbook Chapter: Joint Models of Longitudinal and Survival Data in the Handbook of Survival Analysis
+A more survey-style reference to understand different joint modeling frameworks. 
+Taylor & Francis
+
+4.  `JMbayes2` package vignette: [https://drizopoulos.github.io/JMbayes2/](https://drizopoulos.github.io/JMbayes2/)

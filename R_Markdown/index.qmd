@@ -1,9 +1,7 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_00_survival_analysis_introduction_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_00_survival_analysis_introduction_python.ipynb)
 :::
 
 # Survival Analysis {.unnumbered}
@@ -199,25 +197,121 @@ If you’d like a deeper dive into any specific method, an example with data, or
 
     -   To analyze the time until an event like unemployment, bankruptcy, or loan default occurs.
 
-### Major Types of Survival Analysis
 
-Survival analysis is a statistical branch focused on time-to-event data, handling issues like censoring (incomplete observations). While it encompasses a range of techniques, the major types are broadly categorized into **non-parametric**, **semi-parametric**, and **parametric** methods. These differ in their assumptions about the underlying hazard function (the instantaneous risk of the event occurring). Below, I outline the primary types, their key characteristics, and common applications, based on established statistical practices.
+## Resources
 
-|
 
-Additionally, advanced extensions include:
-- **Tree-Based Models**: Such as survival trees or random survival forests, which handle non-linear interactions and are useful for high-dimensional data.
-- **Competing Risks Models**: Accounts for multiple possible events (e.g., death from different causes), using methods like the Fine-Gray model.
-- **Frailty Models**: Incorporates unobserved heterogeneity (e.g., random effects for clustered data like family studies).
+### **Textbooks (Most Commonly Recommended)**
 
-Choosing a type depends on data characteristics (e.g., sample size, censoring rate) and goals (e.g., estimation vs. comparison). For instance, start with non-parametric for exploration, then move to semi-parametric for covariate adjustment. These methods are implemented in software like R (e.g., `survival` package) or Python (e.g., `lifelines` library).
+ **1. Klein & Moeschberger — *Survival Analysis: Techniques for Censored and Truncated Data***
 
-## References
+A comprehensive classic covering Kaplan–Meier, Cox model, parametric models, competing risks.
 
-1.  "Survival Analysis: Techniques for Censored and Truncated Data" by John P. Klein and Melvin L. Moeschberger: This book provides comprehensive coverage of both parametric and non-parametric methods in survival analysis.
+ **2. Collett — *Modelling Survival Data in Medical Research***
 
-2.  "Applied Survival Analysis: Regression Modeling of Time-to-Event Data" by David W. Hosmer, Stanley Lemeshow, and Susanne May: This is another authoritative source on the topic, especially on the Cox model and its extensions.
+Very practical, great for medical and epidemiological applications. Strong R examples.
 
-3.  [Survival data analysis](https://www.karlin.mff.cuni.cz/~pesta/NMFM404/survival.html)
+ **3. Therneau & Grambsch — *Modeling Survival Data: Extending the Cox Model***
 
-4.  [Survival Analysis in R](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html)
+Advanced Cox model details, time-varying covariates, frailty, diagnostics. Author of the R `survival` package.
+
+ **4. Hosmer, Lemeshow, May — *Applied Survival Analysis***
+
+Beginner-friendly, strong theory + applied examples.
+
+ **5. Andersen, Geskus, de Witte, & Putter — *Competing Risks and Multi-State Models***
+
+Best resource for competing risks and multi-state modeling.
+
+
+
+### **Free Online Courses & Lecture Notes**
+
+**1. UCLA Institute for Digital Research & Education (IDRE)**
+
+Clear applied tutorials for survival analysis using R, Stata, SAS.
+
+ **2. Penn State STAT 507 – Survival Analysis**
+
+Full lecture notes, exercises, parametric & non-parametric survival models.
+
+ **3. Imperial College London — Survival Analysis Notes**
+
+Concise and mathematically clean introductory notes.
+
+ **4. Johns Hopkins Biostat — Survival Analysis Course Material**
+
+Semiparametric Cox model, counting-process notation, frailty.
+
+
+
+### **R-Specific Resources (Highly Useful)**
+
+ **1. Therneau’s *survival* Package Documentation**
+
+Primary reference for:
+
+* Kaplan–Meier
+* Cox PH
+* Time-varying covariates
+* Frailty models
+
+**2. *survminer* (Beautiful KM plots)**
+
+Great for producing publication-quality figures.
+
+ **3. *flexsurv* Package**
+
+Best for parametric survival models (Weibull, log-normal, spline models).
+
+**4. *riskRegression*, *prodlim*, *cmprsk***
+
+Important for:
+
+* Competing risks
+* Fine–Gray model
+* Prediction models
+
+**5. *JM*, *JMbayes2*, *joineRML***
+
+Core packages for **Joint Models** of longitudinal + survival data.
+
+
+
+### **Introductory Tutorials**
+
+**1. “Survival Analysis in R” from R-bloggers**
+
+Dozens of step-by-step practical examples.
+
+**2. CrossValidated (StackExchange) Explanations**
+
+Excellent conceptual Q&A (Cox model intuition, hazard vs risk, competing risks, etc.).
+
+ **3. Datacamp & Coursera Survival Analysis modules**
+
+Good for beginners needing structured exercises.
+
+
+
+### **Specialized Topics**
+
+**1. Dynamic & Time-varying models**
+
+* Counting process notation (Therneau, Andersen)
+* Time-dependent Cox models (`coxph` with `tt()`)
+
+**2. Competing risks**
+
+* Fine–Gray subdistribution hazard
+* Aalen–Johansen estimator
+
+**3. Machine learning survival**
+
+* *randomForestSRC*
+* *xgboost* survival
+* *survival-SVM*, *DeepSurv*, *DeepHit*
+* *mlr3proba* framework
+
+
+

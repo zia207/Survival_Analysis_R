@@ -1,9 +1,7 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_02_00_survival_analysis_semi_parametric_introduction_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_02_00_survival_analysis_semi_parametric_introduction_python.ipynb)
 :::
 
 # 2. Semi-parametric Survival Analysis {.unnumbered}
@@ -157,3 +155,22 @@ Where:
 Semi-parametric survival analysis methods, particularly the Cox proportional hazards model and its extensions, are essential tools for analyzing time-to-event data. They strike a balance between flexibility and interpretability by avoiding strong parametric assumptions about the baseline hazard function while allowing for meaningful covariate effects. Next , we will explore practical implementations of these models using R and Python, including data preparation, model fitting, diagnostics, and interpretation of results.
 
 ## Resources
+
+Here are **five short, focused resources** on **semi-parametric survival analysis** (mainly the Cox model):
+
+1. **Therneau & Grambsch — *Modeling Survival Data: Extending the Cox Model***
+   The classic reference for Cox PH and extensions.
+
+2. **Klein & Moeschberger — *Survival Analysis***
+   Clear explanation of partial likelihood and semi-parametric inference.
+
+3. **Andersen et al. — *Statistical Models Based on Counting Processes***
+   The mathematical foundation for semi-parametric Cox modeling.
+
+4. **Collett — *Modelling Survival Data in Medical Research***
+   Practical applied guide to Cox modeling and diagnostics.
+
+5. **Hosmer, Lemeshow & May — *Applied Survival Analysis***
+   Beginner-friendly treatment of semi-parametric survival models.
+
+

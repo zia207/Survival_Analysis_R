@@ -1,12 +1,10 @@
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
 
 [![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_07_05_03_survival_analysis_deep_survival_gpu_r.ipynb)
-
-[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook//02_07_07_05_03_survival_analysis_deep_survival_gpu_python.ipynb)
 :::
 
-# 2.7.5.3 Deep Survival Model - GUP {.unnumbered}
+# 2.7.6 Deep Survival Model - GUP {.unnumbered}
 
 DeepSurv (Katzman et al., 2018) introduced a breakthrough by replacing the linear predictor of the Cox model with a deep neural network while retaining the same partial likelihood objective. This elegant extension preserves the interpretability of hazard ratios (when needed) and the ability to handle right-censored data, but dramatically increases modeling flexibility.
 
