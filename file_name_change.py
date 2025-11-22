@@ -1,6 +1,6 @@
 import os
 
-folder_path = "/home/zia207/Dropbox/WebSites/R_Website/Survival_Analysis_R/Colab_Notebook" # Change this to your folder's path
+folder_path = "/home/zia207/WebSites/R_Website/Survival_Analysis_R/Colab_Notebook" # Change this to your folder's path
 
 for filename in os.listdir(folder_path):
     if filename.endswith(".ipynb"):
@@ -10,3 +10,6 @@ for filename in os.listdir(folder_path):
 
         os.rename(old_filepath, new_filepath)
         print(f"Renamed: {filename} -> {new_filename}")
+        
+print ("Renaming complete." )       
+        
