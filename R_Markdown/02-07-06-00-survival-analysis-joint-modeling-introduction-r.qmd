@@ -1,0 +1,169 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_00_survival_analysis_joint_models_introduction_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_00_survival_analysis_joint_models_introduction_python.ipynb)
+:::
+
+# 6.  Joint Modeling in Survival Analysis {.unnumbered}
+
+Joint models offer a powerful framework for analyzing complex clinical datasets and generating accurate predictions for longitudinal and survival outcomes. By integrating longitudinal and time-to-event data, joint models provide a holistic view of disease progression and patient outcomes, enabling researchers to make informed decisions and improve patient care. 
+
+## Ovberview
+
+**Joint Modeling** (JM) is a statistical framework that simultaneously analyzes **two or more linked outcome processes** that are measured repeatedly over time and potentially influenced by shared underlying factors. It is particularly powerful when one outcome is **longitudinal** (e.g., a biomarker measured repeatedly) and another is **time-to-event** (e.g., survival time until death, disease progression, or dropout).
+
+The key idea is that these processes are **not independent** — the longitudinal trajectory may inform the risk of the event, and the event may affect the longitudinal process (e.g., via informative dropout). Joint models account for this **association** using **shared random effects**.
+
+## Core Components of a Joint Model
+
+A standard **joint model for longitudinal and survival data** consists of two sub-models:
+
+1. **Longitudinal Sub-model** (for the repeated measurements):
+
+$$
+   y_i(t) = \mathbf{x}_i(t)^\top \boldsymbol{\beta} + \mathbf{z}_i(t)^\top \mathbf{b}_i + \epsilon_i(t)
+$$
+- $y_i(t)$: observed biomarker at time $t$ for subject $i$
+- $\mathbf{x}_i(t)$: fixed-effect covariates (e.g., treatment, age)
+- $\mathbf{z}_i(t)$: random-effect design (e.g., intercept, slope)
+- $\mathbf{b}_i$: subject-specific random effects ~ $N(0, \Sigma)$
+- $\epsilon_i(t)$: measurement error ~ $N(0, \sigma^2)$
+
+2. **Survival (Time-to-Event) Sub-model**:
+
+$$
+   h_i(t) = h_0(t) \exp\left( \mathbf{w}_i^\top \boldsymbol{\gamma} + \alpha \cdot m_i(t) \right)
+$$
+- $h_i(t)$: hazard of event at time $t$
+- $h_0(t)$: baseline hazard (often flexible, e.g., splines)
+- $\mathbf{w}_i$: baseline covariates
+- $m_i(t)$: **true** (unobserved) longitudinal trajectory at time \( t \), linked via:
+
+$$
+     m_i(t) = \mathbf{z}_i^*(t)^\top \mathbf{b}_i
+$$
+- $\alpha$: association parameter (key — measures how the biomarker affects risk)
+
+> The random effects $\mathbf{b}_i$ are **shared** between both sub-models → this induces dependence.
+
+The **link** between sub-models comes through $m_i(t)$ — the true, unobserved value of the biomarker.
+
+
+### Advantages of Joint Models
+
+* Handle **informative dropout** (e.g., subjects leaving the study due to disease progression).
+* Improve **dynamic prediction** of event risk given ongoing biomarker measurements.
+* Better **inference** about longitudinal-survival relationships.
+
+
+### Why Use Joint Models?
+
+1.  **Dependency Between Data Types**:
+    -   Longitudinal markers (e.g., biomarkers, repeated measurements) often influence or are associated with survival outcomes. Ignoring this dependency can lead to biased results.
+    -   For example, in a cancer study, a biomarker like PSA (prostate-specific antigen) measured over time can be predictive of time to disease progression or death.
+    
+2.  **Separate Models are Insufficient**:
+
+   -   Longitudinal models (e.g., linear mixed models) focus only on repeated measurements and ignore survival times.
+   -   Survival models (e.g., Cox proportional hazards) treat longitudinal measures as static covariates, losing information about their dynamic nature.
+   
+3.  **Prediction**:
+    -   Joint models allow dynamic predictions of survival probabilities based on the evolving trajectory of the longitudinal marker.
+
+### Applications
+
+1.  **Medicine**:
+    -   Monitoring disease biomarkers (e.g., tumor size, glucose levels) and predicting survival outcomes.
+2.  **Drug Development**:
+    -   Understanding the relationship between pharmacokinetics/pharmacodynamics and patient outcomes.
+3.  **Engineering**:
+    -   Modeling degradation of machinery (longitudinal) and time to failure (event data).
+
+## Types of Jpoint Models
+
+Below is a concise, systematic classification of the main types of Joint Models (JM) used in **Survival Analysis**.  
+All share the idea of linking a longitudinal sub-model with a time-to-event sub-model via shared random effects, but they differ in:
+
+1. Longitudinal process  
+2. Survival process
+3. Association (link) structure  
+
+### By Longitudinal Sub-model
+
+| Type | Formula (simplified) | When to use |
+|------|----------------------|-------------|
+| **Linear Mixed-Effects JM** | $y_i(t) = X_i(t)\beta + Z_i(t)b_i + \varepsilon_i(t)$ | Continuous biomarker with **linear** trajectory (e.g., eGFR, CD4) |
+| **Non-linear Mixed-Effects JM** | $y_i(t) = f(t;b_i) + \varepsilon_i(t)$ (splines, NLME) | Curvilinear trajectories (e.g., tumor growth, PSA) |
+| **Generalized Linear Mixed JM (GLMM-JM)** | $g(\mu_i(t)) = X_i(t)\beta + Z_i(t)b_i$ | Binary, count, ordinal longitudinal outcomes |
+| **Latent-Class / Mixture JM** | Subjects grouped into latent trajectories | Heterogeneous populations (e.g., fast vs slow decliners) |
+| **Multivariate JM** | Several longitudinal outcomes jointly | Multiple biomarkers (e.g., CD4 + viral load) |
+
+### By Survival Sub-model
+
+| Type | Hazard form | Use case |
+|------|-------------|----------|
+| **Relative Risk (Multiplicative) JM** *(most common)* | $h_i(t) = h_0(t) \exp(\mathbf{w}_i\gamma + \alpha m_i(t))$ | Standard Cox-type with time-varying effect |
+| **Additive Hazard JM** | $h_i(t) = h_0(t) + \mathbf{w}_i\gamma + \alpha m_i(t)$ | When absolute risk difference is of interest |
+| **Accelerated Failure Time (AFT) JM** | Log-time = linear in covariates + random effects | When acceleration of time is the focus |
+| **Competing Risks JM** | Multiple cause-specific hazards share random effects | Multiple event types (death vs transplant) |
+| **Recurrent Events JM** | Gap-time or counting process with frailty | Repeated hospitalizations |
+
+### By Association (Link) Structure  
+
+| Link Type | Functional form | Interpretation |
+|---------|------------------|----------------|
+| **Current Value** | $\alpha \cdot m_i(t)$ | Risk depends on **current true level** |
+| **Current Slope** | $\alpha \cdot \frac{d}{dt}m_i(t)$ | Risk tied to **rate of change** |
+| **Area Under Curve (AUC)** | $\alpha \cdot \int_0^t m_i(s)ds$ | Cumulative exposure |
+| **Random Intercept Only** | $\alpha b_{i0}$ | Baseline heterogeneity drives risk |
+| **Random Slope Only** | $\alpha b_{i1}$ | Trajectory speed drives risk |
+| **Both Intercept & Slope** | $\alpha_1 b_{i0} + \alpha_2 b_{i1}$ | Full trajectory shape |
+| **Time-Lagged Value** | $\alpha m_i(t-\tau)$ | Delayed effect (e.g., treatment lag) |
+| **Interaction Form** | $\alpha(t) m_i(t)$ | Time-varying association |
+
+### Popular Named/Standardized JMs
+
+| Name | Software | Key Feature |
+|------|----------|-------------|
+| **Standard JM (Rizopoulos)** | `JM`, `JMbayes2` (R) | Relative risk + LMM + flexible link |
+| **Dynamic JM** | `JMbayes2` | Real-time **personalized predictions** |
+| **Multivariate JM** | `joineRML` (R) | Multiple longitudinal outcomes |
+| **Competing Risks JM** | `JMbayes2`, `frailtypack` | Cause-specific hazards |
+| **Shared Parameter JM (SPJM)** | General term | Any shared random effect model |
+| **Latent Class JM** | `lcmm` + `JMbayes2` | Trajectory classes |
+
+
+### Quick Decision Tree
+
+```text
+Is longitudinal outcome:
+├── Continuous & linear? → Linear Mixed JM (Current value/slope)
+├── Continuous & nonlinear? → NLME JM (splines)
+├── Binary/count? → GLMM-JM
+└── Multiple biomarkers? → Multivariate JM
+
+Is survival:
+├── Single event? → Relative Risk JM
+├── Competing risks? → CR-JM
+└── Recurrent? → Recurrent Events JM
+
+What drives risk?
+├── Level now? → Current value
+├── Rate of change? → Slope
+└── Cumulative? → AUC
+```
+
+
+
+
+
+## Summary and Conclusion
+
+Joint models provide a robust framework for analyzing complex datasets where longitudinal measurements and time-to-event outcomes are interrelated. By capturing the dependency between these two data types, joint models enhance our understanding of disease progression, improve prediction accuracy, and facilitate better decision-making in clinical and research settings. As computational methods and software continue to advance, joint modeling is becoming increasingly accessible and widely used across various fields. 
+
+## Resources
+
+- Rizopoulos, D. (2012). *Joint Models for Longitudinal and Time-to-Event Data*. Chapman & Hall.
+- `JMbayes2` package vignette: [https://drizopoulos.github.io/JMbayes2/](https://drizopoulos.github.io/JMbayes2/)

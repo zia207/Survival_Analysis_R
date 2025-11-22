@@ -1,0 +1,442 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_05_03_survival_analysis_absolute_risk_regression_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_05_03_survival_analysis_absolute_risk_regression_python.ipynb)
+:::
+
+# 5.3 Absolute Risk Regression (Direct CIF Modeling) {.unnumbered}
+
+Absolute Risk Regression** — also known as Direct CIF (Cumulative Incidence Function) Modeling— is a statistical approach used in competing risks survival analysis to model the absolute risk (probability)` of a specific event occurring by a certain time, directly.  Unlike traditional regression models that often focus on relative risks (how much more or less likely an event is in one group compared to another), absolute risk models aim to provide a direct estimate of the actual risk of an event.
+
+
+## Overview
+
+In competing risks survival data, an individual can experience `multiple types of events` — e.g., death from melanoma vs. death from other causes. The **Absolute Risk Regression (ARR)** model directly models the **Cumulative Incidence Function (CIF)** — that is, the absolute probability of a specific event by time `t`, given covariates. Unlike hazard models (Cox or Fine–Gray), ARR gives `direct probabilities`, which are easier to interpret in clinical and public health contexts. In competing risks, individuals may fail from one of several mutually exclusive causes (e.g., death from cancer vs. death from heart disease). 
+
+### What is Absolute Risk?
+
+Imagine you're trying to predict the chance of someone developing a certain disease in the next 10 years.
+
+`Relative Risk`: If Group A has a relative risk of 2 compared to Group B, it means people in Group A are twice as likely to develop the disease. However, if the baseline risk in Group B is very low (e.g., 1 in 10,000), then being "twice as likely" still means a very small absolute risk (2 in 10,000).
+
+`Absolute Risk`: This is the actual probability. For example, "There is a 5% chance that this individual will develop the disease in the next 10 years." This is often more intuitive and directly relevant for patients and clinicians.
+
+
+
+In contrast to the **Cox proportional hazards model**, which estimates *relative risk* (how much more likely one group is to experience an event compared to another), **absolute risk models estimate the actual risk (or hazard) on an absolute scale**, often expressed as:
+
+- **Instantaneous event rate (hazard)** at time *t*, or  
+- **Cumulative incidence**: the probability of experiencing the event by time *t*.
+
+This makes them especially useful in **clinical decision-making**, **public health planning**, and **personalized risk prediction**, where knowing the *actual risk* (e.g., “You have a 15% chance of recurrence in 5 years”) is more actionable than a relative measure (e.g., “Your risk is 2× higher”).
+
+
+In survival analysis with **competing risks**, absolute risk is quantified by the **Cumulative Incidence Function (CIF)** for event type \(k\):
+
+$$
+F_k(t) = P(T \leq t, \text{cause} = k)
+$$
+
+**Direct CIF modeling** regresses $F_k(t)$ directly on covariates $\mathbf{X}$, bypassing hazard modeling. A common approach uses **pseudo-values**:
+
+1. Compute jackknife pseudo-values of the nonparametric CIF at fixed time points $t_1, \dots, t_K$:
+
+$$
+   \hat{\theta}_{i}(t) = n \hat{F}_k(t) - (n-1) \hat{F}_{k,-i}(t)
+$$
+   where $\hat{F}_{k,-i}(t)$ is the CIF leaving out subject $i$.
+
+2. Regress pseudo-values on $\mathbf{X}$ using generalized estimating equations (GEE):
+
+$$
+   g\big( E[\hat{\theta}_{i}(t) \mid \mathbf{X}_i] \big) = \alpha(t) + \boldsymbol{\beta}(t)^\top \mathbf{X}_i
+$$
+   where $g(\cdot)$ is a link function (e.g., identity or logit).
+
+
+
+
+### Advantages
+
+- **Direct clinical interpretation**: “This treatment reduces absolute risk by 3% over 5 years.”
+- **No proportional hazards assumption** (in time-varying versions).
+- Better for **heterogeneous populations** where baseline risk varies widely.
+- Naturally accommodates **time-varying effects**.
+
+###  Challenges
+
+- The hazard $\lambda(t \mid \mathbf{X})$ **must remain non-negative**—additive models can sometimes predict negative hazards if covariate effects are large (requires careful checking).
+- Less familiar to many researchers compared to Cox models.
+- Software implementation is less standardized (though `timereg`, `riskRegression`, and `cmprsk` in R support them).
+
+
+## Absolute Risk Regression in R
+
+We’ll use the **`Melanoma`** dataset from the **`riskRegression`** package. This dataset contains survival data on patients with malignant melanoma, including competing risks of death from melanoma vs. other causes. 
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression',
+		 'prodlim',
+		 'lava',
+		 'mstate',
+		 'regplot',
+		 'cmprskcoxmsm',
+		 'timereg'
+		 )
+
+```
+
+```r
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+ devtools::install_github("ItziarI/WeDiBaDis")
+```
+
+### Verify installation
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+
+### Data Preparation
+
+n the period 1962-77, 205 patients with malignant melanoma (cancer of the skin) had a radical operation performed at Odense University Hospital, Denmark. All patients were followed until the end of 1977 by which time 134 were still alive while 71 had died (of out whom 57 had died from cancer and 14 from other causes).
+
+`time`: time in days from operation
+
+`status`: a numeric with values 0=censored 1=death.malignant.melanoma 2=death.other.causes
+
+`event`: a factor with levels censored death.malignant.melanoma death.other.causes
+
+`invasion`: a factor with levels level.0, level.1, level.2
+
+`ici`: inflammatory cell infiltration (IFI): 0, 1, 2 or 3
+
+`epicel`: a factor with levels not present present
+
+`ulcer`: a factor with levels not present present
+
+`thick`: tumour thickness (in 1/100 mm)
+
+`sex`: a factor with levels Female Male
+
+`age`: age at operation (years)
+
+`logthick`: tumour thickness on log-scale
+
+
+
+```{r}
+#| warning: false
+data(Melanoma, package = "riskRegression")
+head(Melanoma)
+```
+
+### Prepare Data and Event Definition
+
+```{r}
+# Define event of interest: death from melanoma
+Melanoma$event <- ifelse(Melanoma$status == 1, 1, 
+                  ifelse(Melanoma$status == 2, 2, 0))
+Melanoma$event <- factor(Melanoma$event, levels = c(0,1,2),
+                         labels = c("censored", "melanoma", "other"))
+```
+
+
+## Absolute Risk Regression  with `timereg`
+
+The `timereg` package fits **semiparametric additive hazard models** for survival data, allowing covariate effects to be **time-varying** (Aalen model) or **constant** (Lin–Ying model). Unlike Cox regression, it models **absolute risk** (hazard differences), not relative risk, and does not require proportional hazards. Ideal for flexible, interpretable survival analysis with time-dependent effects.  
+
+Install: `install.packages("timereg")`.
+
+
+
+###  Fit Absolute Risk Model 
+
+Unlike Cox models (which model **relative risk**), **absolute risk models** directly model the **instantaneous risk (hazard)** as a sum of baseline hazard and covariate effects:
+
+$$
+\lambda(t | X) = \lambda_0(t) + \beta_1 X_1 + \beta_2 X_2 + \dots
+$$
+
+
+This model assumes the hazard is the sum of a time-varying baseline and linear covariate effects. comp.risk() from `timereg` fits such models for competing risks data. 
+
+
+In the **`timereg`** package, the `comp.risk()` function supports **several models** for **absolute risk (cumulative incidence) regression** in **competing risks**. These are specified via the `model =` argument.
+
+By default, `model = "additive"` (logit-additive), but you can choose:
+
+| Model | `model =` | Link Function | Interpretation |
+|-------|-----------|---------------|----------------|
+| **Additive (logit)** | `"additive"` | `logit(p) = α(t) + Xᵀβ(t)` | **Default**, most common |
+| **Proportional** | `"prop"` | `p(t\|X) = 1 - [1 - p₀(t)]^{exp(Xᵀβ)}` | Proportional CIFs |
+| **Relative cumulative incidence (rcif)** | `"rcif"` | `log(-log(1-p(t\|X))) = log(-log(1-p₀(t))) + Xᵀβ` | Fine-Gray–like on log-cum hazard scale |
+| **Logistic** | `"logistic"` | `logit(p(t\|X)) = logit(p₀(t)) + Xᵀβ` | Proportional odds on CIF |
+
+
+### `model = "additive"` — **Additive on Logit Scale (Default)**
+
+
+$$
+\text{logit}(P(T \leq t, D=1 \mid \mathbf{X})) = \text{logit}(P_0(t)) + \mathbf{X}^T \boldsymbol{\beta}(t)
+$$
+- **Baseline CIF**: $P_0(t)$ is the cumulative incidence at baseline.
+- Covariates **additively shift the logit of CIF** over time.
+- **Interpretation**: β(t) = change in log-odds of event by time t per unit increase in covariate.
+
+```{r}
+# Fit absolute risk model
+fit_abs <- comp.risk(
+  Event(time, event) ~ const(age) + const(sex) + const(thick),
+  data = Melanoma,
+  cause = 1,                     # event of interest
+  model = "additive",            # additive on logit scale
+  n.sim = 1000,                  # for confidence bands
+  resample.iid = 1
+)
+
+summary(fit_abs)
+```
+
+```{r}
+#| fig.width: 6.5
+#| fig.height: 5.5
+# Coefficient estimates (on logit scale)
+fit_abs$gamma
+
+# Standard errors
+fit_abs$se.gamma
+
+# Cumulative baseline (intercept function)
+plot(fit_abs, score = 0, xlab = "Time (years)", 
+     ylab = "Logit cumulative baseline", main = "Baseline Logit Risk")
+```
+
+
+### `model = "prop"` — **Proportional Absolute Risk**
+
+
+$$
+P(T \leq t, D=1 \mid \mathbf{X}) = 1 - \left[1 - P_0(t)\right]^{\exp(\mathbf{X}^T \boldsymbol{\beta})}
+$$
+
+- **Baseline CIF**: $P_0(t)$ is the cumulative incidence at baseline.
+- Covariates **scale the survival probability** from the event of interest.
+- **Interpretation**: A positive β means **higher absolute risk** at all times.
+
+
+```{r}
+fit_prop <- comp.risk(
+  Event(time, event) ~ const(age) + const(sex),
+  data = Melanoma,
+  cause = 1,
+  model = "prop",          # <-- proportional model
+  n.sim = 1000
+)
+
+summary(fit_prop)
+```
+
+```{r}
+#| fig.width: 6.5
+#| fig.height: 5.5
+# Plot baseline CIF:
+plot(fit_prop, score = 0, xlab = "Years", ylab = "Baseline CIF", 
+     main = "Proportional Model: Baseline Risk")
+```
+
+> **Use when**: You assume **proportionality of CIFs** (like proportional hazards, but for CIF).
+
+###  `model = "rcif"` — **Relative Cumulative Incidence Function**
+
+
+$$
+\log\left(-\log(1 - F_1(t|\mathbf{X}))\right) = \log\left(-\log(1 - F_{10}(t))\right) + \mathbf{X}^T \boldsymbol{\beta}
+$$
+
+- Equivalent to **Fine-Gray model** on the **subdistribution hazard** scale.
+- But here, **directly models CIF**.
+- **Interpretation**: exp(β) = **subdistribution hazard ratio**.
+
+
+```{r}
+fit_rcif <- comp.risk(
+  Event(time, event) ~ const(age) + const(thick),
+  data = Melanoma,
+  cause = 1,
+  model = "rcif",          # <-- Fine-Gray–like
+  n.sim = 1000
+)
+
+summary(fit_rcif)
+```
+
+> **Note**: This is **very similar** to `cmprsk::crr()`, but allows **time-varying effects**.
+
+> **Use when**: You want **Fine-Gray interpretation** but with **flexible time-varying effects**.
+
+###  `model = "logistic"` — **Logistic (Proportional Odds on CIF)**
+
+
+$$
+\text{logit}(F_1(t|\mathbf{X})) = \text{logit}(F_{10}(t)) + \mathbf{X}^T \boldsymbol{\beta}
+$$
+
+- **Proportional odds** for the **cumulative incidence**.
+- Covariates **shift the logit of CIF** by a constant.
+
+
+```{r}
+fit_logistic <- comp.risk(
+  Event(time, event) ~ const(sex) + const(thick),
+  data = Melanoma,
+  cause = 1,
+  model = "logistic",      # <-- logistic model
+  n.sim = 1000
+)
+
+summary(fit_logistic)
+```
+
+> **Use when**: You want **proportional odds** assumption on the **absolute risk**.
+
+
+
+###  Which Model to Choose?
+
+| Model | `model =` | Assumption | Interpretation | Best For |
+|------|-----------|-----------|----------------|----------|
+| **Additive** | `"additive"` | Additive on logit scale | Flexible, no proportionality | **Prediction**, time-varying effects |
+| **Proportional** | `"prop"` | CIFs are proportional | exp(β) = ratio of (1 - S) | Risk stratification |
+| **RCIF** | `"rcif"` | Proportional subdistribution hazard | exp(β) = subdistribution HR | **Compare with Fine-Gray** |
+| **Logistic** | `"logistic"` | Proportional odds on CIF | Odds ratio for cumulative risk | Clinical interpretation |
+
+
+## Absolute Risk Regression with 'riskRegression` package
+
+The `riskRegression` package provides functions for fitting various absolute risk regression models, including the **Additive Hazards Model** and **Cumulative Incidence Regression** for competing risks data. It allows for flexible modeling of absolute risk (CIF) directly, with options for time-varying effects and different link functions. This is a wrapper for the function `comp.risk` from the `timereg `package. The main difference is one marks variables in the formula that should have a time-dependent effect whereas in comp.risk one marks variables that should have a time constant (proportional) effect.
+
+`ARR` function fits absolute risk regression models for competing risks data, directly modeling the cumulative incidence function (CIF) for a specific event type. It allows for flexible covariate effects and provides interpretable estimates of absolute risk. 
+
+### Absolute Risk Regression - single binary factor
+
+```{r}
+#| fig.width: 6.5
+#| fig.height: 5.5
+# absolute risk regression - single binary factor
+fit.arr <- ARR(Hist(time,status)~sex,data=Melanoma,cause=1)
+print(fit.arr)
+```
+
+```{r}
+#| fig.width: 6.5
+#| fig.height: 5.5
+# show predicted cumulative incidences
+plot(fit.arr,col=3:4,newdata=data.frame(sex=c("Female","Male")))
+
+```
+
+### Absolute Risk Regression - single continous variable
+
+```{r}
+# Single continuous factor
+## tumor thickness on the log-scale
+Melanoma$logthick <- log(Melanoma$thick)
+
+## absolute risk regression 
+fit2.arr <- ARR(Hist(time,status)~logthick,data=Melanoma,cause=1)
+print(fit2.arr)
+```
+
+```{r}
+#| fig.width: 6.5
+#| fig.height: 5.5
+# show predicted cumulative incidences
+plot(fit2.arr,col=1:5,newdata=data.frame(logthick=quantile(Melanoma$logthick)))
+```
+
+### Absolute Risk Regression - multiple covariates
+
+```{r}
+# absolute risk model with multiple covariates
+multi.arr <- ARR(Hist(time,status)~logthick+sex+age+ulcer,data=Melanoma,cause=1)
+print(multi.arr)
+```
+
+### Absolute risk regression - stratified model
+
+Stratified model allow different baseline hazards for different levels of a factor variable. 
+
+```{r}
+# stratified model allowing different baseline risk for the two gender
+multi.arr <- ARR(Hist(time,status)~thick+strata(sex)+age+ulcer,data=Melanoma,cause=1)
+print(multi.arr)
+```
+
+### Logistic Absolute Risk Regression
+
+`LRR` function fits logistic absolute risk regression models for competing risks data, directly modeling the cumulative incidence function (CIF) for a specific event type using a logistic link. It provides interpretable estimates of absolute risk in terms of odds ratios.
+
+```{r}
+# logistic absolute risk regression
+fit.lrr <- LRR(Hist(time,status)~thick,data=Melanoma,cause=1)
+summary(fit.lrr)
+```
+
+
+
+## Summary and Conclusion
+
+**Absolute Risk Regression** (Direct CIF Modeling) directly estimates the **probability of event occurrence** by a given time under competing risks.
+It’s especially valuable for **clinical decision-making**, **risk communication**, and **prediction**, where absolute probabilities (not just relative hazards) matter.
+
+## Resources 
+
+* Gerds, T. A., & Andersen, P. K. (2012). *Absolute risk regression for competing risks: interpretation, link functions, and prediction.* **Statistics in Medicine**, 31(29), 3921–3930.
+* `riskRegression` package documentation (CRAN): [https://cran.r-project.org/package=riskRegression](https://cran.r-project.org/package=riskRegression)
+
+- Martinussen, T., & Scheike, T. H. (2006). *Dynamic Regression Models for Survival Data*. Springer.
+- `timereg` package vignette: `vignette("timereg")`
+- `riskRegression` package documentation

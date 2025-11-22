@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>survival-analysis-svm-r – Survival Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6a3c7add2da6d1460021a694b965a515.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Survival Analysis</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://sites.google.com/view/r-data-sci-env/home"> <i class="bi bi-house" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/zia207/r-colab"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/zia-ahmed207"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./zia207@gmail.com"> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block"></header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./Image/chapter_logo_survival_analysis_r.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Survival Analysis</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Non-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-00-survival-analysis-non-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Non-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-01-survival-analysis-kaplan-meier-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-02-survival-analysis-nelson-aalen-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nelson-Aalen Estimator</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Semi-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Semi-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-01-survival-analysis-cox-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cox Proportional Hazards Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis with Time-Dependent Covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-03-survival-analysis-stratified-cox-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stratified Cox Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-00-survival-analysis-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-01-survival-analysis-exponential-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exponential Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-02-survival-analysis-weibull-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Weibull Model for Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-03-survival-analysis-log-normal-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Normal Survival Model f</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-04-survival-analysis-log-logistic-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Logistic Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-05-survival-analysis-generalized-gamma-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Gamma Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-06-survival-analysis-gompertz-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gompertz Survival Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Recurrent Event Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Recurrent Event Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andersen-Gill (AG) Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prentice-Williams-Peterson (PWP) Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-03-survival-analysis-frailty-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frailty Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-04-survival-analysis-marginal-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Marginal Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Risk Regression</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-00-survival-analysi-risk-regression-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Risk Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-01-survival-analysis-cause-specific-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cause-Specific Hazard Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-02-survival-analysis-subdistribution-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Subdistribution Hazard Regression (Fine-Gray Model)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-03-survival-analysis-absolute-risk-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Absolute Risk Regression (Direct CIF Modeling)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-04-survival-analysis-aalen-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aalen’s Additive Regression Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Joint Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-00-survival-analysis-joint-modeling-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Joint Modeling in Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-01-survival-analysis-standard-joint-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Standard (Shared Random Effects) Joint Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-02-survival-analysis-baseline-hazard-function-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Baseline Hazard Function of Joint Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-03-survival-analysis-causal-effects-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Causal Effects from Joint Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-04-survival-analysis-competing-risks-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Competing Risks of Joint Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-05-survival-analysis-dynamic-joint-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamic Joint Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-06-survival-analysis-joint-frailty-modeling-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint Frailty Models For Recurrent and Terminal Events</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#support-vector-machine-svm-survival-model" id="toc-support-vector-machine-svm-survival-model" class="nav-link active" data-scroll-target="#support-vector-machine-svm-survival-model">2.7.4 Support Vector Machine (SVM) Survival Model</a>
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#key-concepts" id="toc-key-concepts" class="nav-link" data-scroll-target="#key-concepts">Key Concepts</a></li>
+  <li><a href="#how-svm-is-adapted-for-survival-analysis" id="toc-how-svm-is-adapted-for-survival-analysis" class="nav-link" data-scroll-target="#how-svm-is-adapted-for-survival-analysis">How SVM is Adapted for Survival Analysis</a>
+  <ul class="collapse">
+  <li><a href="#ranking-based-svm-survival-svm-most-common-e.g.-van-belle-et-al.-2011" id="toc-ranking-based-svm-survival-svm-most-common-e.g.-van-belle-et-al.-2011" class="nav-link" data-scroll-target="#ranking-based-svm-survival-svm-most-common-e.g.-van-belle-et-al.-2011">Ranking-Based SVM (Survival SVM) (Most common: e.g., Van Belle et al., 2011)</a></li>
+  <li><a href="#regression-based-svm-svr-for-survival-e.g.-shivaswamy-et-al.-2007" id="toc-regression-based-svm-svr-for-survival-e.g.-shivaswamy-et-al.-2007" class="nav-link" data-scroll-target="#regression-based-svm-svr-for-survival-e.g.-shivaswamy-et-al.-2007">Regression-Based SVM (SVR for Survival) (e.g., Shivaswamy et al., 2007)</a></li>
+  </ul></li>
+  <li><a href="#advantages-of-svm-based-survival-analysis" id="toc-advantages-of-svm-based-survival-analysis" class="nav-link" data-scroll-target="#advantages-of-svm-based-survival-analysis">Advantages of SVM-Based Survival Analysis</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#practical-use-cases" id="toc-practical-use-cases" class="nav-link" data-scroll-target="#practical-use-cases">Practical Use Cases</a></li>
+  <li><a href="#comparison-with-cox-model" id="toc-comparison-with-cox-model" class="nav-link" data-scroll-target="#comparison-with-cox-model">Comparison with Cox Model</a></li>
+  </ul></li>
+  <li><a href="#svm-based-survival-analysis-from-scratch" id="toc-svm-based-survival-analysis-from-scratch" class="nav-link" data-scroll-target="#svm-based-survival-analysis-from-scratch">SVM-Based Survival Analysis from Scratch</a>
+  <ul class="collapse">
+  <li><a href="#ranking-hinge-loss" id="toc-ranking-hinge-loss" class="nav-link" data-scroll-target="#ranking-hinge-loss">Ranking Hinge Loss</a></li>
+  <li><a href="#generate-comparable-pairs-once" id="toc-generate-comparable-pairs-once" class="nav-link" data-scroll-target="#generate-comparable-pairs-once">Generate Comparable Pairs (Once)</a></li>
+  <li><a href="#sgd-based-survival-svm-trainer" id="toc-sgd-based-survival-svm-trainer" class="nav-link" data-scroll-target="#sgd-based-survival-svm-trainer">SGD-Based Survival SVM Trainer</a></li>
+  <li><a href="#prediction-function" id="toc-prediction-function" class="nav-link" data-scroll-target="#prediction-function">Prediction Function</a></li>
+  <li><a href="#manual-c-index-harrells-concordance" id="toc-manual-c-index-harrells-concordance" class="nav-link" data-scroll-target="#manual-c-index-harrells-concordance">Manual C-index (Harrell’s Concordance)</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#svm-based-survival-analysis-r" id="toc-svm-based-survival-analysis-r" class="nav-link" data-scroll-target="#svm-based-survival-analysis-r">SVM-Based Survival Analysis R</a>
+  <ul class="collapse">
+  <li><a href="#install-required-r-packages" id="toc-install-required-r-packages" class="nav-link" data-scroll-target="#install-required-r-packages">Install Required R Packages</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#install-missing-packages" id="toc-install-missing-packages" class="nav-link" data-scroll-target="#install-missing-packages">Install missing packages</a>
+  <ul>
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load Packages</a></li>
+  <li><a href="#load-and-prepare-the-veteran-dataset" id="toc-load-and-prepare-the-veteran-dataset" class="nav-link" data-scroll-target="#load-and-prepare-the-veteran-dataset">Load and Prepare the <code>veteran</code> Dataset</a></li>
+  <li><a href="#split-data-into-training-and-testing-sets" id="toc-split-data-into-training-and-testing-sets" class="nav-link" data-scroll-target="#split-data-into-training-and-testing-sets">Split Data into Training and Testing Sets</a></li>
+  <li><a href="#fit-survival-svm-models" id="toc-fit-survival-svm-models" class="nav-link" data-scroll-target="#fit-survival-svm-models">Fit Survival SVM Models</a>
+  <ul class="collapse">
+  <li><a href="#linear-like-kernel-add_kernel-ranking-svm" id="toc-linear-like-kernel-add_kernel-ranking-svm" class="nav-link" data-scroll-target="#linear-like-kernel-add_kernel-ranking-svm">Linear-like Kernel (<code>add_kernel</code>) — Ranking SVM</a></li>
+  <li><a href="#rbf-gaussian-kernel" id="toc-rbf-gaussian-kernel" class="nav-link" data-scroll-target="#rbf-gaussian-kernel">RBF (Gaussian) Kernel</a></li>
+  </ul></li>
+  <li><a href="#make-predictions-and-evaluate-performance" id="toc-make-predictions-and-evaluate-performance" class="nav-link" data-scroll-target="#make-predictions-and-evaluate-performance">Make Predictions and Evaluate Performance</a></li>
+  <li><a href="#risk-stratification-and-kaplan-meier-plot-using-linear-svm" id="toc-risk-stratification-and-kaplan-meier-plot-using-linear-svm" class="nav-link" data-scroll-target="#risk-stratification-and-kaplan-meier-plot-using-linear-svm">Risk Stratification and Kaplan-Meier Plot (Using Linear SVM)</a></li>
+  <li><a href="#hyperparameter-tuning" id="toc-hyperparameter-tuning" class="nav-link" data-scroll-target="#hyperparameter-tuning">Hyperparameter Tuning</a>
+  <ul class="collapse">
+  <li><a href="#prepare-for-cross-validation" id="toc-prepare-for-cross-validation" class="nav-link" data-scroll-target="#prepare-for-cross-validation">Prepare for Cross-Validation</a></li>
+  <li><a href="#define-gamma-grid-for-tuning" id="toc-define-gamma-grid-for-tuning" class="nav-link" data-scroll-target="#define-gamma-grid-for-tuning">Define Gamma Grid for Tuning</a></li>
+  <li><a href="#cross-validation-function-for-a-single-gamma-value" id="toc-cross-validation-function-for-a-single-gamma-value" class="nav-link" data-scroll-target="#cross-validation-function-for-a-single-gamma-value">Cross-Validation Function for a Single Gamma Value</a></li>
+  <li><a href="#perform-cross-validation-over-gamma-grid" id="toc-perform-cross-validation-over-gamma-grid" class="nav-link" data-scroll-target="#perform-cross-validation-over-gamma-grid">Perform Cross-Validation Over Gamma Grid</a></li>
+  <li><a href="#select-best-gamma" id="toc-select-best-gamma" class="nav-link" data-scroll-target="#select-best-gamma">Select Best Gamma</a></li>
+  <li><a href="#re-fit-final-model-with-best-gamma" id="toc-re-fit-final-model-with-best-gamma" class="nav-link" data-scroll-target="#re-fit-final-model-with-best-gamma">Re-fit Final Model with Best Gamma</a></li>
+  <li><a href="#risk-stratification-on-full-dataset" id="toc-risk-stratification-on-full-dataset" class="nav-link" data-scroll-target="#risk-stratification-on-full-dataset">Risk Stratification on Full Dataset</a></li>
+  <li><a href="#kaplan-meier-plot-for-final-model" id="toc-kaplan-meier-plot-for-final-model" class="nav-link" data-scroll-target="#kaplan-meier-plot-for-final-model">Kaplan-Meier Plot for Final Model</a></li>
+  <li><a href="#plot-c-index-vs.-gamma" id="toc-plot-c-index-vs.-gamma" class="nav-link" data-scroll-target="#plot-c-index-vs.-gamma">Plot C-index vs.&nbsp;Gamma</a></li>
+  </ul></li>
+  <li><a href="#summary-and-conclusion" id="toc-summary-and-conclusion" class="nav-link" data-scroll-target="#summary-and-conclusion">Summary and Conclusion</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_07_04_survival_analysis_svm_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook//02_07_07_04_survival_analysis_svm_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<section id="support-vector-machine-svm-survival-model" class="level1 unnumbered">
+<h1 class="unnumbered">2.7.4 Support Vector Machine (SVM) Survival Model</h1>
+<p>This section covers <strong>Support Vector Machine (SVM)-based survival analysis</strong>, including its concepts, advantages, limitations, and a practical R tutorial using the <code>survivalsvm</code> package.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p><strong>Support Vector Machine (SVM)-Based Survival Analysis</strong> is a machine learning approach that adapts the <code>Support Vector Machine</code> framework—originally designed for classification and regression—to <code>survival analysis</code> problems. Survival analysis deals with <strong>time-to-event data</strong>, where the outcome of interest is the time until an event occurs (e.g., death, machine failure, customer churn), and data is often 1censored** (i.e., the event has not occurred for some subjects by the end of the study).</p>
+<p>Traditional survival models like <code>Cox Proportional Hazards</code> are parametric or semi-parametric and make strong assumptions (e.g., proportional hazards). SVM-based survival analysis offers a <code>non-parametric, non-linear, and robust alternative</code> using the `maximum margin principle** of SVMs.</p>
+<section id="key-concepts" class="level3">
+<h3 class="anchored" data-anchor-id="key-concepts">Key Concepts</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 61%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concept</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Survival Data</strong></td>
+<td><span class="math inline">\((t_i, \delta_i, \mathbf{x}_i)\)</span>: <br> - <span class="math inline">\(t_i\)</span>: observed time (event or censoring) <br> - <span class="math inline">\(\delta_i = 1\)</span> if event occurred, <span class="math inline">\(0\)</span> if censored <br> - <span class="math inline">\(\mathbf{x}_i\)</span>: feature vector</td>
+</tr>
+<tr class="even">
+<td><strong>Censoring</strong></td>
+<td>Right-censoring: event not observed during study (common)</td>
+</tr>
+<tr class="odd">
+<td><strong>Goal</strong></td>
+<td>Rank subjects by risk or predict survival probability</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="how-svm-is-adapted-for-survival-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="how-svm-is-adapted-for-survival-analysis">How SVM is Adapted for Survival Analysis</h3>
+<p>There are two main formulations:</p>
+<section id="ranking-based-svm-survival-svm-most-common-e.g.-van-belle-et-al.-2011" class="level4">
+<h4 class="anchored" data-anchor-id="ranking-based-svm-survival-svm-most-common-e.g.-van-belle-et-al.-2011">Ranking-Based SVM (Survival SVM) (Most common: e.g., Van Belle et al., 2011)</h4>
+<p>Instead of predicting exact survival times, <strong>rank patients by their risk</strong> — those likely to experience the event <strong>sooner</strong> should have <strong>higher risk scores</strong>.</p>
+<p>Learn a function <span class="math inline">\(f(\mathbf{x})\)</span> such that for any uncensored pair <span class="math inline">\((i, j)\)</span> where <span class="math inline">\(t_i &lt; t_j\)</span> and <span class="math inline">\(\delta_i = 1\)</span>, we have:</p>
+<p><span class="math display">\[
+f(\mathbf{x}_i) &gt; f(\mathbf{x}_j)
+\]</span></p>
+<p>(i.e., higher risk for earlier event)</p>
+<p>For every pair where subject <span class="math inline">\(i\)</span> fails before subject <span class="math inline">\(j\)</span> (and <span class="math inline">\(i\)</span> is not censored):</p>
+<p><span class="math display">\[
+f(\mathbf{x}_i) \geq f(\mathbf{x}_j) + 1 - \xi_{ij}
+\]</span></p>
+<p>with slack <span class="math inline">\(\xi_{ij} \geq 0\)</span></p>
+<p>Optimization Problem:</p>
+<p><span class="math display">\[
+\min_{w, b, \xi} \ \frac{1}{2} \|w\|^2 + C \sum \xi_{ij}
+\]</span> subject to ranking constraints only on <strong>comparable pairs</strong> (uncensored earlier events).</p>
+<p>This is solved via <strong>quadratic programming</strong> or specialized algorithms.</p>
+</section>
+<section id="regression-based-svm-svr-for-survival-e.g.-shivaswamy-et-al.-2007" class="level4">
+<h4 class="anchored" data-anchor-id="regression-based-svm-svr-for-survival-e.g.-shivaswamy-et-al.-2007">Regression-Based SVM (SVR for Survival) (e.g., Shivaswamy et al., 2007)</h4>
+<p>Treat survival time as a regression target, but:</p>
+<ul>
+<li><strong>Censored points</strong> provide <strong>lower bounds</strong> (event time <span class="math inline">\(&gt; t_i\)</span>)</li>
+<li>Use <strong>asymmetric loss</strong> (like in survival SVR)</li>
+</ul>
+<p>Loss Function: - For uncensored: standard <span class="math inline">\(\epsilon\)</span>-insensitive loss - For censored: only penalize if prediction is <strong>below</strong> observed time</p>
+</section>
+</section>
+<section id="advantages-of-svm-based-survival-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="advantages-of-svm-based-survival-analysis">Advantages of SVM-Based Survival Analysis</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Advantage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Non-parametric</strong></td>
+<td>No assumption on survival distribution</td>
+</tr>
+<tr class="even">
+<td><strong>Handles non-linearity</strong></td>
+<td>Via kernel trick (RBF, polynomial)</td>
+</tr>
+<tr class="odd">
+<td><strong>Robust to outliers</strong></td>
+<td>Due to margin maximization</td>
+</tr>
+<tr class="even">
+<td><strong>Handles high-dimensional data</strong></td>
+<td>Like gene expression data</td>
+</tr>
+<tr class="odd">
+<td><strong>Censoring-aware</strong></td>
+<td>Built into the model</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="limitations" class="level3">
+<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Limitation</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Scalability</strong></td>
+<td><span class="math inline">\(O(n^2)\)</span> comparable pairs → slow for large <span class="math inline">\(n\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>No direct probability output</strong></td>
+<td>Gives risk score, not <span class="math inline">\(S(t)\)</span></td>
+</tr>
+<tr class="odd">
+<td><strong>Hard to interpret</strong></td>
+<td>Like standard SVMs</td>
+</tr>
+<tr class="even">
+<td><strong>Requires careful censoring handling</strong></td>
+<td>Only right-censoring typically</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="practical-use-cases" class="level3">
+<h3 class="anchored" data-anchor-id="practical-use-cases">Practical Use Cases</h3>
+<ul>
+<li><strong>Cancer prognosis</strong> using genomic data</li>
+<li><strong>Predicting machine failure</strong> in predictive maintenance</li>
+<li><strong>Customer churn modeling</strong> in business</li>
+</ul>
+</section>
+<section id="comparison-with-cox-model" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-with-cox-model">Comparison with Cox Model</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Cox PH</th>
+<th>SVM Survival</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Assumption</td>
+<td>Proportional hazards</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td>Output</td>
+<td>Hazard ratios</td>
+<td>Risk ranking</td>
+</tr>
+<tr class="odd">
+<td>Non-linearity</td>
+<td>No (unless engineered)</td>
+<td>Yes (kernel)</td>
+</tr>
+<tr class="even">
+<td>Censoring</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Interpretability</td>
+<td>High</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="svm-based-survival-analysis-from-scratch" class="level2">
+<h2 class="anchored" data-anchor-id="svm-based-survival-analysis-from-scratch">SVM-Based Survival Analysis from Scratch</h2>
+<p>This section implements a simple <strong>ranking-based Survival SVM</strong> using <strong>Stochastic Gradient Descent (SGD)</strong> in R from scratch.</p>
+<section id="ranking-hinge-loss" class="level3">
+<h3 class="anchored" data-anchor-id="ranking-hinge-loss">Ranking Hinge Loss</h3>
+<p>Ranking-based SVM for survival analysis focuses on correctly ordering patients by risk.</p>
+<p>For every <strong>comparable pair</strong> ((i, j)) where:</p>
+<ul>
+<li>Patient (j) had an <strong>event</strong> (<code>event[j] == 1</code>)</li>
+<li>Patient (i) survived <strong>longer</strong> than (j) (<code>time[i] &gt; time[j]</code>)</li>
+</ul>
+<p>We want the model’s risk score to satisfy:</p>
+<p><span class="math display">\[
+f(x_i) \geq f(x_j) + 1
+\]</span></p>
+<p>We penalize violations using <strong>hinge loss</strong>:<br>
+<span class="math display">\[
+\mathcal{L}_{ij} = \max\left(0,\ 1 - \big(f(x_i) - f(x_j)\big)\right)
+\]</span></p>
+<p>With linear model (f(x) = w^x), total loss is:<br>
+<span class="math display">\[
+\mathcal{L}(w) = \frac{\lambda}{2} \|w\|^2 + \frac{1}{|P|} \sum_{(i,j) \in P} \max\left(0,\ 1 - w^\top(x_i - x_j)\right)
+\]</span></p>
+<p>We minimize this via <strong>SGD</strong>.</p>
+</section>
+<section id="generate-comparable-pairs-once" class="level3">
+<h3 class="anchored" data-anchor-id="generate-comparable-pairs-once">Generate Comparable Pairs (Once)</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>generate_comparable_pairs <span class="ot">&lt;-</span> <span class="cf">function</span>(time, event) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(time)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  pairs <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  k <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (event[j] <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;&amp;</span> time[i] <span class="sc">&gt;</span> time[j]) {</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        pairs[[k]] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">i =</span> i, <span class="at">j =</span> j)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        k <span class="ot">&lt;-</span> k <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (k <span class="sc">==</span> <span class="dv">1</span>) <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do.call</span>(rbind, pairs)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="sgd-based-survival-svm-trainer" class="level3">
+<h3 class="anchored" data-anchor-id="sgd-based-survival-svm-trainer">SGD-Based Survival SVM Trainer</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>survivalsvm_sgd <span class="ot">&lt;-</span> <span class="cf">function</span>(X, time, event,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                            <span class="at">lambda =</span> <span class="fl">0.01</span>,      <span class="co"># L2 penalty (lambda = 1/C)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">lr =</span> <span class="fl">0.01</span>,          <span class="co"># learning rate</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">epochs =</span> <span class="dv">100</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">verbose =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Input checks</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">is.matrix</span>(X) <span class="sc">||</span> <span class="fu">is.data.frame</span>(X))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(X)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X); p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Generate comparable pairs</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  pairs <span class="ot">&lt;-</span> <span class="fu">generate_comparable_pairs</span>(time, event)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(pairs)) <span class="fu">stop</span>(<span class="st">"No comparable pairs found!"</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">nrow</span>(pairs)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (verbose) <span class="fu">cat</span>(<span class="st">"Number of comparable pairs:"</span>, m, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initialize weights (small random)</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  w <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(p, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="fl">0.01</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Precompute feature differences for all pairs (memory vs speed trade-off)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># X_diff[k, ] = X[i, ] - X[j, ] for pair k = (i, j)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  X_diff <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> m, <span class="at">ncol =</span> p)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>m) {</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> pairs[k, <span class="st">"i"</span>]</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> pairs[k, <span class="st">"j"</span>]</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    X_diff[k, ] <span class="ot">&lt;-</span> X[i, ] <span class="sc">-</span> X[j, ]</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># SGD loop</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (epoch <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>epochs) {</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Shuffle pair indices</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(m)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    total_loss <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k <span class="cf">in</span> idx) {</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>      diff <span class="ot">&lt;-</span> X_diff[k, ]              <span class="co"># x_i - x_j</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>      margin <span class="ot">&lt;-</span> <span class="fu">sum</span>(w <span class="sc">*</span> diff)          <span class="co"># w^T (x_i - x_j)</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>      loss <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="dv">0</span>, <span class="dv">1</span> <span class="sc">-</span> margin)       <span class="co"># hinge loss</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>      total_loss <span class="ot">&lt;-</span> total_loss <span class="sc">+</span> loss</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Gradient update</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (margin <span class="sc">&lt;</span> <span class="dv">1</span>) {</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Subgradient: - (x_i - x_j)</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>        grad_w <span class="ot">&lt;-</span> lambda <span class="sc">*</span> w <span class="sc">-</span> diff</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Only L2 regularization gradient</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>        grad_w <span class="ot">&lt;-</span> lambda <span class="sc">*</span> w</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>      <span class="co"># SGD step</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>      w <span class="ot">&lt;-</span> w <span class="sc">-</span> lr <span class="sc">*</span> grad_w</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    avg_loss <span class="ot">&lt;-</span> total_loss <span class="sc">/</span> m</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (verbose <span class="sc">&amp;&amp;</span> epoch <span class="sc">%%</span> <span class="dv">20</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"Epoch"</span>, epoch, <span class="st">"| Avg Loss:"</span>, <span class="fu">round</span>(avg_loss, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> w,</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_epochs =</span> epochs,</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">lambda =</span> lambda,</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">lr =</span> lr,</span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_pairs =</span> m</span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="prediction-function" class="level3">
+<h3 class="anchored" data-anchor-id="prediction-function">Prediction Function</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>predict_survivalsvm_sgd <span class="ot">&lt;-</span> <span class="cf">function</span>(model, newdata) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  newdata <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(newdata)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(newdata <span class="sc">%*%</span> model<span class="sc">$</span>weights)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="manual-c-index-harrells-concordance" class="level3">
+<h3 class="anchored" data-anchor-id="manual-c-index-harrells-concordance">Manual C-index (Harrell’s Concordance)</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>compute_cindex <span class="ot">&lt;-</span> <span class="cf">function</span>(risk, time, event) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(risk)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  concordant <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  usable <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(n<span class="dv">-1</span>)) {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> (i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>n) {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Only consider pairs where at least one had an event</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (event[i] <span class="sc">==</span> <span class="dv">1</span> <span class="sc">||</span> event[j] <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Only comparable if times are unequal</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (time[i] <span class="sc">!=</span> time[j]) {</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>          usable <span class="ot">&lt;-</span> usable <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>          <span class="co"># Concordant if higher risk = shorter survival</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> ((risk[i] <span class="sc">&gt;</span> risk[j] <span class="sc">&amp;&amp;</span> time[i] <span class="sc">&lt;</span> time[j]) <span class="sc">||</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>              (risk[i] <span class="sc">&lt;</span> risk[j] <span class="sc">&amp;&amp;</span> time[i] <span class="sc">&gt;</span> time[j])) {</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            concordant <span class="ot">&lt;-</span> concordant <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>          <span class="co"># Ties in risk: add 0.5 (optional, skipped here for simplicity)</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (usable <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="cn">NA</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  concordant <span class="sc">/</span> usable</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<p>We’ll manually include the <code>veteran</code> data as a data frame</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate small survival data (base R only)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">50</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n <span class="sc">*</span> p), <span class="at">nrow =</span> n)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"x1"</span>, <span class="st">"x2"</span>, <span class="st">"x3"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># True risk = x1 + 0.5*x2</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>true_risk <span class="ot">&lt;-</span> X[,<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> X[,<span class="dv">2</span>]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate survival time ~ exp(-risk)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>time <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="at">rate =</span> <span class="fu">exp</span>(true_risk))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Event: 80% events, 20% censoring</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>event <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.8</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit Survival SVM via SGD</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>model_sgd <span class="ot">&lt;-</span> <span class="fu">survivalsvm_sgd</span>(</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  X, time, event,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda =</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">lr =</span> <span class="fl">0.05</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">epochs =</span> <span class="dv">100</span>,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of comparable pairs: 1034 
+Epoch 20 | Avg Loss: 0.596 
+Epoch 40 | Avg Loss: 0.5989 
+Epoch 60 | Avg Loss: 0.5932 
+Epoch 80 | Avg Loss: 0.5974 
+Epoch 100 | Avg Loss: 0.5964 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>risk_pred <span class="ot">&lt;-</span> <span class="fu">predict_survivalsvm_sgd</span>(model_sgd, X)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>cindex <span class="ot">&lt;-</span> <span class="fu">compute_cindex</span>(risk_pred, time, event)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Final C-index:"</span>, <span class="fu">round</span>(cindex, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Final C-index: 0.235 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare to true risk</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"C-index (true risk):"</span>, <span class="fu">round</span>(<span class="fu">compute_cindex</span>(true_risk, time, event), <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>C-index (true risk): 0.747 </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="svm-based-survival-analysis-r" class="level2">
+<h2 class="anchored" data-anchor-id="svm-based-survival-analysis-r">SVM-Based Survival Analysis R</h2>
+<p>This tutorial demonstrates <strong>Support Vector Machine (SVM)-based survival analysis</strong> in <strong>R</strong> using the <strong>veteran dataset</strong> from the <code>survival</code> package. We’ll use the <strong><code>survivalsvm</code></strong> package, which implements <strong>ranking-based survival SVM</strong>.</p>
+<section id="install-required-r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-required-r-packages">Install Required R Packages</h3>
+<p>Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span><span class="fu">c</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidyverse'</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="st">'survivalsvm'</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>       <span class="st">'survival'</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survcomp'</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survMisc'</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survminer'</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">'MASS'</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>         </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>```{r #| warning: false #| error: false</p>
+</section>
+</section>
+</section>
+<section id="install-missing-packages" class="level1">
+<h1>Install missing packages</h1>
+<p>new_packages &lt;- packages[!(packages %in% installed.packages()[,“Package”])] if(length(new_packages)) install.packages(new_packages)</p>
+<p>#devtools::install_github(“ItziarI/WeDiBaDis”) BiocManager::install(“survcomp”)</p>
+<pre><code>
+### Verify Installation
+
+
+::: {.cell}
+
+```{.r .cell-code}
+# Verify installation
+cat("Installed packages:\n")</code></pre>
+<div class="cell-output cell-output-stdout">
+<pre><code>Installed packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sapply</span>(packages, requireNamespace, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  tidyverse survivalsvm    survival    survcomp    survMisc   survminer 
+       TRUE        TRUE        TRUE        TRUE        TRUE        TRUE 
+       MASS 
+       TRUE </code></pre>
+</div>
+<p>:::</p>
+<section id="load-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages">Load Packages</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages with suppressed messages</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check loaded packages</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Successfully loaded packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Successfully loaded packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">search</span>()[<span class="fu">grepl</span>(<span class="st">"package:"</span>, <span class="fu">search</span>())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "package:MASS"        "package:survminer"   "package:ggpubr"     
+ [4] "package:survMisc"    "package:survcomp"    "package:prodlim"    
+ [7] "package:survivalsvm" "package:survival"    "package:lubridate"  
+[10] "package:forcats"     "package:stringr"     "package:dplyr"      
+[13] "package:purrr"       "package:readr"       "package:tidyr"      
+[16] "package:tibble"      "package:ggplot2"     "package:tidyverse"  
+[19] "package:stats"       "package:graphics"    "package:grDevices"  
+[22] "package:utils"       "package:datasets"    "package:methods"    
+[25] "package:base"       </code></pre>
+</div>
+</div>
+</section>
+<section id="load-and-prepare-the-veteran-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="load-and-prepare-the-veteran-dataset">Load and Prepare the <code>veteran</code> Dataset</h3>
+<p>The <code>veteran</code> dataset contains survival data for lung cancer patients from the Veterans’ Administration Lung Study. It includes covariates like treatment type, cell type, Karnofsky performance score, time since diagnosis, and survival status.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(veteran)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in data(veteran): data set 'veteran' not found</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect structure</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(veteran)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   137 obs. of  8 variables:
+ $ trt     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ celltype: Factor w/ 4 levels "squamous","smallcell",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ time    : num  72 411 228 126 118 10 82 110 314 100 ...
+ $ status  : num  1 1 1 1 1 1 1 1 1 0 ...
+ $ karno   : num  60 70 60 60 70 20 40 80 50 70 ...
+ $ diagtime: num  7 5 3 9 11 5 10 29 18 6 ...
+ $ age     : num  69 64 38 63 65 49 69 68 43 70 ...
+ $ prior   : num  0 10 0 10 10 0 10 0 0 0 ...</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># time: survival time in days</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># status: 0 = censored, 1 = dead</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># trt: 1=standard, 2=test</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># celltype: 1=squamous, 2=small cell, 3=adeno, 4=large</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co"># karno: Karnofsky performance score (0–100)</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># diagtime: time from diagnosis to study entry (days)</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># age: age in years</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co"># prior: 0=no, 10=yes (prior therapy)</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to factor where appropriate</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>veteran_clean <span class="ot">&lt;-</span> veteran <span class="sc">%&gt;%</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> <span class="fu">ifelse</span>(status <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),  <span class="co"># 1 = event (death), 0 = censored</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">trt =</span> <span class="fu">factor</span>(trt, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Standard"</span>, <span class="st">"Test"</span>)),</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">celltype =</span> <span class="fu">factor</span>(celltype, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Squamous"</span>, <span class="st">"Small Cell"</span>, <span class="st">"Adeno"</span>, <span class="st">"Large"</span>))</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Select relevant columns</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>veteran_df <span class="ot">&lt;-</span> veteran_clean <span class="sc">%&gt;%</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(time, event, trt, celltype, karno, diagtime, age, prior)</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="co"># View first few rows</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(veteran_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  time event      trt celltype karno diagtime age prior
+1   72     1 Standard Squamous    60        7  69     0
+2  411     1 Standard Squamous    70        5  64    10
+3  228     1 Standard Squamous    60        3  38     0
+4  126     1 Standard Squamous    60        9  63    10
+5  118     1 Standard Squamous    70       11  65    10
+6   10     1 Standard Squamous    20        5  49     0</code></pre>
+</div>
+</div>
+</section>
+<section id="split-data-into-training-and-testing-sets" class="level3">
+<h3 class="anchored" data-anchor-id="split-data-into-training-and-testing-sets">Split Data into Training and Testing Sets</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(veteran_df)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>train_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> <span class="fl">0.7</span> <span class="sc">*</span> n)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> veteran_df[train_idx, ]</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>test_data  <span class="ot">&lt;-</span> veteran_df[<span class="sc">-</span>train_idx, ]</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Training samples:"</span>, <span class="fu">nrow</span>(train_data), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Training samples: 95 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Testing samples:"</span>, <span class="fu">nrow</span>(test_data), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Testing samples: 42 </code></pre>
+</div>
+</div>
+</section>
+<section id="fit-survival-svm-models" class="level3">
+<h3 class="anchored" data-anchor-id="fit-survival-svm-models">Fit Survival SVM Models</h3>
+<section id="linear-like-kernel-add_kernel-ranking-svm" class="level4">
+<h4 class="anchored" data-anchor-id="linear-like-kernel-add_kernel-ranking-svm">Linear-like Kernel (<code>add_kernel</code>) — Ranking SVM</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>svm_linear <span class="ot">&lt;-</span> <span class="fu">survivalsvm</span>(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Surv</span>(time, event) <span class="sc">~</span> .,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data        =</span> train_data,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">type        =</span> <span class="st">"vanbelle1"</span>,    <span class="co"># ranking-based SVM</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma       =</span> <span class="fl">0.1</span>,</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">opt         =</span> <span class="st">"quadprog"</span>,</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">diff.meth   =</span> <span class="st">"makediff3"</span>,</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">kernel      =</span> <span class="st">"add_kernel"</span>    <span class="co"># additive (linear-like) kernel</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(svm_linear)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+survivalsvm result
+
+Call:
+ survivalsvm(Surv(time, event) ~ ., data = train_data, type = "vanbelle1", gamma = 0.1, opt = "quadprog", diff.meth = "makediff3", kernel = "add_kernel") 
+
+Survival svm approach                  : vanbelle1 
+Type of Kernel                         : add_kernel 
+Method used to build 1NN differences   : diff3 
+Optimization solver used               : quadprog 
+Number of support vectors retained     : 94 
+survivalsvm version                    : 0.0.6 </code></pre>
+</div>
+</div>
+</section>
+<section id="rbf-gaussian-kernel" class="level4">
+<h4 class="anchored" data-anchor-id="rbf-gaussian-kernel">RBF (Gaussian) Kernel</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>svm_rbf <span class="ot">&lt;-</span> <span class="fu">survivalsvm</span>(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Surv</span>(time, event) <span class="sc">~</span> .,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data      =</span> train_data,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">type      =</span> <span class="st">"regression"</span>,       <span class="co"># regression-based SVM</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma     =</span> <span class="fl">0.05</span>,</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">opt       =</span> <span class="st">"quadprog"</span>,</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">kernel    =</span> <span class="st">"rbf_kernel"</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(svm_rbf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+survivalsvm result
+
+Call:
+
+ survivalsvm(Surv(time, event) ~ ., data = train_data, type = "regression", gamma = 0.05, opt = "quadprog", kernel = "rbf_kernel") 
+
+Survival svm approach              : regression 
+Type of Kernel                     : rbf_kernel 
+Optimization solver used           : quadprog 
+Number of support vectors retained : 94 
+survivalsvm version                : 0.0.6 </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="make-predictions-and-evaluate-performance" class="level3">
+<h3 class="anchored" data-anchor-id="make-predictions-and-evaluate-performance">Make Predictions and Evaluate Performance</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Re-encode factor levels in test_data to match training</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (col <span class="cf">in</span> <span class="fu">names</span>(test_data)) {</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.factor</span>(train_data[[col]])) {</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    test_data[[col]] <span class="ot">&lt;-</span> <span class="fu">factor</span>(test_data[[col]], <span class="at">levels =</span> <span class="fu">levels</span>(train_data[[col]]))</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Make predictions</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>pred_linear <span class="ot">&lt;-</span> <span class="fu">predict</span>(svm_linear, <span class="at">newdata =</span> test_data)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>pred_rbf    <span class="ot">&lt;-</span> <span class="fu">predict</span>(svm_rbf, <span class="at">newdata =</span> test_data)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract risk scores (ensure they are numeric vectors)</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>risk_linear <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(pred_linear<span class="sc">$</span>predicted)</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>risk_rbf    <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(pred_rbf<span class="sc">$</span>predicted)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Safety check</span></span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">length</span>(risk_linear) <span class="sc">==</span> <span class="fu">nrow</span>(test_data))</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">length</span>(risk_rbf) <span class="sc">==</span> <span class="fu">nrow</span>(test_data))</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute C-indices using NEW concordance()</span></span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>cindex_linear <span class="ot">&lt;-</span> <span class="fu">concordance</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> risk_linear, <span class="at">data =</span> test_data)<span class="sc">$</span>concordance</span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>cindex_rbf    <span class="ot">&lt;-</span> <span class="fu">concordance</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> risk_rbf, <span class="at">data =</span> test_data)<span class="sc">$</span>concordance</span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Cox model</span></span>
+<span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a>cox_model <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> ., <span class="at">data =</span> train_data)</span>
+<span id="cb35-26"><a href="#cb35-26" aria-hidden="true" tabindex="-1"></a>cox_risk  <span class="ot">&lt;-</span> <span class="fu">predict</span>(cox_model, <span class="at">newdata =</span> test_data, <span class="at">type =</span> <span class="st">"risk"</span>)</span>
+<span id="cb35-27"><a href="#cb35-27" aria-hidden="true" tabindex="-1"></a>cindex_cox <span class="ot">&lt;-</span> <span class="fu">concordance</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> cox_risk, <span class="at">data =</span> test_data)<span class="sc">$</span>concordance</span>
+<span id="cb35-28"><a href="#cb35-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-29"><a href="#cb35-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Print</span></span>
+<span id="cb35-30"><a href="#cb35-30" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Cox C-index       :"</span>, <span class="fu">round</span>(cindex_cox, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Cox C-index       : 0.3 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"SVM (Linear) C-index :"</span>, <span class="fu">round</span>(cindex_linear, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>SVM (Linear) C-index : 0.432 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"SVM (RBF) C-index    :"</span>, <span class="fu">round</span>(cindex_rbf, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>SVM (RBF) C-index    : 0.468 </code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Higher C-index (closer to 1.0) = better predictive discrimination.</p>
+</blockquote>
+</section>
+<section id="risk-stratification-and-kaplan-meier-plot-using-linear-svm" class="level3">
+<h3 class="anchored" data-anchor-id="risk-stratification-and-kaplan-meier-plot-using-linear-svm">Risk Stratification and Kaplan-Meier Plot (Using Linear SVM)</h3>
+<div class="cell" data-fi.g.width="6">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create risk groups based on median predicted risk</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>pred_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">time  =</span> test_data<span class="sc">$</span>time,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> test_data<span class="sc">$</span>event,</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">risk  =</span> risk_linear</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">risk_group =</span> <span class="fu">ifelse</span>(risk <span class="sc">&gt;</span> <span class="fu">median</span>(risk), <span class="st">"High Risk"</span>, <span class="st">"Low Risk"</span>))</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit Kaplan-Meier curves</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>km_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> risk_group, <span class="at">data =</span> pred_df)</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot</span></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsurvplot</span>(</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  km_fit,</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> pred_df,</span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">pval =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.int =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">risk.table =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.title =</span> <span class="st">"SVM Risk Group"</span>,</span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.labs =</span> <span class="fu">c</span>(<span class="st">"High Risk"</span>, <span class="st">"Low Risk"</span>),</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Kaplan-Meier: SVM-Based Risk Stratification (Veteran Dataset)"</span>,</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Time (days)"</span>,</span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Survival Probability"</span></span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` instead.
+ℹ The deprecated feature was likely used in the ggpubr package.
+  Please report the issue at &lt;https://github.com/kassambara/ggpubr/issues&gt;.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Ignoring unknown labels:
+• colour : "SVM Risk Group"</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-07-04-survival-analysis-svm-r_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>This plot visually assesses whether the SVM risk groups separate well in terms of survival outcomes.</p>
+</blockquote>
+</section>
+<section id="hyperparameter-tuning" class="level2">
+<h2 class="anchored" data-anchor-id="hyperparameter-tuning">Hyperparameter Tuning</h2>
+<section id="prepare-for-cross-validation" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-for-cross-validation">Prepare for Cross-Validation</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(veteran_clean)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>folds <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>k, <span class="at">length.out =</span> n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="define-gamma-grid-for-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="define-gamma-grid-for-tuning">Define Gamma Grid for Tuning</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>gamma_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="cross-validation-function-for-a-single-gamma-value" class="level3">
+<h3 class="anchored" data-anchor-id="cross-validation-function-for-a-single-gamma-value">Cross-Validation Function for a Single Gamma Value</h3>
+<p>Create a function that, given a <code>gamma</code> and fold index, returns the <code>C-index</code> on the validation fold.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>cv_survsvm_one_gamma <span class="ot">&lt;-</span> <span class="cf">function</span>(gamma_val, fold_id, data, folds) {</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Split</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  train_idx <span class="ot">&lt;-</span> <span class="fu">which</span>(folds <span class="sc">!=</span> fold_id)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  val_idx   <span class="ot">&lt;-</span> <span class="fu">which</span>(folds <span class="sc">==</span> fold_id)</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  train_data <span class="ot">&lt;-</span> data[train_idx, ]</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  val_data   <span class="ot">&lt;-</span> data[val_idx, ]</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Re-align factor levels in validation set</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (col <span class="cf">in</span> <span class="fu">names</span>(val_data)) {</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.factor</span>(train_data[[col]])) {</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>      val_data[[col]] <span class="ot">&lt;-</span> <span class="fu">factor</span>(val_data[[col]], <span class="at">levels =</span> <span class="fu">levels</span>(train_data[[col]]))</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fit Survival SVM (ranking type with add_kernel)</span></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>  svm_fit <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>({</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">survivalsvm</span>(</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">Surv</span>(time, event) <span class="sc">~</span> .,</span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> train_data,</span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">type =</span> <span class="st">"vanbelle1"</span>,</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">gamma =</span> gamma_val,</span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">opt =</span> <span class="st">"quadprog"</span>,</span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">diff.meth =</span> <span class="st">"makediff3"</span>,</span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">kernel =</span> <span class="st">"add_kernel"</span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(svm_fit)) <span class="fu">return</span>(<span class="cn">NA</span>)</span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Predict</span></span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>  pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(svm_fit, <span class="at">newdata =</span> val_data)</span>
+<span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a>  risk <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(pred<span class="sc">$</span>predicted)</span>
+<span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Safety: if prediction fails or lengths mismatch</span></span>
+<span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(risk) <span class="sc">!=</span> <span class="fu">nrow</span>(val_data)) <span class="fu">return</span>(<span class="cn">NA</span>)</span>
+<span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute C-index using modern concordance()</span></span>
+<span id="cb46-41"><a href="#cb46-41" aria-hidden="true" tabindex="-1"></a>  concord <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>({</span>
+<span id="cb46-42"><a href="#cb46-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">concordance</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> risk, <span class="at">data =</span> val_data)<span class="sc">$</span>concordance</span>
+<span id="cb46-43"><a href="#cb46-43" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb46-44"><a href="#cb46-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="cn">NA</span>)</span>
+<span id="cb46-45"><a href="#cb46-45" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb46-46"><a href="#cb46-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-47"><a href="#cb46-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(concord)</span>
+<span id="cb46-48"><a href="#cb46-48" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="perform-cross-validation-over-gamma-grid" class="level3">
+<h3 class="anchored" data-anchor-id="perform-cross-validation-over-gamma-grid">Perform Cross-Validation Over Gamma Grid</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">gamma =</span> gamma_grid) <span class="sc">%&gt;%</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">c_indices =</span> <span class="fu">map</span>(gamma, <span class="sc">~</span> {</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>      current_gamma <span class="ot">&lt;-</span> .x</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>k, <span class="sc">~</span> <span class="fu">cv_survsvm_one_gamma</span>(</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">gamma_val =</span> current_gamma,</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">fold_id =</span> .x,</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">data =</span> veteran_clean,</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">folds =</span> folds</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>      ))</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>    }),</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_cindex =</span> <span class="fu">map_dbl</span>(c_indices, <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd_cindex   =</span> <span class="fu">map_dbl</span>(c_indices, <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a><span class="co"># View results</span></span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(results)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 4
+  gamma c_indices mean_cindex sd_cindex
+  &lt;dbl&gt; &lt;list&gt;          &lt;dbl&gt;     &lt;dbl&gt;
+1 0.001 &lt;dbl [5]&gt;       0.558    0.0806
+2 0.01  &lt;dbl [5]&gt;       0.558    0.0806
+3 0.05  &lt;dbl [5]&gt;       0.557    0.0837
+4 0.1   &lt;dbl [5]&gt;       0.540    0.0530
+5 0.5   &lt;dbl [5]&gt;       0.587    0.0813
+6 1     &lt;dbl [5]&gt;       0.621    0.104 </code></pre>
+</div>
+</div>
+</section>
+<section id="select-best-gamma" class="level3">
+<h3 class="anchored" data-anchor-id="select-best-gamma">Select Best Gamma</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>best_row <span class="ot">&lt;-</span> results <span class="sc">%&gt;%</span> </span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(mean_cindex)) <span class="sc">%&gt;%</span> </span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>best_gamma <span class="ot">&lt;-</span> best_row<span class="sc">$</span>gamma</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Best gamma:"</span>, best_gamma, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Best gamma: 1 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Mean C-index:"</span>, <span class="fu">round</span>(best_row<span class="sc">$</span>mean_cindex, <span class="dv">4</span>), <span class="st">"±"</span>, <span class="fu">round</span>(best_row<span class="sc">$</span>sd_cindex, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Mean C-index: 0.6206 ± 0.1039 </code></pre>
+</div>
+</div>
+</section>
+<section id="re-fit-final-model-with-best-gamma" class="level3">
+<h3 class="anchored" data-anchor-id="re-fit-final-model-with-best-gamma">Re-fit Final Model with Best Gamma</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Re-fit final model</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>final_svm <span class="ot">&lt;-</span> <span class="fu">survivalsvm</span>(</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Surv</span>(time, event) <span class="sc">~</span> .,</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> veteran_clean,</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"vanbelle1"</span>,</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> best_gamma,</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">opt =</span> <span class="st">"quadprog"</span>,</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">diff.meth =</span> <span class="st">"makediff3"</span>,</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">kernel =</span> <span class="st">"add_kernel"</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="risk-stratification-on-full-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="risk-stratification-on-full-dataset">Risk Stratification on Full Dataset</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get risk scores for all patients</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>full_risk <span class="ot">&lt;-</span> <span class="fu">predict</span>(final_svm, <span class="at">newdata =</span> veteran_clean)<span class="sc">$</span>predicted</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>veteran_clean<span class="sc">$</span>risk <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(full_risk)</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Risk stratification</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>veteran_clean<span class="sc">$</span>risk_group <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  veteran_clean<span class="sc">$</span>risk <span class="sc">&gt;</span> <span class="fu">median</span>(veteran_clean<span class="sc">$</span>risk, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"High Risk"</span>, <span class="st">"Low Risk"</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="kaplan-meier-plot-for-final-model" class="level3">
+<h3 class="anchored" data-anchor-id="kaplan-meier-plot-for-final-model">Kaplan-Meier Plot for Final Model</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kaplan-Meier plot</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survminer)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>km_final <span class="ot">&lt;-</span> <span class="fu">survfit</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> risk_group, <span class="at">data =</span> veteran_clean)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsurvplot</span>(</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  km_final,</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> veteran_clean,</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">pval =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.int =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">risk.table =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.title =</span> <span class="st">"SVM Risk Group"</span>,</span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Kaplan-Meier: SVM (gamma ="</span>, best_gamma, <span class="st">")"</span>),</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Time (days)"</span>,</span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Survival Probability"</span></span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Ignoring unknown labels:
+• colour : "SVM Risk Group"</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-07-04-survival-analysis-svm-r_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-c-index-vs.-gamma" class="level3">
+<h3 class="anchored" data-anchor-id="plot-c-index-vs.-gamma">Plot C-index vs.&nbsp;Gamma</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> gamma, <span class="at">y =</span> mean_cindex)) <span class="sc">+</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">group =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> mean_cindex <span class="sc">-</span> sd_cindex,</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> mean_cindex <span class="sc">+</span> sd_cindex),</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> <span class="fl">0.02</span>) <span class="sc">+</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Survival SVM: C-index vs. Gamma (5-Fold CV)"</span>,</span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Gamma (log scale)"</span>,</span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Mean C-index"</span></span>
+<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-07-04-survival-analysis-svm-r_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="summary-and-conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="summary-and-conclusion">Summary and Conclusion</h2>
+<p>Survival SVM is a powerful alternative to traditional survival models, especially for complex, high-dimensional data. However, it requires careful tuning and may not scale well to very large datasets. This tutorial demonstrated its implementation in R using the <code>survivalsvm</code> package, along with hyperparameter tuning via cross-validation. At the end, we visualized risk stratification using Kaplan-Meier curves and evaluated model performance using the C-index.</p>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ol type="1">
+<li><p>Van Belle, V., Pelcmans, K., Van Huffel S. and Suykens J. A.K. (2011a). Improved performance on high-dimensional survival data by application of Survival-SVM. Bioinformatics (Oxford, England) 27, 87-94.</p></li>
+<li><p>Van Belle, V., Pelcmans, K., Van Huffel S. and Suykens J. A.K. (2011b). Support vector methods for survival analysis: a comparaison between ranking and regression approaches. Artificial Intelligence in medecine 53, 107-118.</p></li>
+<li><p>Fouodo K. C. J. and König I. R. and Weihs C. and Ziegler A. and Wright M. N. (2018) Support Vector Machines for Survival Analysis with R. The R Journal 10, 412-423.</p></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© CC-By Zia Ahmed, Unversity at Buffalo 2025</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

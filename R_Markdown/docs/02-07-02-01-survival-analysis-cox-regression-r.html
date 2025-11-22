@@ -1,0 +1,2694 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>survival-analysis-cox-regression-r – Survival Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" rel="next">
+<link href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6a3c7add2da6d1460021a694b965a515.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Survival Analysis</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://sites.google.com/view/r-data-sci-env/home"> <i class="bi bi-house" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/zia207/r-colab"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/zia-ahmed207"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./zia207@gmail.com"> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html"><strong>Semi-Parametric Methods</strong></a></li><li class="breadcrumb-item"><a href="./02-07-02-01-survival-analysis-cox-regression-r.html">Cox Proportional Hazards Model</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html"><strong>Semi-Parametric Methods</strong></a></li><li class="breadcrumb-item"><a href="./02-07-02-01-survival-analysis-cox-regression-r.html">Cox Proportional Hazards Model</a></li></ol></nav></header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./Image/chapter_logo_survival_analysis_r.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Survival Analysis</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Non-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-00-survival-analysis-non-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Non-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-01-survival-analysis-kaplan-meier-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-02-survival-analysis-nelson-aalen-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nelson-Aalen Estimator</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Semi-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Semi-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-01-survival-analysis-cox-regression-r.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Cox Proportional Hazards Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis with Time-Dependent Covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-03-survival-analysis-stratified-cox-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stratified Cox Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-00-survival-analysis-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-01-survival-analysis-exponential-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exponential Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-02-survival-analysis-weibull-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Weibull Model for Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-03-survival-analysis-log-normal-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Normal Survival Model f</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-04-survival-analysis-log-logistic-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Logistic Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-05-survival-analysis-generalized-gamma-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Gamma Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-06-survival-analysis-gompertz-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gompertz Survival Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Recurrent Event Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Recurrent Event Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andersen-Gill (AG) Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prentice-Williams-Peterson (PWP) Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-03-survival-analysis-frailty-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frailty Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-04-survival-analysis-marginal-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Marginal Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Risk Regression</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-00-survival-analysi-risk-regression-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Risk Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-01-survival-analysis-cause-specific-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cause-Specific Hazard Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-02-survival-analysis-subdistribution-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Subdistribution Hazard Regression (Fine-Gray Model)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-03-survival-analysis-absolute-risk-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Absolute Risk Regression (Direct CIF Modeling)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-04-survival-analysis-aalen-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aalen’s Additive Regression Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Joint Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-00-survival-analysis-joint-modeling-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Joint Modeling in Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-01-survival-analysis-standard-joint-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Standard (Shared Random Effects) Joint Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-02-survival-analysis-baseline-hazard-function-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Baseline Hazard Function of Joint Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-03-survival-analysis-causal-effects-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Causal Effects from Joint Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-04-survival-analysis-competing-risks-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Competing Risks of Joint Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-05-survival-analysis-dynamic-joint-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamic Joint Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#cox-proportional-hazards-model" id="toc-cox-proportional-hazards-model" class="nav-link active" data-scroll-target="#cox-proportional-hazards-model">2.1 Cox Proportional Hazards Model</a>
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#cox-proportional-hazards-model-from-scratch" id="toc-cox-proportional-hazards-model-from-scratch" class="nav-link" data-scroll-target="#cox-proportional-hazards-model-from-scratch">Cox Proportional Hazards Model from Scratch</a>
+  <ul class="collapse">
+  <li><a href="#create-a-dataset" id="toc-create-a-dataset" class="nav-link" data-scroll-target="#create-a-dataset">Create a dataset</a></li>
+  <li><a href="#define-the-log-partial-likelihood-function" id="toc-define-the-log-partial-likelihood-function" class="nav-link" data-scroll-target="#define-the-log-partial-likelihood-function">Define the Log-Partial Likelihood function</a></li>
+  <li><a href="#prepare-the-data-for-cox-model" id="toc-prepare-the-data-for-cox-model" class="nav-link" data-scroll-target="#prepare-the-data-for-cox-model">Prepare the data for Cox Model</a></li>
+  <li><a href="#optimize-the-log-partial-likelihood-function" id="toc-optimize-the-log-partial-likelihood-function" class="nav-link" data-scroll-target="#optimize-the-log-partial-likelihood-function">Optimize the Log-Partial Likelihood Function</a></li>
+  <li><a href="#summary-statistic-of-cox-regression-model" id="toc-summary-statistic-of-cox-regression-model" class="nav-link" data-scroll-target="#summary-statistic-of-cox-regression-model">Summary statistic of Cox Regression Model</a></li>
+  <li><a href="#plot-the-baseline-survival-function" id="toc-plot-the-baseline-survival-function" class="nav-link" data-scroll-target="#plot-the-baseline-survival-function">Plot the Baseline Survival Function</a>
+  <ul class="collapse">
+  <li><a href="#calculate-the-baseline-hazard" id="toc-calculate-the-baseline-hazard" class="nav-link" data-scroll-target="#calculate-the-baseline-hazard">Calculate the Baseline Hazard</a></li>
+  <li><a href="#calculate-the-baseline-survival-function" id="toc-calculate-the-baseline-survival-function" class="nav-link" data-scroll-target="#calculate-the-baseline-survival-function">Calculate the Baseline Survival Function</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#cox-proportional-hazards-model-in-r" id="toc-cox-proportional-hazards-model-in-r" class="nav-link" data-scroll-target="#cox-proportional-hazards-model-in-r">Cox Proportional Hazards Model in R</a>
+  <ul class="collapse">
+  <li><a href="#install-required-r-packages" id="toc-install-required-r-packages" class="nav-link" data-scroll-target="#install-required-r-packages">Install Required R Packages</a></li>
+  <li><a href="#verify-installation" id="toc-verify-installation" class="nav-link" data-scroll-target="#verify-installation">Verify installation</a></li>
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load Packages</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#data-processing" id="toc-data-processing" class="nav-link" data-scroll-target="#data-processing">Data processing</a></li>
+  <li><a href="#fit-a-cox-proportional-hazards-model" id="toc-fit-a-cox-proportional-hazards-model" class="nav-link" data-scroll-target="#fit-a-cox-proportional-hazards-model">Fit a Cox Proportional Hazards Model</a>
+  <ul class="collapse">
+  <li><a href="#univariate-cox-regression" id="toc-univariate-cox-regression" class="nav-link" data-scroll-target="#univariate-cox-regression">Univariate Cox regression</a></li>
+  <li><a href="#multivariate-cox-regression-analysis" id="toc-multivariate-cox-regression-analysis" class="nav-link" data-scroll-target="#multivariate-cox-regression-analysis">Multivariate Cox regression analysis</a></li>
+  <li><a href="#plot-the-baseline-survival-function-1" id="toc-plot-the-baseline-survival-function-1" class="nav-link" data-scroll-target="#plot-the-baseline-survival-function-1">Plot the baseline survival function</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#summary-and-conclusions" id="toc-summary-and-conclusions" class="nav-link" data-scroll-target="#summary-and-conclusions">Summary and Conclusions</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_02_01_survival_analysis_cox_regression_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_02_01_survival_analysis_cox_regression_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<section id="cox-proportional-hazards-model" class="level1 unnumbered">
+<h1 class="unnumbered">2.1 Cox Proportional Hazards Model</h1>
+<p>Cox Proportional Hazards Model is a widely used statistical technique in survival analysis to study the relationship between survival time and one or more predictor variables. Developed by Sir David Cox in 1972, this semi-parametric model is particularly useful because it does not require the specification of a baseline hazard function, making it flexible for analyzing survival data. This tutorial will demonstrate how to fit a Cox Proportional Hazards Model in R, interpret the results, and visualize the baseline survival function.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p><strong>Cox Regression</strong>, also known as the <strong>Cox Proportional Hazards Model</strong>, is a statistical technique widely used in survival analysis to study the relationship between survival time (time-to-event) and one or more predictor variables (covariates). Developed by Sir David Cox in 1972, this semi-parametric model is particularly useful because it does not require the specification of a baseline hazard function, making it flexible for analyzing survival data.</p>
+<p><strong><em>Key Concepts of Cox Regression</em></strong>:</p>
+<ol type="1">
+<li><strong>Hazard Function</strong>:
+<ul>
+<li>The hazard function <span class="math inline">\(h(t)\)</span> represents the instantaneous rate at which events occur at time <span class="math inline">\(t\)</span>, given that the subject has survived up to time <span class="math inline">\(t\)</span>. It can be thought of as the risk of an event occurring in the next instant of time.</li>
+</ul></li>
+<li><strong>Proportional Hazards Assumption</strong>:
+<ul>
+<li>The key assumption of Cox regression is that the hazard ratios between different levels of the covariates are <strong>proportional</strong> over time. This means that the effect of the covariates on survival is constant and does not change as time progresses.</li>
+</ul></li>
+<li><strong>Semi-parametric Model</strong>:
+<ul>
+<li>The Cox model is called semi-parametric because it does not require a specific form for the baseline hazard function, ( h_0(t) ), making it flexible. It estimates the effect of covariates on the hazard function while leaving the baseline hazard unspecified.</li>
+</ul></li>
+<li><strong>Hazard Ratio (HR)</strong>:
+<ul>
+<li>The model estimates the <strong>hazard ratio</strong>, which quantifies the effect of a covariate on the hazard. A hazard ratio of:
+<ul>
+<li><strong>HR = 1</strong>: No effect (covariate does not influence the risk).</li>
+<li><strong>HR &gt; 1</strong>: Increased hazard (higher risk of the event).</li>
+<li><strong>HR &lt; 1</strong>: Decreased hazard (lower risk of the event).</li>
+</ul></li>
+</ul></li>
+</ol>
+<p><strong><em>Cox Proportional Hazards Model Equation:</em></strong></p>
+<p>The Cox model can be written as:</p>
+<p><span class="math display">\[ h(t|X) = h_0(t) \cdot \exp(\beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p) \]</span></p>
+<p>Where: - <span class="math inline">\(h(t|X)\)</span> is the hazard at time <span class="math inline">\(t\)</span> for an individual with covariates <span class="math inline">\(X_1, X_2, \dots, X_p\)</span>. - <span class="math inline">\(h_0(t)\)</span> is the baseline hazard function (the hazard when all covariates are zero). - <span class="math inline">\(\beta_1, \beta_2, \dots, \beta_p\)</span> are the coefficients that quantify the effect of each covariate on the hazard. - <span class="math inline">\(X_1, X_2, \dots, X_p\)</span> are the covariates (predictors or risk factors).</p>
+<p>The quantity <span class="math inline">\(\exp(\beta)\)</span> is the hazard ratio (HR) for each covariate, which represents the relative risk associated with a one-unit increase in that covariate.</p>
+<p><strong><em>Steps in Cox Regression</em></strong>:</p>
+<ol type="1">
+<li><strong>Model Fitting</strong>: Fit the Cox model to the survival data by estimating the regression coefficients <span class="math inline">\(\beta\)</span> for the covariates.</li>
+<li><strong>Estimate Hazard Ratios</strong>: Compute the hazard ratios <span class="math inline">\(\exp(\beta)\)</span>, which tell how much the risk of the event changes with a one-unit increase in each covariate.</li>
+<li><strong>Check the Proportional Hazards Assumption</strong>: Verify if the proportional hazards assumption holds by assessing whether the hazard ratios remain constant over time.</li>
+<li><strong>Interpretation</strong>: Interpret the hazard ratios to understand how the covariates influence the time to event.</li>
+</ol>
+</section>
+<section id="cox-proportional-hazards-model-from-scratch" class="level2">
+<h2 class="anchored" data-anchor-id="cox-proportional-hazards-model-from-scratch">Cox Proportional Hazards Model from Scratch</h2>
+<p>To fit a Cox Proportional Hazards Model manually using the simulated lung dataset, we need to go through several steps. Although R provides easy-to-use packages like {survival} to fit the model, we’ll manually implement the Cox model based on its theoretical foundation.</p>
+<p><strong><em>Steps for Fitting Cox Proportional Hazards Model Manually</em></strong></p>
+<ol type="1">
+<li><p><strong>Formulate the Model</strong>: The Cox proportional hazards model estimates the effect of covariates (like age, sex, etc.) on the hazard rate. The model can be written as:</p>
+<p><span class="math display">\[ h(t | X) = h_0(t) \exp(\beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p) \]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(h(t | X)\)</span> is the hazard at time <span class="math inline">\(t\)</span> given covariates <span class="math inline">\(X\)</span>,</li>
+<li><span class="math inline">\(h_0(t)\)</span> is the baseline hazard (which is left unspecified),</li>
+<li><span class="math inline">\(\beta_1, \beta_2, \dots, \beta_p\)</span> are the coefficients to be estimated.</li>
+</ul></li>
+<li><p><strong>Partial Likelihood</strong>: The Cox model uses partial likelihood instead of a full likelihood function, which does not require estimating the baseline hazard function. The partial likelihood for a sample with censored data is:</p></li>
+</ol>
+<p><span class="math display">\[ L(\beta) = \prod_{i: \delta_i = 1} \frac{\exp(\beta^T X_i)}{\sum_{j \in R(t_i)} \exp(\beta^T X_j)} \]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(R(t_i)\)</span> is the risk set at time <span class="math inline">\(t_i\)</span> (individuals at risk of the event at time (t_i)),</li>
+<li><span class="math inline">\(\delta_i\)</span> is an indicator (1 if the event occurs, 0 if censored).</li>
+</ul>
+<ol start="3" type="1">
+<li><p><strong>Estimation</strong>: The log-partial likelihood is maximized to estimate the coefficients <span class="math inline">\(\beta\)</span>.</p></li>
+<li><p><strong>Score and Information Matrix</strong>: Use the score function (first derivative) and the observed information matrix (second derivative) to apply Newton-Raphson optimization to find the maximum likelihood estimates for ().</p></li>
+</ol>
+<p>This manual method demonstrates the key steps in Cox model estimation without relying on built-in R packages like <code>survival</code>. It replicates what the <code>coxph()</code> function would do under the hood.</p>
+<section id="create-a-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-dataset">Create a dataset</h3>
+<p>To create a dataset similar to the <code>lung</code> dataset in the {survival} package, we’ll simulate survival data with random values for survival time, event status, and other variables such as age, sex, and treatment. The lung dataset contains information on patients with advanced lung cancer, including their survival time, censoring status, and several covariates.</p>
+<p>Variables typically included in a survival dataset like <strong>lung</strong>:</p>
+<ol type="1">
+<li><p><strong>time</strong>: Survival time (numeric).</p></li>
+<li><p><strong>status</strong>: Censoring indicator (0 = censored, 1 = event).</p></li>
+<li><p><strong>age</strong>: Age of the patient (numeric).</p></li>
+<li><p><strong>sex</strong>: Gender of the patient (1 = male, 2 = female).</p></li>
+<li><p><strong>ph.ecog</strong>: ECOG performance score (0 to 5).</p></li>
+<li><p><strong>treatment</strong>: Treatment group (1 = standard, 2 = experimental).</p></li>
+</ol>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the seed for reproducibility</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of observations</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">228</span>  <span class="co"># same as the original lung dataset</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate survival time (in days)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>time <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(n, <span class="at">min =</span> <span class="dv">1</span>, <span class="at">max =</span> <span class="dv">1000</span>))  <span class="co"># random survival time between 1 and 1000 days</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate censoring indicator (0 = censored, 1 = event)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> <span class="fl">0.7</span>)  <span class="co"># 70% of events, 30% censored</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate age (between 40 and 80 years)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>age <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(n, <span class="at">min =</span> <span class="dv">40</span>, <span class="at">max =</span> <span class="dv">80</span>))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate sex (1 = male, 2 = female)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>sex <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate ECOG performance score (0 to 4)</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>ph_ecog <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate treatment group (1 = standard, 2 = experimental)</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>treatment <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the data frame</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>simulated_lung<span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">time =</span> time,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>                             <span class="at">status =</span> status,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                             <span class="at">age =</span> age,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>                             <span class="at">sex =</span> sex,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>                             <span class="at">ph_ecog =</span> ph_ecog,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>                             <span class="at">treatment =</span> treatment)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the first few rows of the simulated dataset</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(simulated_lung)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  time status age sex ph_ecog treatment
+1  288      1  72   1       4         2
+2  789      0  70   2       0         2
+3  410      1  46   2       2         2
+4  883      1  45   1       1         2
+5  941      1  79   2       2         2
+6   47      1  57   1       3         2</code></pre>
+</div>
+</div>
+</section>
+<section id="define-the-log-partial-likelihood-function" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-log-partial-likelihood-function">Define the Log-Partial Likelihood function</h3>
+<p>We need to define the log-partial likelihood function for the Cox model. Here, we assume the covariates <code>age</code>, <code>sex</code>, and <code>ph_ecog</code> influence the hazard.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>log_partial_likelihood <span class="ot">&lt;-</span> <span class="cf">function</span>(beta, X, time, status) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  logL <span class="ot">&lt;-</span> <span class="dv">0</span>  <span class="co"># Initialize log-likelihood</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Loop through each time point where the event occurred</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(time)) {</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (status[i] <span class="sc">==</span> <span class="dv">1</span>) {  <span class="co"># Only consider events, not censored data</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Calculate the linear predictor for individual i</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      lin_pred_i <span class="ot">&lt;-</span> <span class="fu">sum</span>(beta <span class="sc">*</span> X[i,])</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Calculate the sum of exp(beta * X_j) for individuals in the risk set</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      risk_set <span class="ot">&lt;-</span> <span class="fu">which</span>(time <span class="sc">&gt;=</span> time[i])  <span class="co"># Find the risk set for time[i]</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      denom <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">exp</span>(X[risk_set, ] <span class="sc">%*%</span> beta))  <span class="co"># Denominator of partial likelihood</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Update log-likelihood</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      logL <span class="ot">&lt;-</span> logL <span class="sc">+</span> lin_pred_i <span class="sc">-</span> <span class="fu">log</span>(denom)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="sc">-</span>logL)  <span class="co"># Return negative log-likelihood to minimize it</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="prepare-the-data-for-cox-model" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-data-for-cox-model">Prepare the data for Cox Model</h3>
+<p>Now we need to prepare the covariates and define the starting values for the coefficients <span class="math inline">\(\beta\)</span>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the covariates (X matrix)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(simulated_lung[, <span class="fu">c</span>(<span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"ph_ecog"</span>)])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the response variables (time and status)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>time <span class="ot">&lt;-</span> simulated_lung<span class="sc">$</span>time</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> simulated_lung<span class="sc">$</span>status</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Starting values for beta coefficients (age, sex, ph_ecog)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>beta_start <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)  <span class="co"># Initialize with 0s</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="optimize-the-log-partial-likelihood-function" class="level3">
+<h3 class="anchored" data-anchor-id="optimize-the-log-partial-likelihood-function">Optimize the Log-Partial Likelihood Function</h3>
+<p>We’ll use <code>optim()</code> in R to maximize the log-partial likelihood and find the optimal estimates for <span class="math inline">\(\beta\)</span>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimize the partial likelihood</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>cox_fit <span class="ot">&lt;-</span> <span class="fu">optim</span>(<span class="at">par =</span> beta_start, </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fn =</span> log_partial_likelihood, </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">X =</span> X, </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">time =</span> time, </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">status =</span> status, </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method =</span> <span class="st">"BFGS"</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the estimated beta coefficients</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>cox_fit<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  0.003976534  0.024295597 -0.008395823</code></pre>
+</div>
+</div>
+<p>The <code>cox_fit$par</code> will give us the estimated values of <span class="math inline">\(\beta\)</span> for each covariate (<code>age</code>, <code>sex,</code> <code>ph_ecog</code>). These coefficients represent the log-hazard ratios for each covariate.</p>
+<ul>
+<li><p>If <span class="math inline">\(\beta_i\)</span> &gt; 0, the covariate increases the hazard (risk of event).</p></li>
+<li><p>If <span class="math inline">\(\beta_i\)</span>&lt; 0, the covariate decreases the hazard.</p></li>
+</ul>
+<p>For example, if <span class="math inline">\(\beta_{\text{age}} = 0.02\)</span>, it means a one-year increase in age increases the hazard by about <span class="math inline">\(e^{0.02}\)</span> <span class="math inline">\(\approx\)</span> 2%.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>`optim()` is the</code>General-purpose Optimization based on Nelder–Mead, quasi-Newton and conjugate-gradient algorithms. It includes an option for box-constrained optimization and simulated annealing</p>
+<p>Method <code>"BFGS"</code> is a quasi-Newton method (also known as a variable metric algorithm), specifically that published simultaneously in 1970 by Broyden, Fletcher, Goldfarb and Shanno. This uses function values and gradients to build up a picture of the surface to be optimized.</p>
+</div>
+</div>
+</section>
+<section id="summary-statistic-of-cox-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="summary-statistic-of-cox-regression-model">Summary statistic of Cox Regression Model</h3>
+<p>To create a summary statistics table specifically for the Cox Proportional Hazards model fitted to our simulated lung dataset, we need to summarize the estimated coefficients, their standard errors, hazard ratios, and p-values. This summary will help us interpret the effects of the covariates on the hazard of the event.</p>
+<p><strong><em>Steps for Creating Summary Statistics for Cox Model:</em></strong></p>
+<ul>
+<li><p>Extract Coefficients: Get the estimated coefficients <span class="math inline">\(\beta\)</span> from the fitted Cox model.</p></li>
+<li><p>Calculate Hazard Ratios: Compute the hazard ratio by exponentiating the coefficients.</p></li>
+<li><p>Calculate Standard Errors: These are necessary for calculating confidence intervals and p-values.</p></li>
+<li><p>Calculate p-values: Use the Wald test to derive p-values for the coefficients.</p></li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of covariates</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">length</span>(cox_fit<span class="sc">$</span>par)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the summary statistics table</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>cox_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Covariate =</span> <span class="fu">c</span>(<span class="st">"Age"</span>, <span class="st">"Sex (Male)"</span>, <span class="st">"ECOG Performance Score"</span>),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Coefficient =</span> <span class="fu">c</span>(cox_fit<span class="sc">$</span>par),</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Hazard_Ratio =</span> <span class="fu">exp</span>(cox_fit<span class="sc">$</span>par),  <span class="co"># Exponentiate to get hazard ratios</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">SE =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, p),  <span class="co"># Placeholder for standard errors</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">Z_value =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, p),  <span class="co"># Placeholder for Z-values</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">P_value =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, p)   <span class="co"># Placeholder for p-values</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Assume we have estimated standard errors (for demonstration purposes)</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co"># In practice, you would calculate these based on the observed information matrix</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># For simplicity, we'll just use dummy values</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>dummy_se <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.10</span>, <span class="fl">0.08</span>)  <span class="co"># Replace with actual SE calculation if done</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>cox_summary<span class="sc">$</span>SE <span class="ot">&lt;-</span> dummy_se</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate Z-values and P-values</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>cox_summary<span class="sc">$</span>Z_value <span class="ot">&lt;-</span> cox_summary<span class="sc">$</span>Coefficient <span class="sc">/</span> cox_summary<span class="sc">$</span>SE</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>cox_summary<span class="sc">$</span>P_value <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pnorm</span>(<span class="sc">-</span><span class="fu">abs</span>(cox_summary<span class="sc">$</span>Z_value))  <span class="co"># Two-tailed test</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Format P-values for better readability</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>cox_summary<span class="sc">$</span>P_value <span class="ot">&lt;-</span> <span class="fu">format</span>(cox_summary<span class="sc">$</span>P_value, <span class="at">digits =</span> <span class="dv">3</span>, <span class="at">nsmall =</span> <span class="dv">3</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the summary statistics for the Cox model</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cox_summary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Covariate  Coefficient Hazard_Ratio   SE     Z_value P_value
+1                    Age  0.003976534    1.0039845 0.05  0.07953067   0.937
+2             Sex (Male)  0.024295597    1.0245931 0.10  0.24295597   0.808
+3 ECOG Performance Score -0.008395823    0.9916393 0.08 -0.10494778   0.916</code></pre>
+</div>
+</div>
+</section>
+<section id="plot-the-baseline-survival-function" class="level3">
+<h3 class="anchored" data-anchor-id="plot-the-baseline-survival-function">Plot the Baseline Survival Function</h3>
+<p>To plot the baseline survival function from the Cox Proportional Hazards model, we can utilize the estimated coefficients and the baseline hazard function. Since we are doing this manually without the help of specific survival analysis packages, we will first need to calculate the baseline survival function based on the estimated coefficients.</p>
+<p><strong><em>Steps to Plot the Baseline Survival Function</em></strong></p>
+<ol type="1">
+<li><strong>Calculate the Baseline Hazard</strong>: The baseline hazard can be estimated using the partial likelihood method.</li>
+<li><strong>Calculate the Baseline Survival Function</strong>: The baseline survival function can be obtained by exponentiating the cumulative baseline hazard.</li>
+<li><strong>Plot the Baseline Survival Function</strong>.</li>
+</ol>
+<section id="calculate-the-baseline-hazard" class="level4">
+<h4 class="anchored" data-anchor-id="calculate-the-baseline-hazard">Calculate the Baseline Hazard</h4>
+<p>To derive the baseline hazard, we can use the risk set at each event time. The baseline hazard can be computed as follows:</p>
+<p><span class="math display">\[  \hat{h}_0(t_i) = \frac{d_i}{\sum_{j \in R(t_i)} \exp(\beta^T X_j)} \]</span></p>
+<p>where <span class="math inline">\(d_i\)</span> is the number of events at time <span class="math inline">\(t_i\)</span> and <span class="math inline">\(R(t_i)\)</span> is the risk set at time (t_i).</p>
+</section>
+<section id="calculate-the-baseline-survival-function" class="level4">
+<h4 class="anchored" data-anchor-id="calculate-the-baseline-survival-function">Calculate the Baseline Survival Function</h4>
+<p>The cumulative baseline hazard can be computed by summing the baseline hazards up to time (t), and the baseline survival function can be expressed as:</p>
+<p><span class="math display">\[ S_0(t) = \exp\left(-\sum_{t_i \leq t} \hat{h}_0(t_i)\right) \]</span></p>
+<p>Here’s the code to accomplish this:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to calculate baseline hazard</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>calculate_baseline_hazard <span class="ot">&lt;-</span> <span class="cf">function</span>(X, time, status, beta) {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  baseline_hazard <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(<span class="fu">unique</span>(time)))  <span class="co"># Initialize baseline hazard</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  unique_times <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(time))  <span class="co"># Get unique event times</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> unique_times) {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get the risk set at time t</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    risk_set <span class="ot">&lt;-</span> <span class="fu">which</span>(time <span class="sc">&gt;=</span> t)  <span class="co"># Individuals at risk</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    d_i <span class="ot">&lt;-</span> <span class="fu">sum</span>(time[risk_set] <span class="sc">==</span> t <span class="sc">&amp;</span> status[risk_set] <span class="sc">==</span> <span class="dv">1</span>)  <span class="co"># Events at time t</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate baseline hazard</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(risk_set) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>      baseline_hazard[<span class="fu">which</span>(unique_times <span class="sc">==</span> t)] <span class="ot">&lt;-</span> d_i <span class="sc">/</span> <span class="fu">sum</span>(<span class="fu">exp</span>(X[risk_set, ] <span class="sc">%*%</span> beta))</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(baseline_hazard)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate baseline hazard</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>baseline_hazard <span class="ot">&lt;-</span> <span class="fu">calculate_baseline_hazard</span>(X, time, status, cox_fit<span class="sc">$</span>par)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate cumulative baseline hazard</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>unique_times <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(time))</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>cumulative_hazard <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(baseline_hazard[<span class="fu">match</span>(unique_times, unique_times)])</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate baseline survival function</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>baseline_survival <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="sc">-</span>cumulative_hazard)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame for plotting</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>baseline_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">time =</span> unique_times, </span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>                          <span class="at">baseline_hazard =</span> baseline_hazard[<span class="fu">match</span>(unique_times, unique_times)],</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>                          <span class="at">cumulative_hazard =</span> cumulative_hazard,</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>                          <span class="at">baseline_survival =</span> baseline_survival)</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting the baseline survival function</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(baseline_df<span class="sc">$</span>time, baseline_df<span class="sc">$</span>baseline_survival, <span class="at">type =</span> <span class="st">"s"</span>, </span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, </span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Time (days)"</span>, <span class="at">ylab =</span> <span class="st">"Baseline Survival Probability"</span>,</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Baseline Survival Function"</span>)</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="fu">grid</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-02-01-survival-analysis-cox-regression-r_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="cox-proportional-hazards-model-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="cox-proportional-hazards-model-in-r">Cox Proportional Hazards Model in R</h2>
+<p>This tutorial is mostly used two R packages <a href="https://cran.r-project.org/web/packages/survival/index.html">{survival}</a> and <a href="https://www.danieldsjoberg.com/ggsurvfit/">{ggsurvfit}</a>. Additionally we will use <a href="https://github.com/sinhrks/ggfortify">{ggfortify}</a> which offers <code>fortify</code> and <code>autoplot</code> functions to allow automatic ggplot2 to visualize Kaplan-Meier plots.</p>
+<section id="install-required-r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-required-r-packages">Install Required R Packages</h3>
+<p>Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span><span class="fu">c</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidyverse'</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">'broom.helpers'</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">'report'</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">'performance'</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">'gtsummary'</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">'MASS'</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">'epiDisplay'</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survival'</span>,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survminer'</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggsurvfit'</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidycmprsk'</span>,</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggfortify'</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>         <span class="st">'timereg'</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>         <span class="st">'cmprsk'</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>         <span class="st">'condSURV'</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>         <span class="st">'riskRegression'</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<pre><code>#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages &lt;- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+devtools::install_github("ItziarI/WeDiBaDis")</code></pre>
+</section>
+<section id="verify-installation" class="level3">
+<h3 class="anchored" data-anchor-id="verify-installation">Verify installation</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Installed packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Installed packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sapply</span>(packages, requireNamespace, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'rms':
+  method       from      
+  print.lrtest epiDisplay</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'riskRegression':
+  method        from 
+  nobs.multinom broom</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     tidyverse  broom.helpers         report    performance      gtsummary 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+          MASS     epiDisplay       survival      survminer      ggsurvfit 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+    tidycmprsk      ggfortify        timereg         cmprsk       condSURV 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+riskRegression 
+          TRUE </code></pre>
+</div>
+</div>
+</section>
+<section id="load-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages">Load Packages</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages with suppressed messages</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check loaded packages</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Successfully loaded packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Successfully loaded packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">search</span>()[<span class="fu">grepl</span>(<span class="st">"package:"</span>, <span class="fu">search</span>())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "package:riskRegression" "package:condSURV"       "package:cmprsk"        
+ [4] "package:timereg"        "package:ggfortify"      "package:tidycmprsk"    
+ [7] "package:ggsurvfit"      "package:survminer"      "package:ggpubr"        
+[10] "package:epiDisplay"     "package:nnet"           "package:survival"      
+[13] "package:foreign"        "package:MASS"           "package:gtsummary"     
+[16] "package:performance"    "package:report"         "package:broom.helpers" 
+[19] "package:lubridate"      "package:forcats"        "package:stringr"       
+[22] "package:dplyr"          "package:purrr"          "package:readr"         
+[25] "package:tidyr"          "package:tibble"         "package:ggplot2"       
+[28] "package:tidyverse"      "package:stats"          "package:graphics"      
+[31] "package:grDevices"      "package:utils"          "package:datasets"      
+[34] "package:methods"        "package:base"          </code></pre>
+</div>
+</div>
+</section>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>We will be utilizing the <code>lung</code> dataset from the {survival} package, which serves as a valuable resource for analyzing survival data. This dataset comprises information from subjects diagnosed with advanced lung cancer, specifically gathered from the North Central Cancer Treatment Group, a prominent clinical trial network dedicated to cancer research.</p>
+<p>Throughout this tutorial, we will concentrate on the variables that provide insight into the patients’ demographics and clinical outcomes:</p>
+<ul>
+<li>inst: Institution code</li>
+<li>time: Survival time in days</li>
+<li>status: censoring status 1=censored, 2=dead</li>
+<li>age: Age in years</li>
+<li>sex: Male=1 Female=2</li>
+<li>ph.ecog: ECOG performance score (0=good 5=dead)</li>
+<li>ph.karno: Karnofsky performance score (bad=0-good=100) rated by physician</li>
+<li>pat.karno: Karnofsky performance score as rated by patient</li>
+<li>meal.cal: Calories consumed at meals</li>
+<li>wt.loss: Weight loss in last six months</li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load veteran  dataset</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(lung)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(lung)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 228
+Columns: 10
+$ inst      &lt;dbl&gt; 3, 3, 3, 5, 1, 12, 7, 11, 1, 7, 6, 16, 11, 21, 12, 1, 22, 16…
+$ time      &lt;dbl&gt; 306, 455, 1010, 210, 883, 1022, 310, 361, 218, 166, 170, 654…
+$ status    &lt;dbl&gt; 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, …
+$ age       &lt;dbl&gt; 74, 68, 56, 57, 60, 74, 68, 71, 53, 61, 57, 68, 68, 60, 57, …
+$ sex       &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, …
+$ ph.ecog   &lt;dbl&gt; 1, 0, 0, 1, 0, 1, 2, 2, 1, 2, 1, 2, 1, NA, 1, 1, 1, 2, 2, 1,…
+$ ph.karno  &lt;dbl&gt; 90, 90, 90, 90, 100, 50, 70, 60, 70, 70, 80, 70, 90, 60, 80,…
+$ pat.karno &lt;dbl&gt; 100, 90, 90, 60, 90, 80, 60, 80, 80, 70, 80, 70, 90, 70, 70,…
+$ meal.cal  &lt;dbl&gt; 1175, 1225, NA, 1150, NA, 513, 384, 538, 825, 271, 1025, NA,…
+$ wt.loss   &lt;dbl&gt; NA, 15, 15, 11, 0, 0, 10, 1, 16, 34, 27, 23, 5, 32, 60, 15, …</code></pre>
+</div>
+</div>
+</section>
+<section id="data-processing" class="level3">
+<h3 class="anchored" data-anchor-id="data-processing">Data processing</h3>
+<p>Now we will re-code the data as 1=event, 0=censored:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>lung <span class="ot">&lt;-</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  lung <span class="sc">|&gt;</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">status =</span> <span class="fu">recode</span>(status, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">0</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">1</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now we have:</p>
+<ul>
+<li>time: Observed survival time in days</li>
+<li>status: censoring status 0=censored, 1=dead</li>
+<li>sex: 1=Male, 2=Female</li>
+</ul>
+</section>
+<section id="fit-a-cox-proportional-hazards-model" class="level3">
+<h3 class="anchored" data-anchor-id="fit-a-cox-proportional-hazards-model">Fit a Cox Proportional Hazards Model</h3>
+<p>In this example, we will model the relationship between survival time and covariates like age and sex. The <code>coxph()</code> function from the <strong><code>survival</code></strong> package is used to fit a Cox proportional hazards model in R.</p>
+<ul>
+<li>coxph(formula, data, method)</li>
+</ul>
+<section id="univariate-cox-regression" class="level4">
+<h4 class="anchored" data-anchor-id="univariate-cox-regression">Univariate Cox regression</h4>
+<p>We will fit Cox regression model with one covariate, <code>sex</code> to see difference in survival rate between male and female participants.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the Cox model</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>cox.fit.uni <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span> sex,  <span class="at">data =</span> lung)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>cox.fit.uni</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Call:
+coxph(formula = Surv(time, status) ~ sex, data = lung)
+
+       coef exp(coef) se(coef)      z       p
+sex -0.5310    0.5880   0.1672 -3.176 0.00149
+
+Likelihood ratio test=10.63  on 1 df, p=0.001111
+n= 228, number of events= 165 </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(cox.fit.uni)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Call:
+coxph(formula = Surv(time, status) ~ sex, data = lung)
+
+  n= 228, number of events= 165 
+
+       coef exp(coef) se(coef)      z Pr(&gt;|z|)   
+sex -0.5310    0.5880   0.1672 -3.176  0.00149 **
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    exp(coef) exp(-coef) lower .95 upper .95
+sex     0.588      1.701    0.4237     0.816
+
+Concordance= 0.579  (se = 0.021 )
+Likelihood ratio test= 10.63  on 1 df,   p=0.001
+Wald test            = 10.09  on 1 df,   p=0.001
+Score (logrank) test = 10.33  on 1 df,   p=0.001</code></pre>
+</div>
+</div>
+<p><strong>Statistical Significance</strong>: The column labeled <code>z</code> presents the <code>Wald statistic</code> value, which is calculated as the ratio of each regression coefficient to its standard error (<code>z = coef/se(coef)</code>). This statistic helps determine whether the beta <span class="math inline">\(β\)</span> coefficient of a given variable is statistically significantly different from 0. Based on the output above, we can conclude that the variable <code>sex</code> has highly statistically significant coefficients..</p>
+<p>The <strong>regression coefficients</strong> are an important aspect of the Cox model results. Notably, the sign of the regression coefficients (coef) indicates the relationship between the variable and the hazard (risk of death). A positive coefficient suggests that as the value of the variable increases, the hazard also increases, leading to a poorer prognosis for those subjects.</p>
+<p><strong>Hazard ratios</strong>. The exponentiated coefficients (<code>exp(coef) = exp(-0.53) = 0.59</code>), also known as hazard ratios, give the effect size of covariates. So the <code>HR = 0.59</code> implies that 0.59 times as many females are dying as males, at any given time. Stated differently, females have a significantly lower hazard of death than males in these data.</p>
+<p><strong>Confidence intervals</strong> for the hazard ratios are provided. The summary output also includes the upper and lower 95% confidence intervals for the hazard ratio (<code>exp(coef)</code>).</p>
+<p>The <strong>global statistical significance of the model</strong> is assessed using three alternative tests: the <code>likelihood-ratio test</code>, the <code>Wald test</code>, and the <code>score logrank statistic</code>. These methods are asymptotically equivalent, meaning that for sufficiently large sample sizes (<span class="math inline">\(N\)</span>), they tend to produce similar results. However, for smaller sample sizes, the results may vary. Among these tests, the likelihood-ratio test is generally preferred because it performs better with small sample sizes.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coxph</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span> sex, <span class="at">data =</span> lung) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_regression</span>(<span class="at">exp =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="emhqesfbqw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#emhqesfbqw table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#emhqesfbqw thead, #emhqesfbqw tbody, #emhqesfbqw tfoot, #emhqesfbqw tr, #emhqesfbqw td, #emhqesfbqw th {
+  border-style: none;
+}
+
+#emhqesfbqw p {
+  margin: 0;
+  padding: 0;
+}
+
+#emhqesfbqw .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#emhqesfbqw .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#emhqesfbqw .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#emhqesfbqw .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#emhqesfbqw .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#emhqesfbqw .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#emhqesfbqw .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#emhqesfbqw .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#emhqesfbqw .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#emhqesfbqw .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#emhqesfbqw .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#emhqesfbqw .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#emhqesfbqw .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#emhqesfbqw .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#emhqesfbqw .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emhqesfbqw .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#emhqesfbqw .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#emhqesfbqw .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#emhqesfbqw .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emhqesfbqw .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#emhqesfbqw .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emhqesfbqw .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#emhqesfbqw .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emhqesfbqw .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#emhqesfbqw .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emhqesfbqw .gt_left {
+  text-align: left;
+}
+
+#emhqesfbqw .gt_center {
+  text-align: center;
+}
+
+#emhqesfbqw .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#emhqesfbqw .gt_font_normal {
+  font-weight: normal;
+}
+
+#emhqesfbqw .gt_font_bold {
+  font-weight: bold;
+}
+
+#emhqesfbqw .gt_font_italic {
+  font-style: italic;
+}
+
+#emhqesfbqw .gt_super {
+  font-size: 65%;
+}
+
+#emhqesfbqw .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#emhqesfbqw .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#emhqesfbqw .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#emhqesfbqw .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#emhqesfbqw .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#emhqesfbqw .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#emhqesfbqw .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#emhqesfbqw .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#emhqesfbqw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_col_headings header">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="estimate" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>HR</strong></th>
+<th id="conf.low" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">sex</td>
+<td class="gt_row gt_center" headers="estimate">0.59</td>
+<td class="gt_row gt_center" headers="conf.low">0.42, 0.82</td>
+<td class="gt_row gt_center" headers="p.value">0.001</td>
+</tr>
+</tbody><tfoot>
+<tr class="gt_sourcenotes odd">
+<td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>You may use <code>report()</code> function of {report} package to get a brief summary of fitted Cox regression model:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>report<span class="sc">::</span><span class="fu">report</span>(cox.fit.uni)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>We fitted a logistic model to predict Surv(time, status) with sex (formula:
+Surv(time, status) ~ sex). The model's explanatory power is weak (Nagelkerke's
+R2 = 0.05).  Within this model:
+
+  - The effect of sex is statistically significant and negative (beta = -0.53,
+95% CI [-0.86, -0.20], p = 0.001; Std. beta = -0.23, 95% CI [-0.42, -0.05])
+
+Standardized parameters were obtained by fitting the model on a standardized
+version of the dataset. 95% Confidence Intervals (CIs) and p-values were
+computed using a Wald z-distribution approximation.</code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">performance</span>(cox.fit.uni)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># Indices of model performance
+
+AIC    |   AICc |    BIC | Nagelkerke's R2 |  RMSE | Sigma
+----------------------------------------------------------
+1491.2 | 1491.2 | 1494.6 |           0.046 | 0.859 |     0</code></pre>
+</div>
+</div>
+<p>To apply the univariate <code>coxph</code> function to all covariates at once, we use following code: (source: <a href="http://www.sthda.com/english/wiki/cox-proportional-hazards-model">Cox Proportional-Hazards Model</a>)</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"age"</span>, <span class="st">"sex"</span>,  <span class="st">"ph.karno"</span>, <span class="st">"ph.ecog"</span>, <span class="st">"wt.loss"</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>univ_formulas <span class="ot">&lt;-</span> <span class="fu">sapply</span>(covariates,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">function</span>(x) <span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">'Surv(time, status)~'</span>, x)))</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                        </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>univ_models <span class="ot">&lt;-</span> <span class="fu">lapply</span>( univ_formulas, <span class="cf">function</span>(x){<span class="fu">coxph</span>(x, <span class="at">data =</span> lung)})</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract data </span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>univ_results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(univ_models,</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>                       <span class="cf">function</span>(x){ </span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>                          x <span class="ot">&lt;-</span> <span class="fu">summary</span>(x)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>                          p.value<span class="ot">&lt;-</span><span class="fu">signif</span>(x<span class="sc">$</span>wald[<span class="st">"pvalue"</span>], <span class="at">digits=</span><span class="dv">2</span>)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>                          wald.test<span class="ot">&lt;-</span><span class="fu">signif</span>(x<span class="sc">$</span>wald[<span class="st">"test"</span>], <span class="at">digits=</span><span class="dv">2</span>)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>                          beta<span class="ot">&lt;-</span><span class="fu">signif</span>(x<span class="sc">$</span>coef[<span class="dv">1</span>], <span class="at">digits=</span><span class="dv">2</span>);<span class="co">#coeficient beta</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>                          HR <span class="ot">&lt;-</span><span class="fu">signif</span>(x<span class="sc">$</span>coef[<span class="dv">2</span>], <span class="at">digits=</span><span class="dv">2</span>);<span class="co">#exp(beta)</span></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>                          HR.confint.lower <span class="ot">&lt;-</span> <span class="fu">signif</span>(x<span class="sc">$</span>conf.int[,<span class="st">"lower .95"</span>], <span class="dv">2</span>)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>                          HR.confint.upper <span class="ot">&lt;-</span> <span class="fu">signif</span>(x<span class="sc">$</span>conf.int[,<span class="st">"upper .95"</span>],<span class="dv">2</span>)</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>                          HR <span class="ot">&lt;-</span> <span class="fu">paste0</span>(HR, <span class="st">" ("</span>, </span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>                                       HR.confint.lower, <span class="st">"-"</span>, HR.confint.upper, <span class="st">")"</span>)</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>                          res<span class="ot">&lt;-</span><span class="fu">c</span>(beta, HR, wald.test, p.value)</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">names</span>(res)<span class="ot">&lt;-</span><span class="fu">c</span>(<span class="st">"beta"</span>, <span class="st">"HR (95% CI for HR)"</span>, <span class="st">"wald.test"</span>, </span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"p.value"</span>)</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">return</span>(res)</span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#return(exp(cbind(coef(x),confint(x))))</span></span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>                         })</span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">as.data.frame</span>(univ_results, <span class="at">check.names =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a><span class="fu">as.data.frame</span>(res)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>           beta HR (95% CI for HR) wald.test p.value
+age       0.019            1 (1-1)       4.1   0.042
+sex       -0.53   0.59 (0.42-0.82)        10  0.0015
+ph.karno -0.016      0.98 (0.97-1)       7.9   0.005
+ph.ecog    0.48        1.6 (1.3-2)        18 2.7e-05
+wt.loss  0.0013         1 (0.99-1)      0.05    0.83</code></pre>
+</div>
+</div>
+<p>The output provides a detailed display of the regression beta coefficients, which quantify the relationship between each variable and overall survival. Additionally, it includes the hazard ratios that indicate the effect sizes associated with these variables, along with their statistical significance. Each factor is evaluated through distinct univariate Cox regression analyses, allowing for a clear understanding of how individual variables impact survival outcomes.</p>
+</section>
+<section id="multivariate-cox-regression-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="multivariate-cox-regression-analysis">Multivariate Cox regression analysis</h4>
+<p>Our objective is to explore how several factors work together to affect survival outcomes. To achieve this, we will perform a multivariate Cox regression analysis, a statistical method that allows us to evaluate the impact of multiple variables simultaneously.</p>
+<p>In our initial univariate analysis, we found that the variable <strong>ph.karno</strong> did not show significant relevance to survival, leading us to exclude it from our multivariate model. Instead, we will focus on three key factors that are likely to influence survival: sex, age, and <strong>ph.ecog</strong>.</p>
+<p>The following is the specification for the Cox regression model, which examines the relationship between time to death and the selected time-constant covariates:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cox.fit.multi <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span> age <span class="sc">+</span> sex <span class="sc">+</span> ph.ecog, <span class="at">data =</span>  lung)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(cox.fit.multi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Call:
+coxph(formula = Surv(time, status) ~ age + sex + ph.ecog, data = lung)
+
+  n= 227, number of events= 164 
+   (1 observation deleted due to missingness)
+
+             coef exp(coef)  se(coef)      z Pr(&gt;|z|)    
+age      0.011067  1.011128  0.009267  1.194 0.232416    
+sex     -0.552612  0.575445  0.167739 -3.294 0.000986 ***
+ph.ecog  0.463728  1.589991  0.113577  4.083 4.45e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+        exp(coef) exp(-coef) lower .95 upper .95
+age        1.0111     0.9890    0.9929    1.0297
+sex        0.5754     1.7378    0.4142    0.7994
+ph.ecog    1.5900     0.6289    1.2727    1.9864
+
+Concordance= 0.637  (se = 0.025 )
+Likelihood ratio test= 30.5  on 3 df,   p=1e-06
+Wald test            = 29.93  on 3 df,   p=1e-06
+Score (logrank) test = 30.5  on 3 df,   p=1e-06</code></pre>
+</div>
+</div>
+<p>The <code>p-values</code> from the three tests (l<code>ikelihood, Wald, and score</code>) show that our model is significant. These tests check the overall hypothesis that all coefficients (<span class="math inline">\(β\)</span>) are zero. In this case, the test results agree closely, allowing us to reject this hypothesis.</p>
+<p>In the multivariate Cox analysis, the variables sex and ph.ecog are significant (<span class="math inline">\(p &lt; 0.05\)</span>). However, the variable age is not significant (<span class="math inline">\(p = 0.23\)</span>, which is greater than 0.05).</p>
+<p>The p-value for sex is 0.000986. The <code>hazard ratio (HR)</code> is <code>exp(coef) = 0.58</code>, meaning there is a strong link between sex and a lower risk of death. For example, when we keep other factors constant, being female (sex=2) reduces the risk by 42%. This suggests that being female is associated with a better outcome.</p>
+<p>The <code>p-value</code> for ph.ecog is 4.45e-05, with a hazard ratio (<code>HR</code>) of 1.59. This indicates a strong link between higher ph.ecog values and an increased risk of death. Keeping other factors constant, a higher ph.ecog score suggests poorer survival.</p>
+<p>In contrast, the p-value for age is p = 0.23. The hazard ratio (<code>HR</code>) is <code>exp(coef) = 1.01</code>, with a 95% confidence interval of 0.99 to 1.03. Since the confidence interval includes 1, this means age does not significantly affect the risk of death after adjusting for sex and ph.ecog values. An additional year of age increases the daily risk of death by about 1%, which is not significant.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coxph</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span>  age <span class="sc">+</span> sex <span class="sc">+</span> ph.ecog, <span class="at">data =</span> lung) <span class="sc">%&gt;%</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_regression</span>(<span class="at">exp =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="bjbfmlchan" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#bjbfmlchan table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#bjbfmlchan thead, #bjbfmlchan tbody, #bjbfmlchan tfoot, #bjbfmlchan tr, #bjbfmlchan td, #bjbfmlchan th {
+  border-style: none;
+}
+
+#bjbfmlchan p {
+  margin: 0;
+  padding: 0;
+}
+
+#bjbfmlchan .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#bjbfmlchan .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#bjbfmlchan .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#bjbfmlchan .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#bjbfmlchan .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#bjbfmlchan .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#bjbfmlchan .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#bjbfmlchan .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#bjbfmlchan .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#bjbfmlchan .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#bjbfmlchan .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#bjbfmlchan .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#bjbfmlchan .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#bjbfmlchan .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#bjbfmlchan .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bjbfmlchan .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#bjbfmlchan .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#bjbfmlchan .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#bjbfmlchan .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bjbfmlchan .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#bjbfmlchan .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bjbfmlchan .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#bjbfmlchan .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bjbfmlchan .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#bjbfmlchan .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bjbfmlchan .gt_left {
+  text-align: left;
+}
+
+#bjbfmlchan .gt_center {
+  text-align: center;
+}
+
+#bjbfmlchan .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#bjbfmlchan .gt_font_normal {
+  font-weight: normal;
+}
+
+#bjbfmlchan .gt_font_bold {
+  font-weight: bold;
+}
+
+#bjbfmlchan .gt_font_italic {
+  font-style: italic;
+}
+
+#bjbfmlchan .gt_super {
+  font-size: 65%;
+}
+
+#bjbfmlchan .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#bjbfmlchan .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#bjbfmlchan .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#bjbfmlchan .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#bjbfmlchan .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#bjbfmlchan .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#bjbfmlchan .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#bjbfmlchan .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#bjbfmlchan div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_col_headings header">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="estimate" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>HR</strong></th>
+<th id="conf.low" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">age</td>
+<td class="gt_row gt_center" headers="estimate">1.01</td>
+<td class="gt_row gt_center" headers="conf.low">0.99, 1.03</td>
+<td class="gt_row gt_center" headers="p.value">0.2</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">sex</td>
+<td class="gt_row gt_center" headers="estimate">0.58</td>
+<td class="gt_row gt_center" headers="conf.low">0.41, 0.80</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">ph.ecog</td>
+<td class="gt_row gt_center" headers="estimate">1.59</td>
+<td class="gt_row gt_center" headers="conf.low">1.27, 1.99</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+</tbody><tfoot>
+<tr class="gt_sourcenotes odd">
+<td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-baseline-survival-function-1" class="level4">
+<h4 class="anchored" data-anchor-id="plot-the-baseline-survival-function-1">Plot the baseline survival function</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the baseline survival function</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(<span class="fu">survfit</span>(cox.fit.multi))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+ℹ Please use tidy evaluation idioms with `aes()`.
+ℹ See also `vignette("ggplot2-in-packages")` for more information.
+ℹ The deprecated feature was likely used in the ggfortify package.
+  Please report the issue at &lt;https://github.com/sinhrks/ggfortify/issues&gt;.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-02-01-survival-analysis-cox-regression-r_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="summary-and-conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="summary-and-conclusions">Summary and Conclusions</h2>
+<p>The Cox Proportional Hazards Model is a powerful tool for analyzing survival data and understanding how covariates impact the risk of an event over time. It is widely used in fields like medicine, epidemiology, and engineering, where time-to-event data is prevalent. The flexibility of not having to specify the baseline hazard makes it particularly popular for modeling survival data.</p>
+<p>In this article, we described the Cox regression model for assessing simultaneously the relationship between multiple risk factors and patient’s survival time.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ol type="1">
+<li><p><a href="https://rviews.rstudio.com/2017/09/25/survival-analysis-with-r/">Survival Analysis with R</a></p></li>
+<li><p><a href="http://www.sthda.com/english/wiki/cox-proportional-hazards-model">Cox Proportional-Hazards Model</a></p></li>
+<li><p><a href="https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html">Survival Analysis in R</a></p></li>
+<li><p><a href="https://bioconnector.github.io/workshops/r-survival.html">Survival Analysis with R</a></p></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="pagination-link" aria-label="Introduction to Semi-Parametric Survival Models">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Introduction to Semi-Parametric Survival Models</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="pagination-link" aria-label="Survival Analysis with Time-Dependent Covariates">
+        <span class="nav-page-text">Survival Analysis with Time-Dependent Covariates</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© CC-By Zia Ahmed, Unversity at Buffalo 2025</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

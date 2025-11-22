@@ -1,0 +1,278 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_03_05_survival_analysis_generalized_gamma_model_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_03_05_survival_analysis_generalized_gamma_model_python.ipynb)
+:::
+
+# 3.5 Generalized Gamma Survival Model {.unnumbered}
+
+
+### Overview
+
+The **Generalized Gamma (GG) survival model** is a highly flexible parametric model in survival analysis that generalizes several other models, including the exponential, Weibull, log-normal, and gamma distributions. It is characterized by three parameters, allowing it to model a wide range of hazard shapes (monotonic increasing, decreasing, arc-shaped, or bathtub-shaped). This makes it suitable for complex survival data where simpler models (e.g., exponential or log-normal) may not fit well. The GG model can be used in an Accelerated Failure Time (AFT) framework, where covariates scale the survival time, or in other parameterizations depending on the software.
+
+### Key Features
+
+- **Flexibility**: The GG model’s three parameters allow it to capture diverse hazard behaviors, including those of the exponential ($p = q = 1$), Weibull ($q = 1$), log-normal ($q\to \infty$), and standard gamma ($p = q$).
+- **Applications**: Used in medical research (e.g., survival after treatment), reliability engineering (e.g., component failure times), and economics (e.g., duration models) when hazard shapes are complex or unknown.
+- **Assumptions**: Assumes survival times $T$ follow a generalized gamma distribution, with log-times having a flexible distribution controlled by shape parameters.
+- **Advantages**: Encompasses multiple models, reducing the need to test several distributions. Can model non-monotonic hazards (e.g., bathtub-shaped for infant mortality followed by aging).
+- **Limitations**: Computationally intensive due to three parameters. Parameter estimation can be unstable with small datasets or misspecified models. Less intuitive interpretation compared to simpler models.
+
+
+The generalized gamma distribution has three parameters: $\mu$ (location, related to the mean of log-time), $\sigma > 0$ (scale, controlling dispersion), and $q$ (shape, affecting hazard shape). Alternatively, it is often parameterized with a scale parameter $\lambda = \exp(-\mu/\sigma)$ and shape parameters $p = 1/(\sigma q).
+
+- **Probability Density Function (PDF)**:
+$$
+  f(t) = \frac{p \lambda (p t)^{pq - 1} e^{-(p t)^q}}{\Gamma(p)}, \quad t > 0, \quad \lambda, p, q > 0
+$$
+
+where $\Gamma$ is the gamma function, $p = 1/(\sigma q)$, and $\lambda = \exp(-\mu/\sigma)$. The PDF is complex but reduces to simpler forms (e.g., Weibull when $q = 1$).
+
+- **Survival Function**:
+
+$$
+  S(t) = 1 - \frac{\gamma(p, (p t)^q)}{\Gamma(p)}
+$$
+
+ where $\gamma(p, x) = \int_0^x u^{p-1} e^{-u} \, du $ is the incomplete gamma function. This gives the probability of surviving past time $t$.
+
+- **Hazard Function**:
+
+$$
+  h(t) = \frac{f(t)}{S(t)} = \frac{p \lambda (p t)^{pq - 1} e^{-(p t)^q}}{\Gamma(p) - \gamma(p, (p t)^q)}
+$$
+  The hazard shape depends on $p$ and $q$:
+  
+  - $p > 1, q > 1$: Arc-shaped (increases then decreases).
+  - $p < 1, q < 1$: Bathtub-shaped (decreases, then increases).
+  - $q = 1$: Weibull-like (monotonic increasing or decreasing).
+
+- **Mean and Variance**:
+
+  - Mean: $E[T] = \frac{\exp(\mu) \Gamma(p + 1/q)}{\Gamma(p)}$, if $p + 1/q > 0$.
+  - Variance: Complex, involving higher-order gamma functions.
+  - Note: Mean may be undefined for certain parameter values.
+
+### When to Use
+
+Choose the generalized gamma model when:
+- Nonparametric hazard estimates (e.g., from Kaplan-Meier) show complex shapes (arc-shaped, bathtub-shaped, or non-monotonic).
+- You want to test multiple parametric models within one framework (e.g., exponential, Weibull, log-normal).
+- Flexibility is needed, but you’re willing to handle computational complexity.
+
+### Model Fit Assessment
+
+- Use AIC/BIC to compare with simpler models (e.g., Weibull, log-normal, log-logistic).
+- Check residuals (e.g., Cox-Snell) or compare fitted survival curves to Kaplan-Meier estimates.
+- Validate parameter estimates with Q-Q plots or hazard shape diagnostics.
+
+## Implementation in R
+
+This tutorial demonstrates fitting a generalized gamma survival model using R’s `flexsurv` package, as the `survival` package’s `survreg` does not support the generalized gamma distribution directly. We’ll use the `lung` dataset from `survival`, consistent with your previous queries. The code includes data preparation, model fitting, predictions, plotting, and diagnostics, addressing lessons from prior errors (e.g., `Invalid status value`, `psurvreg`, `lines`, and plotting issues).
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'flexsurv',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression'
+		 )
+
+```
+
+``` 
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+devtools::install_github("ItziarI/WeDiBaDis")
+
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+
+### Data Loading and Cleaning
+
+```{R}
+# Load dataset properly
+data("lung", package = "survival")
+
+# Recode status: 1=censored (0), 2=dead (1)
+lung$status <- lung$status - 1
+
+# Clean data
+lung_clean <- lung[!is.na(lung$time) & !is.na(lung$status) & 
+                   !is.na(lung$age) & !is.na(lung$sex) & 
+                   lung$time > 0 & lung$status %in% c(0, 1), ]
+print(dim(lung_clean))
+
+```
+
+### Data Preparation
+
+```{R}
+# Create survival object explicitly for right-censored data
+surv_object <- Surv(time = lung_clean$time, event = lung_clean$status)
+print("Structure of Surv object:")
+str(surv_object)
+```
+
+
+### Model Fitting
+
+```{R}
+# Fit generalized gamma models with initial estimates
+gg_model <- flexsurvreg(surv_object ~ 1, data = lung_clean, dist = "gengamma")
+
+gg_model_cov <- flexsurvreg(surv_object ~ age + sex, data = lung_clean, dist = "gengamma",
+              inits = c(5, 0.5, 0, 0, 0))
+print("Model summary (with covariates):")
+summary(gg_model_cov)
+```
+
+
+### Predictions
+
+```{R}
+# Prediction for new data (60-year-old male)
+new_data <- data.frame(age = 60 - mean(lung_clean$age), sex = 1)
+median_time <- predict(gg_model_cov, newdata = new_data, type = "survival")[[1]]
+print("Median survival time (days):")
+print(median_time)
+```
+
+
+### Survival Probability 
+
+```{R}
+#| fig.width: 5.5
+#| fig.height: 5
+# Survival probability at t=500 days
+surv_prob <- summary(gg_model_cov, newdata = new_data, type = "survival", t = 500)$est
+print("Survival probability at t=500 days:")
+print(surv_prob)
+
+# Plot Kaplan-Meier and generalized gamma curve (null model)
+km_fit <- survfit(surv_object ~ 1)
+plot(km_fit, main = "Kaplan-Meier vs Generalized Gamma Survival Curve", 
+     xlab = "Time (days)", ylab = "Survival Probability", 
+     col = "black", lwd = 2)
+t_seq <- seq(0, max(lung_clean$time), length.out = 100)
+surv_gg <- summary(gg_model, t = t_seq, type = "survival")$est
+lines(t_seq, surv_gg, col = "red", lwd = 2)
+legend("topright", c("Kaplan-Meier", "Generalized Gamma"), col = c("black", "red"), lwd = 2)
+```
+### Model Diagnostics
+
+
+#### Cox-Snell Residuals
+
+```{R}
+#| fig.width: 5.5
+#| fig.height: 5
+
+# Compute survival probabilities for each individual time
+surv_list <- summary(gg_model_cov, t = lung_clean$time, type = "survival")
+
+# Extract 'est' column from each list element
+surv_probs <- sapply(surv_list, function(x) x$est[1])
+
+# Compute Cox–Snell residuals
+residuals_cs <- -log(surv_probs)
+# 2. Cox-Snell Residuals
+valid <- is.finite(residuals_cs)
+residuals_cs <- residuals_cs[valid]
+
+# Plot Cox-Snell residuals
+plot(sort(residuals_cs), (1:length(residuals_cs))/length(residuals_cs),
+     main = "Cox-Snell Residuals vs Exp(1)",
+     xlab = "Cox-Snell Residuals", ylab = "Empirical CDF")
+lines(sort(residuals_cs), pexp(sort(residuals_cs)), col = "red", lwd = 2)
+abline(0, 1, lty = 2)
+
+```
+
+#### Model Comparison
+
+
+```{R}
+# 3. Goodness-of-Fit: Compare with Weibull and Log-Normal
+weibull_model_cov <- flexsurvreg(surv_object ~ age + sex, data = lung_clean, dist = "weibull")
+lnorm_model_cov <- flexsurvreg(surv_object ~ age + sex, data = lung_clean, dist = "lnorm")
+print("AIC Comparison:")
+print(AIC(gg_model_cov, weibull_model_cov, lnorm_model_cov))
+```
+
+#### Hazard Function
+
+```{R}
+
+# 4. Hazard Plot (for new_data)
+haz_gg <- summary(gg_model_cov, newdata = new_data, type = "hazard", t = t_seq, tidy = TRUE)
+ggplot(haz_gg, aes(x = time, y = est)) +
+  geom_line(col = "blue", lwd = 1) +
+  ggtitle("Generalized Gamma Hazard Function (for new data)") +
+  xlab("Time (days)") + ylab("Hazard Rate")
+```
+
+## Summary and Conclusion
+
+The generalized gamma survival model is a powerful and flexible tool in survival analysis, capable of modeling a wide range of hazard shapes through its three parameters. It encompasses several common distributions, making it a versatile choice when the underlying hazard function is complex or unknown. However, its complexity can lead to computational challenges and interpretability issues, especially with small datasets. Model fit should be carefully assessed using AIC/BIC, residual analysis, and visual diagnostics to ensure the chosen model adequately represents the data. 
+
+## Resources
+
+- **R Documentation**:
+  - `survreg`: [https://rdrr.io/r/stats/survreg.html](https://rdrr.io/r/stats/survreg.html)
+  - `flexsurvreg`: [https://cran.r-project.org/web/packages/flexsurv/flexsurv.pdf](https://cran.r-project.org/web/packages/flexsurv/flexsurv.pdf)
+- **Books**:
+  - "Survival Analysis: Techniques for Censored and Truncated Data" by Klein & Moeschberger
+  - "Applied Survival Analysis" by Hosmer, Lemeshow, & May
+- **Tutorials**:
+  - UCLA IDRE Survival Analysis with R: [https://stats.idre.ucla.edu/r/seminars/survival-analysis-with-r/](https://stats.idre.ucla.edu/r/seminars/survival-analysis-with-r/)
+  - R-bloggers: [https://www.r-bloggers.com/](https://www.r-bloggers.com/)
+- **Online Courses**:
+  - Coursera: "Survival Analysis in R" by Duke University
+  - edX: "Survival Analysis" by Harvard University
+```
+
+```{r}
+# remove all objects from the environment
+rm(list = ls())
+```
+

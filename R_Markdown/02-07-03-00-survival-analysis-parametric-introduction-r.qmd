@@ -1,0 +1,126 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_03_00_survival_analysis_parametric_introduction_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_03_00_survival_analysis_parametric_introduction_python.ipynb)
+:::
+
+# 3. Parametric Survival Analysis {.unnumbered}
+
+Parametric methods in survival analysis assume that the **time-to-event (survival time)** follows a specific probability distribution. Unlike non-parametric (e.g., Kaplan–Meier) or semi-parametric (e.g., Cox proportional hazards) methods, parametric models fully specify the shape of the survival curve using distributional assumptions.
+
+## Overview
+
+
+Survival analysis is a branch of statistics that deals with analyzing time-to-event data, such as the time until an event like death, failure, or recovery occurs. These methods account for censoring (when the event hasn't occurred by the end of the study) and truncation in the data.
+
+**Parametric methods** in survival analysis assume that the survival times follow a specific probability distribution (e.g., exponential, Weibull). This assumption allows for modeling the entire survival function, hazard function, and other characteristics using a fixed number of parameters. These methods are efficient when the assumed distribution fits the data well, providing more precise estimates and predictions compared to non-parametric approaches. However, they can be biased if the distribution is misspecified.
+
+In contrast:
+
+- Non-parametric methods (e.g., Kaplan-Meier estimator) make no distributional assumptions and are good for exploratory analysis.
+- Semi-parametric methods (e.g., Cox proportional hazards model) assume a form for the hazard but not the baseline distribution.
+
+Parametric models estimate parameters via maximum likelihood estimation (MLE) or other optimization techniques, often incorporating covariates through accelerated failure time (AFT) models or proportional hazards frameworks.
+
+## Types of Parametric Models
+
+Here are some common parametric models used in survival analysis, along with their key features, hazard functions, and typical applications:
+
+### Exponential Model   
+
+   This is the simplest parametric model, assuming a constant hazard rate over time (memoryless property). It's suitable for events where the risk doesn't change with time, like radioactive decay or certain mechanical failures.  
+   
+   - **Survival function**: $S(t) = e^{-\lambda t}$, where $\lambda > 0$ is the constant hazard rate.  
+   - **Hazard function**: $h(t) = \lambda$ (constant).  
+   - **Pros**: Easy to interpret; only one parameter.  
+   - **Cons**: Rarely fits real-world data where hazards vary.  
+   - **Applications**: Modeling constant-risk scenarios in reliability engineering or basic clinical trials.
+
+### Weibull Model  
+
+   A flexible extension of the exponential model, it can capture increasing, decreasing, or constant hazards depending on the shape parameter. It's widely used in engineering and medical research.  
+   
+   - **Survival function**: $S(t) = e^{-(\lambda t)^p}$, where $\lambda > 0$) is the scale parameter and $p > 0$ is the shape parameter (p=1 reduces to exponential).  
+   - **Hazard function**: $h(t) = \lambda p (\lambda t)^{p-1}$ (monotonically increasing if p>1, decreasing if p<1).  
+   - **Pros**: Versatile for non-constant hazards; can be used in AFT or proportional hazards forms.  
+   - **Cons**: Assumes monotonic hazard, which may not fit complex patterns.  
+   - **Applications**: Failure time analysis in manufacturing, cancer survival studies where risk increases over time.
+
+### Log-Normal Model  
+
+   Assumes the logarithm of survival time follows a normal distribution, leading to a non-monotonic hazard that rises then falls. It's an AFT model, meaning covariates accelerate or decelerate time.  
+   
+   - **Survival function**: $S(t) = 1 - \Phi\left(\frac{\log t - \mu}{\sigma}\right)$, where $\Phi$ is the standard normal CDF, $\mu$ is the mean, and $\sigma > 0$ is the standard deviation of the log-time.  
+   - **Hazard function**: Increases to a maximum and then decreases to zero.  
+   - **Pros**: Handles skewed data well; useful when hazards peak early.  
+   - **Cons**: Not proportional hazards; interpretation can be tricky.  
+   - **Applications**: Biological processes like time to tumor onset or economic durations like unemployment spells.
+
+### Log-Logistic Model
+
+   Similar to log-normal but based on the logistic distribution for log-time. It's also an AFT model with a non-monotonic hazard.  
+   - **Survival function**: $S(t) = \frac{1}{1 + (\lambda t)^p}$, where $\lambda > 0$ is scale and $p > 0$ is shape.  
+   - **Hazard function**: $h(t) = \frac{\lambda p (\lambda t)^{p-1}}{1 + (\lambda t)^p}$) (increasing then decreasing if p>1; decreasing if p≤1).  
+   - **Pros**: Closed-form expressions; can model crossing survival curves.  
+   - **Cons**: Less common software support compared to Weibull.  
+   - **Applications**: Medical data with initial high risk that tapers off, like post-surgery recovery.
+
+### Gamma Model  
+
+   Generalizes the exponential (when shape=1) and can model various hazard shapes, including those from Erlang or chi-squared distributions.  
+   
+   - **Survival function**: Involves the incomplete gamma function; $S(t) = 1 - \frac{\gamma(k, \lambda t)}{\Gamma(k)}$, where $k > 0$ is shape, $\lambda > 0$ is rate, and $\gamma, \Gamma$ are gamma functions.  
+   - **Hazard function**: No closed form, but it's increasing if k>1, decreasing if k<1.  
+   - **Pros**: Flexible for overdispersed data.  
+   - **Cons**: Computationally intensive; parameters harder to interpret.  
+   - **Applications**: Queuing theory, insurance claims, or when data shows variance greater than the mean.
+
+### Gompertz Model  
+
+   Assumes an exponentially increasing hazard, making it ideal for modeling aging or mortality where risk grows with time.  
+   - **Survival function**: $S(t) = e^{-\frac{b}{c}(e^{ct} - 1)}$, where $b > 0$ is the baseline hazard and $c > 0$ controls the growth rate.  
+   - **Hazard function**: $h(t) = b e^{ct}$ (exponentially increasing).  
+   - **Pros**: Captures accelerating risks; extends to Gompertz-Makeham for constant + increasing components.  
+   - **Cons**: Limited to increasing hazards; not for decreasing risks.  
+   - **Applications**: Actuarial science, demography, and human longevity studies.
+
+Other less common models include the inverse Gaussian (for Brownian motion processes) or generalized gamma (encompassing several of the above). Model selection often involves goodness-of-fit tests like AIC/BIC or visual checks of hazard plots. In practice, tools like R (survival package) or Python (lifelines library) are used to fit these models. If the data doesn't fit a standard distribution, flexible parametric models (e.g., splines) or non-parametric alternatives may be better.
+
+## Summary and Conclusion
+
+Here's a summary table of the discussed parametric survival models:
+
+| Model             | Distribution of T  | Hazard shape         | Special cases     |
+| ----------------- | ------------------ | -------------------- | ----------------- |
+| Exponential       | Constant rate      | Constant             | —                 |
+| Weibull           | Power function     | ↑ or ↓               | Exponential (p=1) |
+| Log-normal        | Normal on log(T)   | Unimodal             | —                 |
+| Log-logistic      | Logistic on log(T) | Unimodal             | —                 |
+| Gompertz          | Exponential hazard | ↑ or ↓ exponentially | —                 |
+| Generalized Gamma | Flexible family    | Many shapes          | —                 |
+
+## Resources
+
+1. **"Survival Analysis: Techniques for Censored and Truncated Data" by Klein & Moeschberger** - Covers exponential, Weibull, log-normal, etc., with R examples. Available on SpringerLink, Amazon.
+
+2. **"Applied Survival Analysis" by Hosmer, Lemeshow, & May** - Practical guide to parametric models in R. Available on Wiley, Amazon.
+
+3. **"The Statistical Analysis of Failure Time Data" by Kalbfleisch & Prentice** - Theoretical focus on parametric models. Available on Wiley, Amazon.
+
+4. **R `survival` Package Documentation** - Covers `survreg` for exponential, Weibull, log-normal, log-logistic. Free at [CRAN](https://cran.r-project.org/package=survival).
+
+5. **R `flexsurv` Package Documentation** - Supports generalized gamma and flexible models. Free at [CRAN](https://cran.r-project.org/package=flexsurv).
+
+6. **UCLA IDRE Survival Analysis** - R tutorial for parametric models. [Link](https://stats.idre.ucla.edu/r/seminars/survival-analysis-with-r/).
+
+7. **"Flexible Parametric Survival Models" by Royston & Lambert (2011)** - Discusses generalized gamma, Weibull, etc. Available via Journal of Statistical Software.
+
+8. **"Parametric Survival Models" by Breheny (2019)** - Notes with R code. Free at [Breheny’s Notes](https://myweb.uiowa.edu/pbreheny/7210/f19/notes.html).
+
+9. **Coursera: Survival Analysis in R (Imperial College)** - Covers parametric models with R labs. [Link](https://www.coursera.org/learn/survival-analysis-r-public-health) (audit free).
+
+10. **YouTube: MarinStatsLectures** - Videos on parametric models in R. [Link](https://www.youtube.com/c/MarinStatsLectures-RProgrammingStats).
+
+

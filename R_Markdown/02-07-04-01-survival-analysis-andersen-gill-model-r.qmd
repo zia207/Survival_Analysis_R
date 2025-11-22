@@ -1,0 +1,258 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right"
+width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_04_01_survival_analysis_andersen_gill_model_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right"
+width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_04_01_survival_analysis_andersen_gill_model.ipynb)
+:::
+
+
+# 4.1 Andersen-Gill (AG) Model {.unnumbered}
+
+The Andersen-Gill (AG) model is a popular approach for analyzing recurrent event data using the counting process framework. It extends the Cox proportional hazards model to handle multiple events per subject by treating each event as a separate observation while accounting for the correlation of events within subjects through robust variance estimation.The AG model is an extension of the Cox PH model that treats recurrent events as independent observations within a subject, adjusted for intra-subject correlation using a robust variance estimator (clustering by subject ID). It assumes that the hazard for each event depends on covariates and the time since the study start (or a reset time). It treats each event as a separate observation while accounting for the at-risk time between events using a **counting process framework**.
+
+This tutorial will:
+
+- Explain the Andersen-Gill model
+- Show how to prepare data in R
+- Fit the model using `survival` package
+- Perform diagnostics
+- Compute and plot the **Cumulative Incidence Function (CIF)**
+- Provide interpretation and best practices
+
+
+## Overview
+
+
+The AG model assumes that:
+
+- Events follow a **non-homogeneous Poisson process**.
+- The hazard for the *k*-th event depends on **calendar time** (not time since last event).
+- All events from the same subject are **conditionally independent** given covariates (though robust standard errors account for within-subject correlation).
+
+### Hazard Function
+
+Hazard for the *i*-th subject at time *t*:
+
+$$
+h_i(t) = h_0(t) \exp(\beta^T X_i(t))
+$$
+
+Where:
+
+- $h_0(t)$: baseline hazard (common to all events)
+- $X_i(t)$: possibly time-varying covariates
+- Each subject contributes **multiple rows** to the dataset (one per event or risk interval)
+
+### Key Assumptions
+
+- Proportional hazards over **calendar time**
+- Events are **independent conditional on covariates** (robust SEs relax this)
+- No terminal event that stops the process (e.g., death may need special handling)
+
+**Note**: If a terminal event (like death) prevents further recurrences, consider **joint modeling** or **competing risks** approaches instead.
+
+## Implementation in R
+
+We’ll use the built-in `readmission`-like data. Since R doesn’t include a standard recurrent event dataset, we’ll simulate one or use the `tcut` example from the `survival` package.
+
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'riskRegression',
+		 'reda'
+		 )
+
+```
+
+
+```{r 
+#| warning: false
+#| error: false
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+devtools::install_github("ItziarI/WeDiBaDis")
+``` 
+ 
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+ 
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+We use the `surviva`l package and `bladder1` dataset, which contains recurrent bladder tumor data. The data set contains multiple rows per patient, with start and stop times for each interval, event indicators, and covariates.
+
+`id`:	Patient id
+`treatment`:	Placebo, pyridoxine (vitamin B6), or thiotepa
+`number`:	Initial number of tumours (8=8 or more)
+`size`:	Size (cm) of largest initial tumour
+`recur`:	Number of recurrences
+`start,stop`:	The start and end time of each time interval
+`status`:	End of interval code, 0=censored, 1=recurrence, 2=death from bladder disease, 3=death other/unknown cause
+`rtumor`:	Number of tumors found at the time of a recurrence
+`rsize`:	Size of largest tumor at a recurrence
+`enum`:	Event number (observation number within patient)
+
+```{r}
+# Load bladder1 (long format)
+data(bladder1)
+str(bladder1)
+```
+
+### Data Preparation
+
+We will create gaptime for PWP-GT and truncate to the first 4 events for stable risk sets:
+
+```{r}
+# Identify problematic rows
+invalid_intervals <- bladder1[bladder1$stop <= bladder1$start, ]
+invalid_status <- bladder1[!bladder1$status %in% c(0, 1), ]
+
+# Remove invalid rows
+bladder1_clean <- bladder1 %>%
+  filter(stop > start, status %in% c(0, 1))
+
+# Create gaptime for PWP-GT
+bladder1_clean <- bladder1_clean %>%
+  group_by(id) %>%
+  mutate(gaptime = stop - start) %>%
+  ungroup()
+
+# Truncate to first 4 events for PWP models
+bladder_trunc <- bladder1_clean[bladder1_clean$enum <= 4, ]
+
+# Verify
+head(bladder_trunc)
+```
+
+
+###  Fit the Andersen-Gill Model
+
+Use `coxph()` with a **Surv(tstart, tstop, event)** object:
+
+```{r}
+# Fit AG model
+ag_model <- coxph(Surv(start, stop, status) ~ treatment + number + size + cluster(id), 
+                data = bladder_trunc, robust = TRUE)
+
+summary(ag_model)
+```
+
+###  Model Diagnostics
+
+#### Proportional Hazards Assumption
+
+Use `cox.zph()`:
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 8
+zph_test <- cox.zph(ag_model)
+print(zph_test)
+ggcoxzph(zph_test)  # plot
+```
+
+>  If p < 0.05 for a covariate, PH assumption may be violated. Consider time-interactions (e.g., `tt()` function).
+
+#### Residuals
+
+Check martingale or deviance residuals (less common for recurrent events):
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+mart_res <- residuals(ag_model, type = "martingale", collapse = bladder_trunc$id)
+plot(mart_res ~ bladder_trunc$number[match(names(mart_res), bladder_trunc$id)], 
+     xlab = "Initial Tumors", ylab = "Martingale Residuals")
+abline(h = 0, lty = 2)
+```
+
+
+### Compute and Plot Cumulative Incidence Function (CIF)
+
+While the AG model estimates **hazard ratios**, the **Cumulative Incidence Function (CIF)** shows the **expected number of events** over time.
+
+
+The **Cumulative Incidence Function (CIF)** is a key concept in **survival analysis**, particularly in the context of **competing risks**—situations where multiple distinct types of events can occur, and the occurrence of one event precludes the others.
+
+The Cumulative Incidence Function for a specific event type \( k \) at time \( t \) is defined as:
+
+$$
+\text{CIF}_k(t) = P(T \leq t \text{ and event type } = k)
+$$
+In words:  
+
+$CIF(_k)(t)$ is the probability that an individual experiences event type $k$ by time $t$, in the presence of other competing event types.
+
+This differs from the standard **Kaplan-Meier (KM) estimator**, which treats all other event types as censored. In competing risks settings, censoring competing events leads to **overestimation** of the event probability, because it assumes those individuals could still experience the event of interest later—which is not true if a competing event (e.g., death from another cause) has already occurred.
+
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+base_ag <- basehaz(ag_model, centered = FALSE)
+plot(base_ag$hazard ~ base_ag$time, type = "s", xlab = "Time", ylab = "Cumulative Hazard", 
+     main = "CMF by Stratum (AG-Model)")
+```
+
+
+## Summary & Conclusion
+
+The Andersen-Gill (AG) model is appropriate when subjects experience multiple events of the same type—such as hospital readmissions or recurrent infections—and there is no terminal event (like death) that permanently stops the event process (or if such an event is handled separately). It is particularly useful when the research question focuses on the **event rate** over calendar time rather than the time between successive events. Among its strengths, the AG model is a straightforward extension of the standard Cox proportional hazards model, naturally accommodates time-varying covariates, and uses robust (sandwich) standard errors to account for within-subject correlation across recurrent events. However, it has important limitations: it assumes that, conditional on covariates, recurrent events are independent, and it does not explicitly model dependence on event history—such as changes in risk based on the number of prior events or the gap time since the last event. Additionally, the model may be inappropriate when a terminal event truncates follow-up, as it does not inherently account for this competing risk. In such cases, alternative approaches should be considered, including the **Prentice-Williams-Peterson (PWP) model** (which stratifies by event order and can model gap or total times), **frailty models** (which incorporate random effects to capture unobserved subject-specific heterogeneity), or **joint models** that simultaneously analyze recurrent events and associated terminal events like death.
+
+
+
+## Resources
+
+ **Books**
+- *Modeling Survival Data: Extending the Cox Model* by Terry M. Therneau & Patricia M. Grambsch  
+- *The Statistical Analysis of Recurrent Events* by Richard J. Cook & Jerald F. Lawless
+
+**R Packages**
+- [`survival`](https://cran.r-project.org/package=survival): Core survival analysis
+- [`reda`](https://cran.r-project.org/package=reda): Recurrent event data analysis (MCF, simulation)
+- [`frailtypack`](https://cran.r-project.org/package=frailtypack): Frailty models for recurrent events
+
+**Vignettes & Tutorials**
+- `vignette("timedep", package = "survival")`
+- `vignette("reda-MCF", package = "reda")`
+- Therneau’s [Survival Analysis Tutorial](https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf)
+
+
+
+

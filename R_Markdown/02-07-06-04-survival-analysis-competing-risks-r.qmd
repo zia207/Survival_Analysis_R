@@ -1,0 +1,209 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_04_survival_analysis_competing_risks_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_04_survival_analysis_competing_risks_r_python.ipynb)
+:::
+
+# 6.4  Competing Risks of Joint Models {.unnumbered}
+
+In survival analysis, **competing risks** arise when individuals face multiple possible event types, and the occurrence of one event precludes the others. For instance, in a study of disease-specific death, deaths from other causes (such as accidents or unrelated illnesses) act as competing risks. In the context of **joint models**, competing risks analysis involves modeling the time to multiple event types while accounting for their correlation with longitudinal biomarkers. These joint models combine: (1) a **longitudinal submodel** for the repeated measurements of a continuous outcome over time, and (2) a **competing risks survival submodel** for the multiple event types. The two submodels are connected via **shared random effects**, which capture the association between the longitudinal trajectory and the risk of each event type.
+
+To fit such a model in **`{JMbayes2}`**, the first step is to restructure the event data into a **long format** suitable for competing risks. Specifically, if there are $K$ event types, each subject must be represented by $K$ rows—one for each cause. The observed event time $T_i$ is repeated across these rows, accompanied by two indicator variables: one specifying the event cause and another indicating whether that cause actually occurred. Standard survival datasets (with one row per subject) can be converted to this format using the `crisk_setup()` function, which takes the original survival data, the name of the status variable, and the value denoting censoring.
+
+##  Competing Risks of Joint Models in R
+
+We use the `pbc2` dataset from the `{JMbayes2}` package, which contains longitudinal measurements and survival data for patients with primary biliary cirrhosis (PBC). In this example, we will model the longitudinal biomarker `serBilir` (serum bilirubin levels) and the competing risks of death due to PBC and death due to other causes. 
+
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression',
+		 'prodlim',
+		 'lava',
+		 'mstate',
+		 'regplot',
+		 'cmprskcoxmsm',
+		 'GLMMadaptive',
+		 'nlme',
+		 'lme4',
+		 'lattice',
+		 'JM',
+		 'joineR',
+		 'joineRML',
+		 'JMbayes2'
+		 )
+
+```
+
+```{r         
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+#devtools::install_github("ItziarI/WeDiBaDis")
+```
+
+### Verify Installation
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Load data
+
+We use `pbc2` dataset from the `JMbayes2` package, which contains follow up of 312 randomized patients with primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic.
+
+```{r}
+data(pbc2)
+data(pbc2.id)
+```
+
+### Prepare Data for Competing Risks
+
+We convert the `pbc2.id` dataset into a long format suitable for competing risks analysis using the `crisk_setup()` function. The `status` variable indicates the event type, with "alive" representing censoring. 
+
+```{r}
+pbc2.id[pbc2.id$id %in% c(1, 2, 5), c("id", "years", "status")]
+
+pbc2.idCR <- crisk_setup(pbc2.id, statusVar = "status", censLevel = "alive", 
+                         nameStrata = "CR")
+
+pbc2.idCR[pbc2.idCR$id %in% c(1, 2, 5), 
+          c("id", "years", "status", "status2", "CR")]
+```
+
+
+### Fit the Joint Model with Competing Risks
+
+#### Fit Cause-Specific Cox Models
+
+Firs, t we fit the corresponding cause-specific Cox regressions by including the interaction terms of age and treatment with variable CR, which is treated as a stratification variable using the strata() function:
+
+```{r}
+CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
+                     data = pbc2.idCR)
+```
+
+
+#### Fit the Longitudinal Submodel
+
+Next, we fit two longitudinal submodels for the biomarker `serBilir` using a linear mixed-effects model:
+
+
+```{r}
+fm1 <- lme(log(serBilir) ~ poly(year, 2) * drug, data = pbc2, 
+           random = ~ poly(year, 2) | id)
+fm2 <- lme(prothrombin ~ year * drug, data = pbc2, random = ~ year | id)
+```
+
+#### Specify the Association Structure
+
+To specify the association structure between the longitudinal and survival submodels, we define a list of formulas indicating how each longitudinal outcome is linked to the competing risks. In this example, we use the current value of `log(serBilir)` and `prothrombin` to model their effects on the hazard of each event type:
+
+```{r}
+CR_forms <- list(
+    "log(serBilir)" = ~ value(log(serBilir)):CR,
+    "prothrombin" = ~ value(prothrombin):CR
+)
+```
+
+#### Fit Risk Joint Model
+
+Finally, we fit the joint model for competing risks using the `jm()` function, specifying the cause-specific Cox model, the list of longitudinal submodels, the time variable, and the functional forms for the association structure. We also set the number of iterations, burn-in period, and thinning interval for the MCMC sampling:
+
+```{r}
+jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year", 
+              functional_forms = CR_forms, 
+              n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
+
+summary(jFit_CR)
+
+```
+
+
+### Dynamic Predictions
+
+We can obtain dynamic predictions for a specific patient (e.g., patient with `id` 81) using their longitudinal data and event information. We create a list containing the longitudinal data and event data for this patient, setting the `status2` variable to 0 to indicate censoring: 
+
+
+```{r}
+ND_long <- pbc2[pbc2$id == 81, ]
+ND_event <- pbc2.idCR[pbc2.idCR$id == 81, ]
+ND_event$status2 <- 0
+ND <- list(newdataL = ND_long, newdataE = ND_event)
+```
+
+#### Predict Longitudinal and Event Outcomes
+
+
+```{r}
+predLong <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
+                    times = seq(6.5, 15, length = 25))
+
+predEvent <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
+                     process = "event")
+```
+
+
+#### Plot Dynamic Predictions
+
+```{r}
+#| fig.width: 8
+#| fig.height: 7
+#| 
+plot(predLong, predEvent, outcomes = 1:2, ylim_long_outcome_range = FALSE,
+     col_line_event = c("#03BF3D", "#FF0000"), 
+     fill_CI_event = c("#03BF3D4D", "#FF00004D"), pos_ylab_long = c(1.5, 11.5))
+legend(x = 8.1, y = 0.45, legend = levels(pbc2.idCR$CR), 
+       lty = 1, lwd = 2, col = c("#03BF3D", "#FF0000"), bty = "n", cex = 0.8)
+```
+
+
+## Summary and Conclusion 
+
+In this notebook, we explored the application of joint models for competing risks using the `{JMbayes2}` package in R. We demonstrated how to prepare the data for competing risks analysis, fit cause-specific Cox models, and specify the association structure between longitudinal biomarkers and competing event types. Finally, we illustrated how to obtain dynamic predictions for individual patients based on their longitudinal data and event history. Joint models for competing risks provide a powerful framework for understanding the complex relationships between longitudinal processes and multiple event types in survival analysis.
+ 
+## Resources
+
+1. Rizopoulos, D. (2012). *Joint Models for Longitudinal and Time-to-Event Data: With Applications in R*. Chapman and Hall/CRC.
+
+2.  Rizopoulos, D. (2024). *JMbayes2: Joint Models for Longitudinal and Time-to-Event Data under a Bayesian Approach*. R package version 0.9.6. https://CRAN.R-project.org/package=JMbayes2
+
+3.  [Competing Risks](https://drizopoulos.github.io/JMbayes2/articles/Competing_Risks.html)

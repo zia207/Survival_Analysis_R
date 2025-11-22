@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>survival-analysis-prentice-williams-peterson-model-r – Survival Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./02-07-04-03-survival-analysis-frailty-models-r.html" rel="next">
+<link href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-3e0287c6c42128026c316e6e81ca3353.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Survival Analysis</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://sites.google.com/view/r-data-sci-env/home"> <i class="bi bi-house" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/zia207/r-colab"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/zia-ahmed207"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./zia207@gmail.com"> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html"><strong>Recurrent Event Models</strong></a></li><li class="breadcrumb-item"><a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html">Prentice-Williams-Peterson (PWP) Models</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html"><strong>Recurrent Event Models</strong></a></li><li class="breadcrumb-item"><a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html">Prentice-Williams-Peterson (PWP) Models</a></li></ol></nav></header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./Image/chapter_logo_survival_analysis_r.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Survival Analysis</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Non-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-00-survival-analysis-non-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Non-Parametric Methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-01-survival-analysis-kaplan-meier-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-02-survival-analysis-nelson-aalen-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nelson-Aalen Estimator</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Semi-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Semi-Parametric Methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-01-survival-analysis-cox-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cox Proportional Hazards Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis with Time-Dependent Covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-03-survival-analysis-stratified-cox-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stratified Cox Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-00-survival-analysis-parametric-introduction-r.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Parametric Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Recurrent Event Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Recurrent Event Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andersen-Gill (AG) Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Prentice-Williams-Peterson (PWP) Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-03-survival-analysis-frailty-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frailty Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-04-survival-analysis-marginal-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Marginal Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#prentice-williams-peterson-pwp-models" id="toc-prentice-williams-peterson-pwp-models" class="nav-link active" data-scroll-target="#prentice-williams-peterson-pwp-models">4.2 Prentice-Williams-Peterson (PWP) Models</a>
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#key-assumptions" id="toc-key-assumptions" class="nav-link" data-scroll-target="#key-assumptions">Key Assumptions</a></li>
+  <li><a href="#when-to-use-pwp" id="toc-when-to-use-pwp" class="nav-link" data-scroll-target="#when-to-use-pwp">When to Use PWP</a></li>
+  <li><a href="#strengths" id="toc-strengths" class="nav-link" data-scroll-target="#strengths">Strengths</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#pwp-vs.-ag-model" id="toc-pwp-vs.-ag-model" class="nav-link" data-scroll-target="#pwp-vs.-ag-model">PWP vs.&nbsp;AG Model</a></li>
+  </ul></li>
+  <li><a href="#implementation-in-r" id="toc-implementation-in-r" class="nav-link" data-scroll-target="#implementation-in-r">Implementation in R</a>
+  <ul class="collapse">
+  <li><a href="#install-required-r-packages" id="toc-install-required-r-packages" class="nav-link" data-scroll-target="#install-required-r-packages">Install Required R Packages</a></li>
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load Packages</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">Data Preparation</a></li>
+  <li><a href="#model-fitting" id="toc-model-fitting" class="nav-link" data-scroll-target="#model-fitting">Model Fitting</a>
+  <ul class="collapse">
+  <li><a href="#pwp-tt-otal-time-stratified-by-event-order-model" id="toc-pwp-tt-otal-time-stratified-by-event-order-model" class="nav-link" data-scroll-target="#pwp-tt-otal-time-stratified-by-event-order-model">PWP-TT (otal Time, stratified by event order) Model</a></li>
+  <li><a href="#pwp-gt-gap-time-stratified-by-event-order-model" id="toc-pwp-gt-gap-time-stratified-by-event-order-model" class="nav-link" data-scroll-target="#pwp-gt-gap-time-stratified-by-event-order-model">PWP-GT (Gap Time, stratified by event order) Model</a></li>
+  </ul></li>
+  <li><a href="#model-diagnostic" id="toc-model-diagnostic" class="nav-link" data-scroll-target="#model-diagnostic">Model Diagnostic</a>
+  <ul class="collapse">
+  <li><a href="#proportional-hazards-check" id="toc-proportional-hazards-check" class="nav-link" data-scroll-target="#proportional-hazards-check">Proportional Hazards Check</a></li>
+  <li><a href="#residuals" id="toc-residuals" class="nav-link" data-scroll-target="#residuals">Residuals</a></li>
+  </ul></li>
+  <li><a href="#estimating-and-plotting-the-mean-cumulative-function-mcf" id="toc-estimating-and-plotting-the-mean-cumulative-function-mcf" class="nav-link" data-scroll-target="#estimating-and-plotting-the-mean-cumulative-function-mcf">Estimating and Plotting the Mean Cumulative Function (MCF)</a></li>
+  </ul></li>
+  <li><a href="#summary-conclusions" id="toc-summary-conclusions" class="nav-link" data-scroll-target="#summary-conclusions">Summary &amp; Conclusions</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a>
+  <ul class="collapse">
+  <li><a href="#books" id="toc-books" class="nav-link" data-scroll-target="#books">Books</a></li>
+  <li><a href="#r-packages" id="toc-r-packages" class="nav-link" data-scroll-target="#r-packages">R Packages</a></li>
+  <li><a href="#vignettes-tutorials" id="toc-vignettes-tutorials" class="nav-link" data-scroll-target="#vignettes-tutorials">Vignettes &amp; Tutorials</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_04_02_survival_analysis_prentice_williams_peterson_model_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_04_02_survival_analysis_prentice_williams_peterson_model.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<section id="prentice-williams-peterson-pwp-models" class="level1 unnumbered">
+<h1 class="unnumbered">4.2 Prentice-Williams-Peterson (PWP) Models</h1>
+<p>In many longitudinal studies, subjects may experience <strong>multiple occurrences of the same event</strong>—such as hospital readmissions, seizures, or equipment failures. While the <strong>Andersen-Gill (AG) model</strong> treats all events as independent increments in a counting process, it ignores the <strong>natural ordering and history</strong> of events (e.g., time since last event or number of prior events).</p>
+<p>This tutorial explains the PWP framework, demonstrates how to implement both PWP-GT and PWP-TT models in R, covers data preparation, model fitting, diagnostics, and visualization of the <strong>Mean Cumulative Function (MCF)</strong>—the recurrent-event analog of the Cumulative Incidence Function (CIF).</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Prentice-Williams-Peterson (PWP) models are extensions of the Cox proportional hazards model specifically designed for analyzing recurrent event data, where the same type of event (e.g., infections, hospitalizations, or tumor recurrences) can occur multiple times for an individual. Unlike standard survival analysis for single events, PWP models account for the ordering and dependency of repeated events by stratifying the analysis based on the number of prior events. This stratification creates conditional risk sets: all subjects are at risk for the first event, but only those who experienced the first are at risk for the second, and so on.</p>
+<p>PWP models are particularly useful in epidemiology and clinical studies, such as tracking recurrent infections in patients with chronic conditions (e.g., cystic fibrosis or kidney disease) or repeated sports injuries. They allow for event-specific covariate effects, meaning the impact of predictors like treatment or age can vary across event orders. However, if the number of events is large, risk sets for later events may become small, leading to unstable estimates—often requiring truncation (e.g., analyzing only the first 3-4 events).</p>
+<p>The Andersen-Gill (AG) model is an intensity-based extension of the Cox model for recurrent events, treating the data as a counting process. It models the instantaneous rate (intensity) of events conditional on the event history and covariates, assuming a common baseline hazard across all events:</p>
+<p><span class="math display">\[
+\lambda(t | \bar{N}(t-), Z(t)) = \lambda_0(t) \exp(\beta^T Z(t))
+\]</span></p>
+<p>Here, <span class="math inline">\(\lambda_0(t)\)</span> is the baseline intensity, <span class="math inline">\(Z(t)\)</span> are (possibly time-dependent) covariates, and <span class="math inline">\(\bar{N}(t-)\)</span> is the event history up to just before t. The AG model assumes that correlations between events are fully explained by included covariates (e.g., a time-dependent covariate for the number of prior events). If not, robust standard errors (via clustering on subject ID) are used to account for within-subject dependence.</p>
+<p>There are two main variants:</p>
+<ul>
+<li><p><strong>PWP-TT (Total Time or Conditional Risk Set Model)</strong>: Measures time from study entry to each event, similar to calendar time. It’s suitable when the overall timeline matters, and it assumes a common baseline hazard within each stratum (event order) but allows covariate effects to differ.</p></li>
+<li><p><strong>PWP-GT (Gap Time Model)</strong>: Measures the time between consecutive events (inter-event gaps), resetting the clock after each event. This assumes a renewal process and is ideal for focusing on waiting times between recurrences, such as predicting the time to the next event.</p></li>
+</ul>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Time Scale</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>PWP-GT (Gap Time)</strong></td>
+<td>Time since <em>previous</em> event</td>
+<td>“What is the risk of the <em>k</em>-th event given the (<em>k–1</em>)-th occurred?”</td>
+</tr>
+<tr class="even">
+<td><strong>PWP-TT (Total Time)</strong></td>
+<td>Time since <em>study entry</em></td>
+<td>“What is the risk of the <em>k</em>-th event at calendar time <em>t</em>?”</td>
+</tr>
+</tbody>
+</table>
+<p>The PWP model <strong>stratifies by event number</strong> (1st event, 2nd event, etc.), allowing the baseline hazard to differ across event orders. This acknowledges that the risk of a second event may differ from the first due to biological, behavioral, or mechanical factors.</p>
+<section id="key-assumptions" class="level3">
+<h3 class="anchored" data-anchor-id="key-assumptions">Key Assumptions</h3>
+<ul>
+<li>Subjects are <strong>not at risk for the <em>k</em>-th event until the (<em>k–1</em>)-th event has occurred</strong>.</li>
+<li>The baseline hazard is <strong>unspecified and unique for each event order</strong> (handled via stratification).</li>
+<li>Covariate effects (β) are often assumed <strong>constant across event orders</strong> (can be relaxed).</li>
+</ul>
+</section>
+<section id="when-to-use-pwp" class="level3">
+<h3 class="anchored" data-anchor-id="when-to-use-pwp">When to Use PWP</h3>
+<ul>
+<li>Event history matters (e.g., risk changes after first recurrence)<br>
+</li>
+<li>Interest in <strong>time between events</strong> (PWP-GT) or <strong>calendar-time risk of ordered events</strong> (PWP-TT)<br>
+</li>
+<li>Events are <strong>ordered and of the same type</strong></li>
+</ul>
+<blockquote class="blockquote">
+<p><strong>Not suitable</strong> if subjects can experience events without prior ones (e.g., simultaneous events).</p>
+</blockquote>
+</section>
+<section id="strengths" class="level3">
+<h3 class="anchored" data-anchor-id="strengths">Strengths</h3>
+<ul>
+<li>Accounts for <strong>event order</strong> via stratification.</li>
+<li>Flexible: allows different baseline hazards per event.</li>
+<li>Can incorporate time-varying covariates.</li>
+</ul>
+</section>
+<section id="limitations" class="level3">
+<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
+<ul>
+<li><strong>Does not model correlation</strong> between gap times beyond stratification (frailty models may be better).</li>
+<li><strong>Excludes subjects</strong> from risk sets for higher-order events until prior events occur (reduces power).</li>
+<li>Interpretation is <strong>conditional on having reached that event order</strong>.</li>
+</ul>
+</section>
+<section id="pwp-vs.-ag-model" class="level3">
+<h3 class="anchored" data-anchor-id="pwp-vs.-ag-model">PWP vs.&nbsp;AG Model</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>AG Model</th>
+<th>PWP Model</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Time scale</strong></td>
+<td>Calendar time</td>
+<td>TT: calendar; GT: gap time</td>
+</tr>
+<tr class="even">
+<td><strong>Event dependence</strong></td>
+<td>Assumes independence (robust SEs)</td>
+<td>Explicitly models order via strata</td>
+</tr>
+<tr class="odd">
+<td><strong>At-risk assumption</strong></td>
+<td>Always at risk until censoring</td>
+<td>Only at risk for <em>k</em>-th event after (<em>k–1</em>)-th occurs</td>
+</tr>
+<tr class="even">
+<td><strong>Best for</strong></td>
+<td>Event <em>rate</em> over time</td>
+<td>Event <em>timing/order</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="implementation-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-in-r">Implementation in R</h2>
+<p>We’ll use simulated recurrent event data and fit both PWP-GT and PWP-TT models using the <code>survival</code> package.</p>
+<section id="install-required-r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-required-r-packages">Install Required R Packages</h3>
+<p>Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span><span class="fu">c</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidyverse'</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survival'</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survminer'</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggsurvfit'</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidycmprsk'</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggfortify'</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">'timereg'</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">'cmprsk'</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">'riskRegression'</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">'reda'</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>{r  #| warning: false #| error: false # Install missing packages new_packages &lt;- packages[!(packages %in% installed.packages()[,"Package"])] if(length(new_packages)) install.packages(new_packages) devtools::install_github("ItziarI/WeDiBaDis")</code></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Installed packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Installed packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sapply</span>(packages, requireNamespace, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'riskRegression':
+  method        from 
+  nobs.multinom broom</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     tidyverse       survival      survminer      ggsurvfit     tidycmprsk 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+     ggfortify        timereg         cmprsk riskRegression           reda 
+          TRUE           TRUE           TRUE           TRUE           TRUE </code></pre>
+</div>
+</div>
+</section>
+<section id="load-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages">Load Packages</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages with suppressed messages</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check loaded packages</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Successfully loaded packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Successfully loaded packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">search</span>()[<span class="fu">grepl</span>(<span class="st">"package:"</span>, <span class="fu">search</span>())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "package:reda"           "package:riskRegression" "package:cmprsk"        
+ [4] "package:timereg"        "package:ggfortify"      "package:tidycmprsk"    
+ [7] "package:ggsurvfit"      "package:survminer"      "package:ggpubr"        
+[10] "package:survival"       "package:lubridate"      "package:forcats"       
+[13] "package:stringr"        "package:dplyr"          "package:purrr"         
+[16] "package:readr"          "package:tidyr"          "package:tibble"        
+[19] "package:ggplot2"        "package:tidyverse"      "package:stats"         
+[22] "package:graphics"       "package:grDevices"      "package:utils"         
+[25] "package:datasets"       "package:methods"        "package:base"          </code></pre>
+</div>
+</div>
+</section>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>We use the <code>surviva</code>l package and <code>bladder1</code> dataset, which contains recurrent bladder tumor data. The data set contains multiple rows per patient, with start and stop times for each interval, event indicators, and covariates.</p>
+<p><code>id</code>: Patient id <code>treatment</code>: Placebo, pyridoxine (vitamin B6), or thiotepa <code>number</code>: Initial number of tumours (8=8 or more) <code>size</code>: Size (cm) of largest initial tumour <code>recur</code>: Number of recurrences <code>start,stop</code>: The start and end time of each time interval <code>status</code>: End of interval code, 0=censored, 1=recurrence, 2=death from bladder disease, 3=death other/unknown cause <code>rtumor</code>: Number of tumors found at the time of a recurrence <code>rsize</code>: Size of largest tumor at a recurrence <code>enum</code>: Event number (observation number within patient)</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load bladder1 (long format)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(bladder1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in data(bladder1): data set 'bladder1' not found</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(bladder1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   294 obs. of  11 variables:
+ $ id       : int  1 2 3 4 5 6 6 7 8 9 ...
+ $ treatment: Factor w/ 3 levels "placebo","pyridoxine",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ number   : int  1 1 2 1 5 4 4 1 1 1 ...
+ $ size     : int  1 3 1 1 1 1 1 1 1 3 ...
+ $ recur    : int  0 0 0 0 0 1 1 0 0 1 ...
+ $ start    : int  0 0 0 0 0 0 6 0 0 0 ...
+ $ stop     : int  0 1 4 7 10 6 10 14 18 5 ...
+ $ status   : num  3 3 0 0 3 1 3 0 0 1 ...
+ $ rtumor   : chr  "." "." "." "." ...
+ $ rsize    : chr  "." "." "." "." ...
+ $ enum     : num  1 1 1 1 1 1 2 1 1 1 ...</code></pre>
+</div>
+</div>
+</section>
+<section id="data-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation">Data Preparation</h3>
+<p>We will create gaptime for PWP-GT and truncate to the first 4 events for stable risk sets:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify problematic rows</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>invalid_intervals <span class="ot">&lt;-</span> bladder1[bladder1<span class="sc">$</span>stop <span class="sc">&lt;=</span> bladder1<span class="sc">$</span>start, ]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>invalid_status <span class="ot">&lt;-</span> bladder1[<span class="sc">!</span>bladder1<span class="sc">$</span>status <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), ]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove invalid rows</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>bladder1_clean <span class="ot">&lt;-</span> bladder1 <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(stop <span class="sc">&gt;</span> start, status <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create gaptime for PWP-GT</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>bladder1_clean <span class="ot">&lt;-</span> bladder1_clean <span class="sc">%&gt;%</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gaptime =</span> stop <span class="sc">-</span> start) <span class="sc">%&gt;%</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Truncate to first 4 events for PWP models</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>bladder_trunc <span class="ot">&lt;-</span> bladder1_clean[bladder1_clean<span class="sc">$</span>enum <span class="sc">&lt;=</span> <span class="dv">4</span>, ]</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(bladder_trunc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 12
+     id treatment number  size recur start  stop status rtumor rsize  enum
+  &lt;int&gt; &lt;fct&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;
+1     3 placebo        2     1     0     0     4      0 .      .         1
+2     4 placebo        1     1     0     0     7      0 .      .         1
+3     6 placebo        4     1     1     0     6      1 1      1         1
+4     7 placebo        1     1     0     0    14      0 .      .         1
+5     8 placebo        1     1     0     0    18      0 .      .         1
+6     9 placebo        1     3     1     0     5      1 2      4         1
+# ℹ 1 more variable: gaptime &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="model-fitting" class="level3">
+<h3 class="anchored" data-anchor-id="model-fitting">Model Fitting</h3>
+<section id="pwp-tt-otal-time-stratified-by-event-order-model" class="level4">
+<h4 class="anchored" data-anchor-id="pwp-tt-otal-time-stratified-by-event-order-model">PWP-TT (otal Time, stratified by event order) Model</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pwp_tt_fit <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(start, stop, status) <span class="sc">~</span> treatment <span class="sc">+</span> number <span class="sc">+</span> size <span class="sc">+</span> <span class="fu">strata</span>(enum) <span class="sc">+</span> <span class="fu">cluster</span>(id), </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> bladder_trunc, <span class="at">robust =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(pwp_tt_fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Call:
+coxph(formula = Surv(start, stop, status) ~ treatment + number + 
+    size + strata(enum), data = bladder_trunc, robust = TRUE, 
+    cluster = id)
+
+  n= 216, number of events= 149 
+
+                        coef exp(coef) se(coef) robust se      z Pr(&gt;|z|)  
+treatmentpyridoxine  0.01842   1.01859  0.21156   0.25150  0.073   0.9416  
+treatmentthiotepa   -0.21361   0.80766  0.21185   0.18601 -1.148   0.2508  
+number               0.10925   1.11544  0.04400   0.04574  2.388   0.0169 *
+size                 0.01889   1.01907  0.05110   0.05280  0.358   0.7206  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+                    exp(coef) exp(-coef) lower .95 upper .95
+treatmentpyridoxine    1.0186     0.9818    0.6222     1.668
+treatmentthiotepa      0.8077     1.2381    0.5609     1.163
+number                 1.1154     0.8965    1.0198     1.220
+size                   1.0191     0.9813    0.9189     1.130
+
+Concordance= 0.615  (se = 0.029 )
+Likelihood ratio test= 6.42  on 4 df,   p=0.2
+Wald test            = 6.06  on 4 df,   p=0.2
+Score (logrank) test = 6.91  on 4 df,   p=0.1,   Robust = 8.71  p=0.07
+
+  (Note: the likelihood ratio and score tests assume independence of
+     observations within a cluster, the Wald and robust score tests do not).</code></pre>
+</div>
+</div>
+</section>
+<section id="pwp-gt-gap-time-stratified-by-event-order-model" class="level4">
+<h4 class="anchored" data-anchor-id="pwp-gt-gap-time-stratified-by-event-order-model">PWP-GT (Gap Time, stratified by event order) Model</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pwp_gt_fit <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(gaptime, status) <span class="sc">~</span> treatment <span class="sc">+</span> number <span class="sc">+</span> size <span class="sc">+</span> <span class="fu">strata</span>(enum) <span class="sc">+</span> <span class="fu">cluster</span>(id), </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> bladder_trunc, <span class="at">robust =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(pwp_gt_fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Call:
+coxph(formula = Surv(gaptime, status) ~ treatment + number + 
+    size + strata(enum), data = bladder_trunc, robust = TRUE, 
+    cluster = id)
+
+  n= 216, number of events= 149 
+
+                         coef exp(coef)  se(coef) robust se      z Pr(&gt;|z|)   
+treatmentpyridoxine -0.003212  0.996793  0.206778  0.229990 -0.014  0.98886   
+treatmentthiotepa   -0.204154  0.815337  0.205963  0.203142 -1.005  0.31491   
+number               0.142757  1.153450  0.043835  0.045034  3.170  0.00152 **
+size                 0.024727  1.025035  0.049948  0.052969  0.467  0.64063   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+                    exp(coef) exp(-coef) lower .95 upper .95
+treatmentpyridoxine    0.9968     1.0032    0.6351     1.564
+treatmentthiotepa      0.8153     1.2265    0.5475     1.214
+number                 1.1534     0.8670    1.0560     1.260
+size                   1.0250     0.9756    0.9240     1.137
+
+Concordance= 0.602  (se = 0.029 )
+Likelihood ratio test= 9.94  on 4 df,   p=0.04
+Wald test            = 10.83  on 4 df,   p=0.03
+Score (logrank) test = 11.06  on 4 df,   p=0.03,   Robust = 12.39  p=0.01
+
+  (Note: the likelihood ratio and score tests assume independence of
+     observations within a cluster, the Wald and robust score tests do not).</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p><strong>Note</strong>: - <code>cluster(id)</code> provides robust standard errors. - <code>strata(event_order)</code> allows baseline hazard to vary by event number. - In PWP-GT, the <strong>first event</strong> is often analyzed separately (as it has no prior gap).</p>
+</blockquote>
+</section>
+</section>
+<section id="model-diagnostic" class="level3">
+<h3 class="anchored" data-anchor-id="model-diagnostic">Model Diagnostic</h3>
+<section id="proportional-hazards-check" class="level4">
+<h4 class="anchored" data-anchor-id="proportional-hazards-check">Proportional Hazards Check</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For PWP-TT</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>zph_tt <span class="ot">&lt;-</span> <span class="fu">cox.zph</span>(pwp_tt_fit)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(zph_tt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>          chisq df    p
+treatment 0.355  2 0.84
+number    0.880  1 0.35
+size      1.053  1 0.30
+GLOBAL    2.728  4 0.60</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggcoxzph</span>(zph_tt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ggtheme is not a valid theme.
+Please use `theme()` to construct themes.
+ggtheme is not a valid theme.
+Please use `theme()` to construct themes.
+ggtheme is not a valid theme.
+Please use `theme()` to construct themes.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-04-02-survival-analysis-prentice-williams-peterson-model-r_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For PWP-GT</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>zph_gt <span class="ot">&lt;-</span> <span class="fu">cox.zph</span>(pwp_gt_fit)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(zph_gt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>           chisq df    p
+treatment 2.8188  2 0.24
+number    0.0116  1 0.91
+size      0.2162  1 0.64
+GLOBAL    3.2800  4 0.51</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggcoxzph</span>(zph_gt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ggtheme is not a valid theme.
+Please use `theme()` to construct themes.
+ggtheme is not a valid theme.
+Please use `theme()` to construct themes.
+ggtheme is not a valid theme.
+Please use `theme()` to construct themes.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-04-02-survival-analysis-prentice-williams-peterson-model-r_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>If PH violated for a stratum, consider time-dependent effects or separate models per event order.</p>
+</blockquote>
+</section>
+<section id="residuals" class="level4">
+<h4 class="anchored" data-anchor-id="residuals">Residuals</h4>
+<p>Martingale residuals can be examined per stratum:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>res_PWP_tt <span class="ot">&lt;-</span> <span class="fu">residuals</span>(pwp_tt_fit, <span class="at">type =</span> <span class="st">"martingale"</span>, <span class="at">collapse =</span> bladder_trunc<span class="sc">$</span>id)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res_PWP_tt <span class="sc">~</span>bladder_trunc<span class="sc">$</span>number[<span class="fu">match</span>(<span class="fu">names</span>(res_PWP_tt), bladder_trunc<span class="sc">$</span>id)], </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Initial Tumors"</span>, </span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Martingale Residuals"</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"PWP-TT Model"</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-04-02-survival-analysis-prentice-williams-peterson-model-r_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>res_PWP_gt <span class="ot">&lt;-</span> <span class="fu">residuals</span>(pwp_gt_fit, <span class="at">type =</span> <span class="st">"martingale"</span>, <span class="at">collapse =</span> bladder_trunc<span class="sc">$</span>id)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res_PWP_gt <span class="sc">~</span>bladder_trunc<span class="sc">$</span>number[<span class="fu">match</span>(<span class="fu">names</span>(res_PWP_gt), bladder_trunc<span class="sc">$</span>id)], </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Initial Tumors"</span>, </span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Martingale Residuals"</span>,</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"PWP-GT Model"</span>)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-04-02-survival-analysis-prentice-williams-peterson-model-r_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="estimating-and-plotting-the-mean-cumulative-function-mcf" class="level3">
+<h3 class="anchored" data-anchor-id="estimating-and-plotting-the-mean-cumulative-function-mcf">Estimating and Plotting the Mean Cumulative Function (MCF)</h3>
+<p>While PWP models estimate <strong>hazard ratios per event order</strong>, the <strong>Mean Cumulative Function (MCF)</strong> shows the <strong>average number of events per subject over time</strong>—the recurrent-event analog of CIF.</p>
+<p>We’ll use the <code>reda</code> package:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>base_tt <span class="ot">&lt;-</span> <span class="fu">basehaz</span>(pwp_tt_fit, <span class="at">centered =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(base_tt<span class="sc">$</span>hazard <span class="sc">~</span> base_tt<span class="sc">$</span>time, <span class="at">type =</span> <span class="st">"s"</span>, <span class="at">xlab =</span> <span class="st">"Time"</span>, <span class="at">ylab =</span> <span class="st">"Cumulative Hazard"</span>, </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"CMF by Stratum (PWP-TT)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-04-02-survival-analysis-prentice-williams-peterson-model-r_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="528"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>base_gt <span class="ot">&lt;-</span> <span class="fu">basehaz</span>(pwp_gt_fit, <span class="at">centered =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(base_gt<span class="sc">$</span>hazard <span class="sc">~</span> base_gt<span class="sc">$</span>time, <span class="at">type =</span> <span class="st">"s"</span>, <span class="at">xlab =</span> <span class="st">"Time"</span>, <span class="at">ylab =</span> <span class="st">"Cumulative Hazard"</span>, </span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"CMF by Stratum (PWP-GT)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-04-02-survival-analysis-prentice-williams-peterson-model-r_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="528"></p>
+</figure>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p><strong>Note</strong>: The MCF is <strong>not directly output by PWP models</strong>—it’s a descriptive summary of the event process, often used alongside modeling.</p>
+</blockquote>
+</section>
+</section>
+<section id="summary-conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="summary-conclusions">Summary &amp; Conclusions</h2>
+<p>This tutorial demonstrated how to implement Prentice-Williams-Peterson (PWP) models for recurrent event data in R, covering both PWP-TT and PWP-GT variants. Key steps included: data preparation, model fitting with <code>coxph()</code>, diagnostics, and visualization of the Mean Cumulative Function (MCF). This tutorial provides a foundational implementation. For full applications, consult the <code>survival</code> package vignettes or supplementary materials from epidemiological studies.</p>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<section id="books" class="level3">
+<h3 class="anchored" data-anchor-id="books">Books</h3>
+<ul>
+<li><em>The Statistical Analysis of Recurrent Events</em> by Cook &amp; Lawless<br>
+</li>
+<li><em>Modeling Survival Data: Extending the Cox Model</em> by Therneau &amp; Grambsch</li>
+</ul>
+</section>
+<section id="r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="r-packages">R Packages</h3>
+<ul>
+<li><a href="https://cran.r-project.org/package=survival"><code>survival</code></a>: Core Cox models with <code>strata()</code></li>
+<li><a href="https://cran.r-project.org/package=reda"><code>reda</code></a>: MCF estimation and recurrent event simulation</li>
+<li><a href="https://cran.r-project.org/package=frailtypack"><code>frailtypack</code></a>: Frailty models for recurrent events</li>
+</ul>
+</section>
+<section id="vignettes-tutorials" class="level3">
+<h3 class="anchored" data-anchor-id="vignettes-tutorials">Vignettes &amp; Tutorials</h3>
+<ul>
+<li><code>vignette("survival")</code> and <code>vignette("timedep", package = "survival")</code></li>
+<li><code>vignette("reda-intro", package = "reda")</code></li>
+<li>Therneau’s <a href="https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf">Advanced Survival Analysis Notes</a></li>
+</ul>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" class="pagination-link" aria-label="Andersen-Gill (AG) Model">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Andersen-Gill (AG) Model</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./02-07-04-03-survival-analysis-frailty-models-r.html" class="pagination-link" aria-label="Frailty Models">
+        <span class="nav-page-text">Frailty Models</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© CC-By Zia Ahmed, Unversity at Buffalo 2024</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

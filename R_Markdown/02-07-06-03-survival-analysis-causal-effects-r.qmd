@@ -1,0 +1,264 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_03_survival_analysis_causal_effects_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_03_survival_analysis_causal_effects_python.ipynb)
+:::
+
+# 6.3 Causal Effects from Joint Models {.unnumbered}
+
+This tutorial demonstrates how to estimate **causal effects** of time-varying treatments or exposures using **joint models** fitted with the `{JMbayes2}` R package. We’ll use the **Mayo Clinic Primary Biliary Cirrhosis (`pbc2`)** dataset as a running example. The tutorial covers:
+
+1. **Causal Effects from Joint Models**  
+2. **Conditional Causal Effects**  
+3. **Marginal Causal Effects**  
+4. **Marginal–Conditional Causal Effects**  
+5. **Summary and Conclusion**  
+6. **Resources**
+
+## Overview
+
+In longitudinal studies, time-varying confounding and feedback between biomarkers and outcomes complicate causal inference. **Joint models** simultaneously model:
+
+- A **longitudinal submodel** (e.g., biomarker trajectory)
+
+- A **survival submodel** (e.g., time to death/transplant)
+
+By linking these via shared random effects, joint models can be used to simulate **counterfactual outcomes** under hypothetical treatment scenarios—enabling estimation of **causal effects**.
+
+> **Key idea**: Compare expected survival under two treatment regimes (e.g., always treated vs. never treated), adjusting for time-varying confounders via the longitudinal process.
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression',
+		 'prodlim',
+		 'lava',
+		 'mstate',
+		 'regplot',
+		 'cmprskcoxmsm',
+		 'GLMMadaptive',
+		 'nlme',
+		 'lme4',
+		 'lattice',
+		 'JM',
+		 'joineR',
+		 'joineRML',
+		 'JMbayes2'
+		 )
+
+```
+
+```{r         
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+#devtools::install_github("ItziarI/WeDiBaDis")
+```
+
+### Verify Installation
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Load data
+
+We use `pbc2` dataset from the `JMbayes2` package, which contains follow up of 312 randomised patients with primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic.
+
+The `pbc` data is a well-known longitudinal dataset originally collected to study the natural history and treatment effects in patients with primary biliary cirrhosis, a chronic liver disease. The data have been widely used in survival analysis, joint modeling of longitudinal and time-to-event data, and mixed-effects modeling.
+
+There are two main versions of this dataset:
+
+1.  `pbc` – A baseline (cross-sectional) version containing one record per patient, used primarily for survival analysis.
+
+2.  `pbc2` – A **longitudinal** version that includes repeated measurements over time for each patient, making it suitable for joint modeling of longitudinal biomarkers (e.g., serum bilirubin, albumin) and survival outcomes (e.g., time to death or liver transplantation).
+
+Key Features of `pbc2`:
+
+-   **Patients**: 312 individuals randomized to either D-penicillamine or placebo in a clinical trial.
+-   **Repeated measures**: Multiple visits per patient (up to 17 visits), with lab values and clinical assessments recorded over time.
+-   **Time-to-event outcome**: Time from enrollment to death or transplant, with censoring for patients still alive at last follow-up.
+-   **Common longitudinal markers**:
+    -   Serum bilirubin (log-transformed often used)
+    -   Albumin
+    -   Alkaline phosphatase
+    -   Platelet count
+    -   etc.
+-   **Covariates**: Age, sex, treatment group, ascites, hepatomegaly, spiders, edema, etc.
+
+This dataset is especially valuable for illustrating **dynamic predictions**, **model calibration**, and **individualized risk assessment** in chronic disease settings.
+
+```{r}
+data(pbc2)
+data(pbc2.id)
+```
+
+###  Prepare event indicator
+
+```{r}
+pbc2.id$event <- as.numeric(pbc2.id$status != "alive")
+```
+
+> Note: In the original `pbc2` trial, `drug` (D-penicillamine vs. placebo) was **randomized at baseline**, so it’s not a time-varying treatment. For illustration, we’ll treat `drug` as if it were a dynamic treatment or use a **hypothetical time-varying covariate** (e.g., based on bilirubin levels). In practice, causal joint modeling is most useful when the exposure is **time-dependent and potentially confounded**.
+
+### Conditional Causal Effects
+
+**Conditional causal effects** are estimated **for a specific subject** (i.e., conditional on their random effects). They answer:  
+> *“What would happen to this patient if they followed treatment regime A vs. B?”*
+
+#### Fit Longitudinal Submodels
+
+We’ll model log serum bilirubin and use it as a time-varying covariate in the survival model. The code below fits a flexible, patient-specific nonlinear mixed model for log bilirubin over time, with treatment-specific trajectories, using natural cubic splines with pre-specified boundary knots and a robust optimizer. It’s a foundational step for advanced analyses like joint modeling or dynamic prediction.
+
+Specifically, the model includes:
+
+- Fixed effects: natural cubic spline of time (`year`) with 3 degrees of freedom, interacting with `drug` (treatment group).
+- A random intercept (via the constant term in the spline basis),
+- Plus random slopes for the two non-constant spline basis functions (since df = 3 → 2 internal basis functions beyond the intercept).
+The same boundary knots (B = c(0, 14.4)) are used in the random effects to ensure compatibility with the fixed-effects spline.
+
+```{r}
+#| warning: false
+
+# Longitudinal submodel: log bilirubin
+lmeFit <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) * drug, 
+                   data = pbc2, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
+                   control = lmeControl(opt = "optim"))
+summary(lmeFit)
+```
+
+#### Survival submodel: Cox model with baseline covariates
+
+```{r}
+# Survival submodel: include baseline drug and age
+CoxFit <- coxph(Surv(years, status2) ~ drug, data = pbc2.id)
+
+```
+
+#### Fit Joint Model
+
+
+
+```{r}
+#| warning: false
+jmFit <- jm(CoxFit, lmeFit, time_var = "year")
+summary(jmFit)
+```
+
+>  For true causal inference with a **time-varying treatment**, you’d include that treatment in both submodels. Since `drug` is baseline-only here, we’ll illustrate the *mechanics* of causal effect estimation.
+
+
+
+Below, we visualize the longitudinal trajectory of serum bilirubin for Patient 2.
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Visualize longitudinal trajectory for a specific patient (e.g., id = 2)
+xyplot(log(serBilir) ~ year, data = pbc2, subset = id == 2, type = "b",
+       xlab = "Follow-up time (years)", ylab = "log{serum bilirubin (mg/dL)}",
+       main = "Patient 2")
+```
+
+
+### Compute Risk Difference for Patient 2
+
+We compute the risk difference for the composite event between the active treatment (D-penicillamine) and placebo at the prediction horizon $t_{\text{horiz}} = 6$ years, using the patient’s longitudinal measurements available up to $t_0 = 4$ years. To do this, we construct a dataset containing this patient’s observed data. Since the patient was originally assigned to D-penicillamine, we also generate a counterfactual version of her data in which the `drug` variable is set to placebo.
+
+```{r}
+t0 <- 4
+t_horiz <- 6
+dataP2_Dpenici <- pbc2[pbc2$id == 2 & pbc2$year <= t0, ]
+dataP2_Dpenici$years <- t0
+dataP2_Dpenici$status2 <- 0
+
+dataP2_placebo <- dataP2_Dpenici
+dataP2_placebo$drug <- factor("placebo", levels = levels(pbc2$drug))
+```
+
+Now we use the `predict()` function to compute the predicted survival probabilities at the horizon time $t_{\text{horiz}} = 6$ years under both treatment regimes.
+
+```{r}
+# Predict survival probabilities under both treatment regimes
+Pr1 <- predict(jmFit, newdata = dataP2_Dpenici, process = "event", 
+               times = t_horiz, return_mcmc = TRUE)
+```
+
+We produce the same estimate under the placebo arm:
+
+```{r}
+Pr0 <- predict(jmFit, newdata = dataP2_placebo, process = "event", 
+               times = t_horiz, return_mcmc = TRUE)
+```
+
+
+The estimated risk difference and its 95% credible interval are calculated by the corresponding elements of the Pr1 and Pr0 objects, i.e.,
+
+```{r}
+# estimate 
+Pr1$pred[2L] - Pr0$pred[2L]
+# MCMC variability
+quantile(Pr1$mcmc[2L, ] - Pr0$mcmc[2L, ], probs = c(0.025, 0.975))
+
+```
+
+##  Summary and Conclusion
+
+This tutorial demonstrated how to estimate **conditional causal effects** using joint models fitted with the `{JMbayes2}` R package. By comparing predicted survival probabilities under different treatment regimes for a specific patient, we can assess the impact of treatments while accounting for time-varying confounders through the longitudinal process. This approach provides a powerful framework for causal inference in longitudinal studies with complex data structures. 
+
+
+## Resources
+
+1. **Official Vignette**: 
+
+   [Causal Effects with JMbayes2](https://drizopoulos.github.io/JMbayes2/articles/Causal_Effects.html)
+
+2. **Source Code Example**:  
+
+   [causal_effects.R](https://github.com/drizopoulos/JMbayes2/blob/master/Development/CI/causal_effects.R)
+
+3. **Key References**:
+
+   - Rizopoulos, D. (2012). *Joint Models for Longitudinal and Time-to-Event Data*. Chapman & Hall.
+   - Rizopoulos, D. (2021). *JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data*. R package.
+   - Keogh, R. H., & Morris, R. W. (2019). *Causal inference with joint models*. Statistical Methods in Medical Research.
+
+
+

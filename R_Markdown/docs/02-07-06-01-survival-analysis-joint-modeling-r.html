@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Survival Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Survival Analysis</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://sites.google.com/view/r-data-sci-env/home"> <i class="bi bi-house" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/zia207/r-colab"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/zia-ahmed207"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./zia207@gmail.com"> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./Image/chapter_logo_survival_analysis_r.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text"><strong>Survival Analysis</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text"><strong>Non-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-00-survival-analysis-non-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Non-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-01-survival-analysis-kaplan-meier-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-02-survival-analysis-nelson-aalen-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nelson-Aalen Estimator</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+ <span class="menu-text"><strong>Semi-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Semi-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-01-survival-analysis-cox-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cox Proportional Hazards Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis with Time-Dependent Covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-03-survival-analysis-stratified-cox-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stratified Cox Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+ <span class="menu-text"><strong>Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-00-survival-analysis-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-01-survival-analysis-exponential-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exponential Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-02-survival-analysis-weibull-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Weibull Model for Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-03-survival-analysis-log-normal-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Normal Survival Model f</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-04-survival-analysis-log-logistic-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Logistic Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-05-survival-analysis-generalized-gamma-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Gamma Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-06-survival-analysis-gompertz-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gompertz Survival Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+ <span class="menu-text"><strong>Recurrent Event Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Recurrent Event Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andersen-Gill (AG) Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prentice-Williams-Peterson (PWP) Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-03-survival-analysis-frailty-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frailty Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-04-survival-analysis-marginal-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Marginal Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+ <span class="menu-text"><strong>Risk Regression</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-00-survival-analysi-risk-regression-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Risk Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-01-survival-analysis-cause-specific-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cause-Specific Hazard Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-02-survival-analysis-subdistribution-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Subdistribution Hazard Regression (Fine-Gray Model)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-03-survival-analysis-absolute-risk-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Absolute Risk Regression (Direct CIF Modeling)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-04-survival-analysis-aalen-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aalen’s Additive Regression Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#standard-shared-random-effects-joint-model" id="toc-standard-shared-random-effects-joint-model" class="nav-link active" data-scroll-target="#standard-shared-random-effects-joint-model">6.1 Standard (Shared Random Effects) Joint Model</a>
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#common-association-structures-etacdot" id="toc-common-association-structures-etacdot" class="nav-link" data-scroll-target="#common-association-structures-etacdot">Common Association Structures <span class="math inline">\(\eta(\cdot)\)</span></a></li>
+  <li><a href="#key-assumptions" id="toc-key-assumptions" class="nav-link" data-scroll-target="#key-assumptions">Key Assumptions</a></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
+  <li><a href="#advantages" id="toc-advantages" class="nav-link" data-scroll-target="#advantages">Advantages</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#implementation-in-r" id="toc-implementation-in-r" class="nav-link" data-scroll-target="#implementation-in-r">Implementation in R</a>
+  <ul class="collapse">
+  <li><a href="#install-required-r-packages" id="toc-install-required-r-packages" class="nav-link" data-scroll-target="#install-required-r-packages">Install Required R Packages</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#install-missing-packages" id="toc-install-missing-packages" class="nav-link" data-scroll-target="#install-missing-packages">Install missing packages</a>
+  <ul>
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load Packages</a></li>
+  <li><a href="#the-jm-package" id="toc-the-jm-package" class="nav-link" data-scroll-target="#the-jm-package">The {JM} Package</a>
+  <ul class="collapse">
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#fit-a-longitudinal-model-lmeobject" id="toc-fit-a-longitudinal-model-lmeobject" class="nav-link" data-scroll-target="#fit-a-longitudinal-model-lmeobject">Fit a Longitudinal Model (<code>lmeObject</code>)</a></li>
+  <li><a href="#fit-a-survival-model-survobject" id="toc-fit-a-survival-model-survobject" class="nav-link" data-scroll-target="#fit-a-survival-model-survobject">Fit a Survival Model (<code>survObject</code>)</a></li>
+  <li><a href="#fit-the-joint-model" id="toc-fit-the-joint-model" class="nav-link" data-scroll-target="#fit-the-joint-model">Fit the Joint Model</a></li>
+  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison">Model Comparison</a></li>
+  <li><a href="#plotting-marginal-survival-curves" id="toc-plotting-marginal-survival-curves" class="nav-link" data-scroll-target="#plotting-marginal-survival-curves">Plotting Marginal Survival Curves</a></li>
+  <li><a href="#hazard-ratio" id="toc-hazard-ratio" class="nav-link" data-scroll-target="#hazard-ratio">Hazard Ratio</a></li>
+  <li><a href="#expected-survival-probabilities" id="toc-expected-survival-probabilities" class="nav-link" data-scroll-target="#expected-survival-probabilities">Expected survival probabilities</a></li>
+  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a></li>
+  </ul></li>
+  <li><a href="#the-joiner-package" id="toc-the-joiner-package" class="nav-link" data-scroll-target="#the-joiner-package">The {joineR} package</a>
+  <ul class="collapse">
+  <li><a href="#data-1" id="toc-data-1" class="nav-link" data-scroll-target="#data-1">Data</a></li>
+  <li><a href="#converting-between-balanced-and-unbalanced-data-formats" id="toc-converting-between-balanced-and-unbalanced-data-formats" class="nav-link" data-scroll-target="#converting-between-balanced-and-unbalanced-data-formats">Converting between balanced and unbalanced data-formats</a></li>
+  <li><a href="#exploring-covariance-structure" id="toc-exploring-covariance-structure" class="nav-link" data-scroll-target="#exploring-covariance-structure">Exploring covariance structure</a></li>
+  <li><a href="#creating-a-jointdata-object" id="toc-creating-a-jointdata-object" class="nav-link" data-scroll-target="#creating-a-jointdata-object">Creating a jointdata object</a></li>
+  <li><a href="#model-fitting" id="toc-model-fitting" class="nav-link" data-scroll-target="#model-fitting">Model Fitting</a></li>
+  </ul></li>
+  <li><a href="#summary-and-conclusions" id="toc-summary-and-conclusions" class="nav-link" data-scroll-target="#summary-and-conclusions">Summary and Conclusions</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_01_survival_analysis_joint_models_introduction_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_01_survival_analysis_joint_models_introduction_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<section id="standard-shared-random-effects-joint-model" class="level1 unnumbered">
+<h1 class="unnumbered">6.1 Standard (Shared Random Effects) Joint Model</h1>
+<p>The <strong>Standard (Shared Random Effects) Joint Model</strong> is the most widely used framework for simultaneously analyzing <strong>longitudinal biomarker data</strong> and <strong>time-to-event (survival) outcomes</strong>. It explicitly accounts for the fact that the longitudinal measurements (e.g., repeated lab values) and the event process (e.g., death, disease progression) are <strong>interdependent</strong>—often because the underlying health trajectory influences both.</p>
+<p>The core idea: <strong>link the two processes through shared subject-specific random effects</strong>, which capture unobserved heterogeneity across individuals.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>In a mixed-effects longitudinal model, random effects (e.g., random intercepts/slopes) represent individual deviations from the population average trajectory. In a joint model, these <strong>same random effects</strong> are included in the survival submodel to explain differences in event risk. This “sharing” induces correlation between the longitudinal and event processes.</p>
+<p>The standard joint model consists of <strong>two submodels</strong>:</p>
+<p><strong>Longitudinal Submodel Typically a Linear Mixed-Effects Model)</strong></p>
+<p><span class="math display">\[
+y_i(t) = m_i(t) + \varepsilon_i(t) = \underbrace{x_i^\top(t) \beta}_{\text{Fixed effects}} + \underbrace{z_i^\top(t) b_i}_{\text{Random effects}} + \varepsilon_i(t)
+\]</span></p>
+<ul>
+<li><span class="math inline">\(y_i(t)\)</span>: observed longitudinal outcome for subject <span class="math inline">\(i\)</span> at time <span class="math inline">\(t\)</span></li>
+<li><span class="math inline">\(x_i(t)\)</span>: vector of fixed-effect covariates (e.g., time, treatment)</li>
+<li><span class="math inline">\(\beta\)</span>: fixed-effect coefficients</li>
+<li><span class="math inline">\(z_i(t)\)</span>: design vector for random effects (often includes intercept and time)</li>
+<li><span class="math inline">\(b_i \sim \mathcal{N}(0, D)\)</span>: subject-specific random effects (e.g., random intercept <span class="math inline">\(b_{0i}\)</span>, random slope <span class="math inline">\(b_{1i}\)</span></li>
+<li><span class="math inline">\(\varepsilon_i(t) \sim \mathcal{N}(0, \sigma^2)\)</span>: measurement error, independent of <span class="math inline">\(b_i\)</span>)</li>
+</ul>
+<p>The <strong>true (unobserved) longitudinal trajectory</strong> is:</p>
+<p><span class="math display">\[
+m_i(t) = x_i^\top(t)\beta + z_i^\top(t)b_i
+\]</span></p>
+<p><strong>Survival (Event Time) Submodel (Typically a relative risk model with baseline hazard)</strong></p>
+<p><span class="math display">\[
+h_i(t) = h_0(t) \exp\left( w_i^\top \gamma + \alpha \cdot \eta\big(m_i(t), b_i, t\big) \right)
+\]</span></p>
+<ul>
+<li><span class="math inline">\(h_i(t)\)</span>: hazard of the event for subject <span class="math inline">\(i\)</span> at time <span class="math inline">\(t\)</span></li>
+<li><span class="math inline">\(h_0(t)\)</span>: baseline hazard function (can be parametric like Weibull, or semi-parametric using splines)</li>
+<li>$w_i ): vector of baseline/time-independent covariates (e.g., age, treatment group)</li>
+<li><span class="math inline">\(gamma\)</span>: log-hazard ratios for covariates</li>
+<li><span class="math inline">\(\alpha\)</span>: <strong>association parameter</strong> — quantifies how the longitudinal process affects event risk</li>
+<li><span class="math inline">\(\eta(\cdot)\)</span>): <strong>association structure</strong> linking longitudinal and survival processes</li>
+</ul>
+<section id="common-association-structures-etacdot" class="level3">
+<h3 class="anchored" data-anchor-id="common-association-structures-etacdot">Common Association Structures <span class="math inline">\(\eta(\cdot)\)</span></h3>
+<p>The choice of <span class="math inline">\(\eta\)</span> defines how the biomarker influences risk:</p>
+<table class="table">
+<colgroup>
+<col style="width: 45%">
+<col style="width: 15%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Association Type</th>
+<th>Form</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Current value</strong></td>
+<td><span class="math inline">\(\eta = m_i(t)\)</span></td>
+<td>Instantaneous biomarker level affects current hazard</td>
+</tr>
+<tr class="even">
+<td><strong>Current slope</strong></td>
+<td><span class="math inline">\(\eta = m_i'(t) = \frac{d}{dt}m_i(t)\)</span></td>
+<td>Rate of change (e.g., rapid decline) affects risk</td>
+</tr>
+<tr class="odd">
+<td><strong>Random effects</strong></td>
+<td><span class="math inline">\(\eta = b_i\)</span></td>
+<td>Subject’s deviation from population (e.g., low baseline) affects baseline hazard</td>
+</tr>
+<tr class="even">
+<td><strong>Combined</strong></td>
+<td><span class="math inline">\(\eta = m_i(t) + m_i'(t)\)</span></td>
+<td>Both level and trend matter</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="blockquote">
+<p>The <strong>current value</strong> parameterization is the most common and often serves as the “standard” joint model.</p>
+</blockquote>
+</section>
+<section id="key-assumptions" class="level3">
+<h3 class="anchored" data-anchor-id="key-assumptions">Key Assumptions</h3>
+<ul>
+<li><strong>Conditional independence</strong>: Given the random effects ( b_i ) (and thus ( m_i(t) )), the longitudinal and event processes are independent.</li>
+<li><strong>Normality</strong>: Random effects ( b_i (0, D) ); measurement errors ( _i (0, ^2) ).</li>
+<li><strong>Correct specification</strong> of the association structure and baseline hazard.</li>
+</ul>
+</section>
+<section id="estimation" class="level3">
+<h3 class="anchored" data-anchor-id="estimation">Estimation</h3>
+<p>Typically done via <strong>maximum likelihood</strong>: [ L() = _{i=1}^n ] - ( = (_L, _S, D, ^2, ) ): full parameter vector - Integration over ( b_i ) is done numerically (e.g., <strong>Gauss-Hermite quadrature</strong> or <strong>Monte Carlo</strong>) - Alternatively, <strong>Bayesian MCMC</strong> can be used</p>
+</section>
+<section id="advantages" class="level3">
+<h3 class="anchored" data-anchor-id="advantages">Advantages</h3>
+<ul>
+<li>Reduces <strong>bias from informative dropout</strong> (e.g., patients with worsening biomarkers drop out and die)</li>
+<li>Accounts for <strong>measurement error</strong> in biomarkers</li>
+<li>Enables <strong>dynamic predictions</strong>: update survival probability as new longitudinal data arrive</li>
+<li>Provides <strong>mechanistic insight</strong>: quantifies how biomarker trajectories drive risk</li>
+</ul>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<blockquote class="blockquote">
+<p><strong>Study</strong>: Prostate cancer patients monitored via repeated PSA (prostate-specific antigen) tests; event = metastasis.</p>
+<ul>
+<li><strong>Longitudinal</strong>: PSA modeled with random intercept/slope.</li>
+<li><strong>Survival</strong>: Hazard of metastasis depends on <strong>current true PSA level</strong>.</li>
+<li><strong>Result</strong>: Higher PSA trajectory → significantly increased metastasis risk (( &gt; 0 )).</li>
+</ul>
+</blockquote>
+<p>This fits the standard shared random effects joint model with current-value association.</p>
+</section>
+</section>
+<section id="implementation-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-in-r">Implementation in R</h2>
+<p>Standard joint models can be implemented in R using several packages, including {JM}, {joineR}, and {JMbayes}. Below, we provide an example of how to fit a standard joint model using the {JM} and {joineR} package.</p>
+<section id="install-required-r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-required-r-packages">Install Required R Packages</h3>
+<p>Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span><span class="fu">c</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidyverse'</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survival'</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survminer'</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggsurvfit'</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidycmprsk'</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggfortify'</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">'timereg'</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">'cmprsk'</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">'condSURV'</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">'riskRegression'</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">'prodlim'</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>         <span class="st">'lava'</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         <span class="st">'mstate'</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>         <span class="st">'regplot'</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>         <span class="st">'cmprskcoxmsm'</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>         <span class="st">'GLMMadaptive'</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>         <span class="st">'JM'</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>         <span class="st">'nlme'</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>         <span class="st">'lattice'</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>         <span class="st">'joineR'</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>         <span class="st">'joineRML'</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>         </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>```{r<br>
+#| warning: false #| error: false</p>
+</section>
+</section>
+</section>
+<section id="install-missing-packages" class="level1">
+<h1>Install missing packages</h1>
+<p>new_packages &lt;- packages[!(packages %in% installed.packages()[,“Package”])] if(length(new_packages)) install.packages(new_packages)</p>
+<p>#devtools::install_github(“ItziarI/WeDiBaDis”)</p>
+<pre><code>
+### Verify Installation
+
+
+::: {.cell}
+
+```{.r .cell-code}
+# Verify installation
+cat("Installed packages:\n")</code></pre>
+<div class="cell-output cell-output-stdout">
+<pre><code>Installed packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sapply</span>(packages, requireNamespace, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'riskRegression':
+  method        from 
+  nobs.multinom broom</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 methods overwritten by 'joineRML':
+  method         from 
+  augment.mjoint broom
+  glance.mjoint  broom
+  tidy.mjoint    broom</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     tidyverse       survival      survminer      ggsurvfit     tidycmprsk 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+     ggfortify        timereg         cmprsk       condSURV riskRegression 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+       prodlim           lava         mstate        regplot   cmprskcoxmsm 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+  GLMMadaptive             JM           nlme        lattice         joineR 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+      joineRML 
+          TRUE </code></pre>
+</div>
+<p>:::</p>
+<section id="load-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages">Load Packages</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages with suppressed messages</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check loaded packages</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Successfully loaded packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Successfully loaded packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">search</span>()[<span class="fu">grepl</span>(<span class="st">"package:"</span>, <span class="fu">search</span>())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "package:joineRML"       "package:joineR"         "package:lattice"       
+ [4] "package:JM"             "package:splines"        "package:nlme"          
+ [7] "package:MASS"           "package:GLMMadaptive"   "package:cmprskcoxmsm"  
+[10] "package:regplot"        "package:mstate"         "package:lava"          
+[13] "package:prodlim"        "package:riskRegression" "package:condSURV"      
+[16] "package:cmprsk"         "package:timereg"        "package:ggfortify"     
+[19] "package:tidycmprsk"     "package:ggsurvfit"      "package:survminer"     
+[22] "package:ggpubr"         "package:survival"       "package:lubridate"     
+[25] "package:forcats"        "package:stringr"        "package:dplyr"         
+[28] "package:purrr"          "package:readr"          "package:tidyr"         
+[31] "package:tibble"         "package:ggplot2"        "package:tidyverse"     
+[34] "package:stats"          "package:graphics"       "package:grDevices"     
+[37] "package:utils"          "package:datasets"       "package:methods"       
+[40] "package:base"          </code></pre>
+</div>
+</div>
+</section>
+<section id="the-jm-package" class="level2">
+<h2 class="anchored" data-anchor-id="the-jm-package">The {JM} Package</h2>
+<p>The {JM} package is a comprehensive tool for fitting joint models of longitudinal and time-to-event data in R. It provides functions for estimating the parameters of the longitudinal and survival submodels, as well as the association structure linking the two. The package also offers tools for making predictions and assessing the model’s performance. Below, we demonstrate how to use the {JM} package to fit joint models to longitudinal and time-to-event data.</p>
+<p>The joint model consists of two submodels: a linear mixed model for the longitudinal CD4 cell counts and a Cox proportional hazards model for the survival outcomes. The two submodels are linked by a shared parameter that captures the association between the longitudinal and survival processes.</p>
+<section id="data" class="level4">
+<h4 class="anchored" data-anchor-id="data">Data</h4>
+<p>We’ll use the <code>aids</code> dataset from the {JM} package to demonstrate how to perform joint modeling of longitudinal and time-to-event data in R. A randomized clinical trial in which both longitudinal and survival data were collected to compare the efficacy and safety of two antiretroviral drugs in treating patients who had failed or were intolerant of zidovudine (<code>AZT</code>) therapy. The dataset contains information on patients’ CD4 cell counts (<code>CD4</code>) and survival status (<code>death</code>) over time, along with other covariates. The goal is to model the relationship between <code>CD4</code> cell counts and survival outcomes.</p>
+<p>The dataset used is the same that the one seen with the mixed model, <code>aids</code>. The survival information can be found in <code>aids.id</code>.</p>
+<p>A data frame with 1408 observations on the following 9 variables.</p>
+<p><code>patiet</code>: patients identifier; in total there are 467 patients.</p>
+<p><code>Time</code>: the time to death or censoring.</p>
+<p><code>death</code>: a numeric vector with 0 denoting censoring and 1 death.</p>
+<p><code>CD4</code>: the CD4 cells count.</p>
+<p><code>obstime</code>: the time points at which the CD4 cells count was recorded.</p>
+<p><code>drug</code>: a factor with levels ddC denoting zalcitabine and ddI denoting didanosine.</p>
+<p><code>gender</code>: a factor with levels female and male.</p>
+<p><code>prevOI</code>: a factor with levels AIDS denoting previous opportunistic infection (AIDS diagnosis) at study entry, and noAIDS denoting no previous infection.</p>
+<p><code>AZT</code>: a factor with levels intolerance and failure denoting AZT intolerance and AZT failure, respectively.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">"aids"</span>, <span class="at">package =</span> <span class="st">"JM"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(aids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 1,405
+Columns: 12
+$ patient &lt;fct&gt; 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 7, 7,…
+$ Time    &lt;dbl&gt; 16.97, 16.97, 16.97, 19.00, 19.00, 19.00, 19.00, 18.53, 18.53,…
+$ death   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,…
+$ CD4     &lt;dbl&gt; 10.677078, 8.426150, 9.433981, 6.324555, 8.124038, 4.582576, 5…
+$ obstime &lt;int&gt; 0, 6, 12, 0, 6, 12, 18, 0, 2, 6, 0, 2, 6, 12, 0, 2, 6, 12, 0, …
+$ drug    &lt;fct&gt; ddC, ddC, ddC, ddI, ddI, ddI, ddI, ddI, ddI, ddI, ddC, ddC, dd…
+$ gender  &lt;fct&gt; male, male, male, male, male, male, male, female, female, fema…
+$ prevOI  &lt;fct&gt; AIDS, AIDS, AIDS, noAIDS, noAIDS, noAIDS, noAIDS, AIDS, AIDS, …
+$ AZT     &lt;fct&gt; intolerance, intolerance, intolerance, intolerance, intoleranc…
+$ start   &lt;int&gt; 0, 6, 12, 0, 6, 12, 18, 0, 2, 6, 0, 2, 6, 12, 0, 2, 6, 12, 0, …
+$ stop    &lt;dbl&gt; 6.00, 12.00, 16.97, 6.00, 12.00, 18.00, 19.00, 2.00, 6.00, 18.…
+$ event   &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,…</code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">"aids.id"</span>, <span class="at">package =</span> <span class="st">"JM"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(aids.id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 467
+Columns: 12
+$ patient &lt;fct&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,…
+$ Time    &lt;dbl&gt; 16.97, 19.00, 18.53, 12.70, 15.13, 1.90, 14.33, 9.57, 11.57, 1…
+$ death   &lt;int&gt; 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1,…
+$ CD4     &lt;dbl&gt; 10.677078, 6.324555, 3.464102, 3.872983, 7.280110, 4.582576, 6…
+$ obstime &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ drug    &lt;fct&gt; ddC, ddI, ddI, ddC, ddI, ddC, ddC, ddI, ddC, ddI, ddC, ddI, dd…
+$ gender  &lt;fct&gt; male, male, female, male, male, female, male, female, male, ma…
+$ prevOI  &lt;fct&gt; AIDS, noAIDS, AIDS, AIDS, AIDS, AIDS, AIDS, noAIDS, AIDS, AIDS…
+$ AZT     &lt;fct&gt; intolerance, intolerance, intolerance, failure, failure, failu…
+$ start   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ stop    &lt;dbl&gt; 6.00, 6.00, 2.00, 2.00, 2.00, 1.90, 2.00, 2.00, 2.00, 2.00, 2.…
+$ event   &lt;dbl&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,…</code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(aids<span class="sc">$</span>CD4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The CD4 cell exhibits right skewed shapes of distribution, and therefore, for the remainder of this analysis we will work with the square root of the CD4 cell values</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(<span class="fu">sqrt</span>(aids<span class="sc">$</span>CD4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>lattice<span class="sc">::</span><span class="fu">xyplot</span>(<span class="fu">sqrt</span>(CD4) <span class="sc">~</span> obstime <span class="sc">|</span> patient, <span class="at">group =</span> patient, </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">data =</span> aids[aids<span class="sc">$</span>patient <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),], </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">xlab =</span> <span class="st">"Months"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">sqrt</span>(<span class="st">"CD4"</span>)), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">type =</span> <span class="st">"b"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="fit-a-longitudinal-model-lmeobject" class="level4">
+<h4 class="anchored" data-anchor-id="fit-a-longitudinal-model-lmeobject">Fit a Longitudinal Model (<code>lmeObject</code>)</h4>
+<p>First, we fit a linear mixed model for the longitudinal CD4 cell counts using the <code>lme()</code> function from the {nlme} package. This model captures the trajectory of CD4 cell counts over time, accounting for patient-specific variability.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># linear mixed model fit (random intercepts)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>lmeFit_01 <span class="ot">&lt;-</span> <span class="fu">lme</span>(<span class="fu">sqrt</span>(CD4) <span class="sc">~</span> obstime <span class="sc">:</span> drug, <span class="at">random =</span> <span class="sc">~</span> <span class="dv">1</span> <span class="sc">|</span> patient, <span class="at">data =</span> aids)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lmeFit_01)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: aids 
+       AIC      BIC    logLik
+  2730.729 2756.957 -1360.364
+
+Random effects:
+ Formula: ~1 | patient
+        (Intercept)  Residual
+StdDev:   0.8719493 0.4106749
+
+Fixed effects:  sqrt(CD4) ~ obstime:drug 
+                     Value  Std.Error  DF  t-value p-value
+(Intercept)      2.5087153 0.04306984 936 58.24761       0
+obstime:drugddC -0.0338783 0.00352643 936 -9.60697       0
+obstime:drugddI -0.0282970 0.00360358 936 -7.85247       0
+ Correlation: 
+                (Intr) obst:C
+obstime:drugddC -0.153       
+obstime:drugddI -0.145  0.022
+
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-5.09514877 -0.46243667  0.01324625  0.48993786  5.17139372 
+
+Number of Observations: 1405
+Number of Groups: 467 </code></pre>
+</div>
+</div>
+</section>
+<section id="fit-a-survival-model-survobject" class="level4">
+<h4 class="anchored" data-anchor-id="fit-a-survival-model-survobject">Fit a Survival Model (<code>survObject</code>)</h4>
+<p>Next, we fit a Cox proportional hazards model for the survival outcomes using the <code>coxph()</code> function from the <code>survival</code> package. This model estimates the hazard of death based on the CD4 cell counts and other covariates.</p>
+<p>The survival submodel include: treatment effect (as a time-independent covariate) and the <code>true</code> underlying effect of CD4 cell count as estimated from the longitudinal model (as time-dependent). The baseline risk function is assumed piecewise constant.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the survival model</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>survFit <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(Time, death) <span class="sc">~</span> drug, <span class="at">data =</span> aids.id, <span class="at">x =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(survFit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Call:
+coxph(formula = Surv(Time, death) ~ drug, data = aids.id, x = TRUE)
+
+  n= 467, number of events= 188 
+
+          coef exp(coef) se(coef)     z Pr(&gt;|z|)
+drugddI 0.2102    1.2339   0.1462 1.437    0.151
+
+        exp(coef) exp(-coef) lower .95 upper .95
+drugddI     1.234     0.8104    0.9264     1.643
+
+Concordance= 0.531  (se = 0.019 )
+Likelihood ratio test= 2.07  on 1 df,   p=0.2
+Wald test            = 2.07  on 1 df,   p=0.2
+Score (logrank) test = 2.07  on 1 df,   p=0.1</code></pre>
+</div>
+</div>
+</section>
+<section id="fit-the-joint-model" class="level4">
+<h4 class="anchored" data-anchor-id="fit-the-joint-model">Fit the Joint Model</h4>
+<p>The <code>jointModel()</code> function is used to fit the joint model, specifying the longitudinal and survival submodels, as well as the time variable (<code>obstime</code>) linking the two.</p>
+<p>This <code>jointModel()</code> function fits shared parameter models for the joint modelling of normal longitudinal responses and time-to-event data under a maximum likelihood approach. Various options for the survival model are available.</p>
+<pre><code>jointModel(lmeObject, survObject, timeVar, 
+  parameterization = c("value", "slope", "both"),
+  method = c("weibull-PH-aGH", "weibull-PH-GH", "weibull-AFT-aGH", 
+    "weibull-AFT-GH", "piecewise-PH-aGH", "piecewise-PH-GH", 
+    "Cox-PH-aGH", "Cox-PH-GH", "spline-PH-aGH", "spline-PH-GH", 
+    "ch-Laplace"),
+  interFact = NULL, derivForm = NULL, lag = 0, scaleWB = NULL,
+  CompRisk = FALSE, init = NULL, control = list(), ...)</code></pre>
+<p><code>method</code> a character string specifying the type of joint model to fit. Various methods are available for the survival model:</p>
+<p><code>weibull-AFT-GH</code>: a time-dependent Weibull model under the accelerated failure time formulation is assumed. <code>weibull-PH-GH</code>: a time-dependent relative risk model is postulated with a Weibull baseline risk function. <code>piecewise-PH-GH</code>: a time-dependent relative risk model is postulated with a piecewise constant baseline risk function. <code>spline-PH-GH</code>: a time-dependent relative risk model is assumed in which the log baseline risk function is approximated using B-splines. <code>ch-Laplace</code>: an additive model on the log cumulative hazard scale is assumed (see Rizopoulos et al., 2009 for more info). <code>Cox-PH-GH</code> a time-dependent relative risk model is assumed where the baseline risk function is left unspecified (Wulfsohn and Tsiatis, 1997</p>
+<p>Finally, we fit the joint model that links the longitudinal and survival submodels using the <code>jointModel()</code> function from the <code>JM</code> package. This model provides insights into how the CD4 cell counts influence the risk of death over time.</p>
+<p>We will use <code>method</code> as <code>piecewise-PH-GH</code> to fit a time-dependent relative risk model with a piecewise constant baseline risk function.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the joint model with random intercepts</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>JMfit_01 <span class="ot">&lt;-</span> <span class="fu">jointModel</span>(lmeFit_01, survFit, <span class="at">timeVar =</span> <span class="st">"obstime"</span>, <span class="at">method =</span> <span class="st">"piecewise-PH-GH"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>summary()</code> retrieves the summary of the joint model summary, variance components, and the association parameter, coefficients of longitudinal and time-to-event processs:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(JMfit_01)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+jointModel(lmeObject = lmeFit_01, survObject = survFit, timeVar = "obstime", 
+    method = "piecewise-PH-GH")
+
+Data Descriptives:
+Longitudinal Process        Event Process
+Number of Observations: 1405    Number of Events: 188 (40.3%)
+Number of Groups: 467
+
+Joint Model Summary:
+Longitudinal Process: Linear mixed-effects model
+Event Process: Relative risk model with piecewise-constant
+        baseline risk function
+Parameterization: Time-dependent 
+
+   log.Lik      AIC      BIC
+ -2135.224 4298.447 4356.496
+
+Variance Components:
+               StdDev
+(Intercept) 0.8797564
+Residual    0.4251247
+
+Coefficients:
+Longitudinal Process
+                  Value Std.Err z-value p-value
+(Intercept)      2.4987  0.0457 54.6228 &lt;0.0001
+obstime:drugddC -0.0361  0.0037 -9.8114 &lt;0.0001
+obstime:drugddI -0.0314  0.0037 -8.4558 &lt;0.0001
+
+Event Process
+            Value Std.Err z-value p-value
+drugddI    0.3466  0.1527  2.2697  0.0232
+Assoct    -1.0945  0.1192 -9.1841 &lt;0.0001
+log(xi.1) -1.6430  0.2543 -6.4603        
+log(xi.2) -1.2659  0.2517 -5.0283        
+log(xi.3) -0.9151  0.2991 -3.0597        
+log(xi.4) -1.4505  0.3839 -3.7782        
+log(xi.5) -1.3336  0.3597 -3.7072        
+log(xi.6) -1.3264  0.4310 -3.0774        
+log(xi.7) -1.3026  0.5386 -2.4186        
+
+Integration:
+method: Gauss-Hermite
+quadrature points: 15 
+
+Optimization:
+Convergence: 0 </code></pre>
+</div>
+</div>
+<p>Now will fit the with random intercepts + random slopes</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>lmeFit_02 <span class="ot">&lt;-</span> <span class="fu">lme</span>(<span class="fu">sqrt</span>(CD4) <span class="sc">~</span> obstime <span class="sc">:</span> drug, <span class="at">random =</span> <span class="sc">~</span> obstime <span class="sc">|</span> patient, <span class="at">data =</span> aids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the joint model with intercepts + random slopes</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>JMfit_02 <span class="ot">&lt;-</span> <span class="fu">jointModel</span>(lmeFit_02, survFit, <span class="at">timeVar =</span> <span class="st">"obstime"</span>, <span class="at">method =</span> <span class="st">"piecewise-PH-GH"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="model-comparison" class="level4">
+<h4 class="anchored" data-anchor-id="model-comparison">Model Comparison</h4>
+<p><code>anova()</code> function can be used to compare the two models:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(JMfit_01, JMfit_02)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+             AIC     BIC  log.Lik   LRT df p.value
+JMfit_01 4298.45 4356.50 -2135.22                 
+JMfit_02 4247.29 4313.64 -2107.65 55.15  2 &lt;0.0001</code></pre>
+</div>
+</div>
+<p>Longitudinal submodels with random intercepts and random slopes are compared using the <code>anova()</code> function. The results show that the model with random intercepts and slopes is significantly better than the model with random intercepts only.</p>
+</section>
+<section id="plotting-marginal-survival-curves" class="level4">
+<h4 class="anchored" data-anchor-id="plotting-marginal-survival-curves">Plotting Marginal Survival Curves</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(JMfit_02, <span class="dv">3</span>, <span class="at">add.KM =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="dv">2</span>,</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Piecewise-constant Baseline Risk Function"</span>, </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Survival Probability"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><code>survfit()</code> function of {survial} pcakage creates survival curves from either a formula (e.g.&nbsp;the Kaplan-Meier), a previously fitted Cox model, or a previously fitted accelerated failure time model.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>res.surv <span class="ot">&lt;-</span> <span class="fu">residuals</span>(JMfit_02, <span class="at">process =</span> <span class="st">"Event"</span>, <span class="at">type =</span> <span class="st">"Cox"</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>sfit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(<span class="fu">Surv</span>(res.surv,JMfit_02<span class="sc">$</span>y<span class="sc">$</span>d) <span class="sc">~</span> <span class="dv">1</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sfit, <span class="at">mark.time =</span> <span class="cn">FALSE</span>, <span class="at">conf.int =</span> <span class="cn">TRUE</span>, <span class="at">lty =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, </span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="st">"Cox-Snell Residuals"</span>, <span class="at">ylab =</span> <span class="st">"Survival Probability"</span>, </span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Piecewise-constant Baseline Risk Function"</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">pexp</span>(x, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>), <span class="at">from =</span> <span class="fu">min</span>(res.surv), <span class="at">to =</span> <span class="fu">max</span>(res.surv), </span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="fu">c</span>(<span class="st">"Survival function of unit Exponential"</span>, </span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Survival function of Cox-Snell Residuals"</span>), <span class="at">lty =</span> <span class="dv">1</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>, <span class="at">bty =</span> <span class="st">"n"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>Cox-Snell residuals</code> are a diagnostic tool used in survival analysis to assess the fit of a survival model, such as a Cox proportional hazards model or parametric survival models. They transform survival data into residuals that should ideally follow a standard exponential distribution with a mean of 1, under the assumption that the model is correctly specified.</p>
+</div>
+</div>
+</section>
+<section id="hazard-ratio" class="level4">
+<h4 class="anchored" data-anchor-id="hazard-ratio">Hazard Ratio</h4>
+<p>The <code>cinfint()</code> function calculates the hazard ratio for the treatment effect in the survival model. This ratio quantifies the relative risk of death between the two treatment groups.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">confint</span>(JMfit_02, <span class="at">parm =</span> <span class="st">"Event"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>            2.5 %      est.    97.5 %
+drugddI 1.0510576 1.4206752 1.9202736
+Assoct  0.2637343 0.3323346 0.4187786</code></pre>
+</div>
+</div>
+<p>we also compare with the time-dependent Cox model</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">confint</span>(survFit))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>            2.5 %   97.5 %
+drugddI 0.9264493 1.643414</code></pre>
+</div>
+</div>
+</section>
+<section id="expected-survival-probabilities" class="level4">
+<h4 class="anchored" data-anchor-id="expected-survival-probabilities">Expected survival probabilities</h4>
+<p><code>survfitJM()</code> function calculates the expected survival probabilities for each patient at specific time points based on the joint model.</p>
+<p>Here we compute the expected survival probabilities for two patients (5, 141) in the data set who has not died by the time of loss to follow-up. The function assumes that the patient has survived up to the last time point <span class="math inline">\(t\)</span> in newdata for which a CD4 measurement was recorded, and will produce survival probabilities for a set of predefined <span class="math inline">\(u &gt; t\)</span> values</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">300716</span>) <span class="co"># it uses Monte Carlo samples</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">survfitJM</span>(JMfit_02, <span class="at">newdata =</span> aids[aids<span class="sc">$</span>patient <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"5"</span>, <span class="st">"141"</span>), ],</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">idVar =</span> <span class="st">"patient"</span>)  <span class="co"># last.time = "Time"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pred, <span class="at">which =</span> <span class="st">"5"</span>, <span class="at">conf.int =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pred, <span class="at">which =</span> <span class="st">"141"</span>, <span class="at">conf.int =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">fun =</span> <span class="cf">function</span> (x) <span class="sc">-</span><span class="fu">log</span>(x), <span class="at">ylab =</span> <span class="st">"Cumulative Risk"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="prediction" class="level4">
+<h4 class="anchored" data-anchor-id="prediction">Prediction</h4>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>DF <span class="ot">&lt;-</span> <span class="fu">with</span>(aids, <span class="fu">expand.grid</span>(<span class="at">drug =</span> <span class="fu">levels</span>(drug),</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">obstime =</span> <span class="fu">seq</span>(<span class="fu">min</span>(obstime), <span class="fu">max</span>(obstime), <span class="at">len =</span> <span class="dv">100</span>)))</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>Ps <span class="ot">&lt;-</span> <span class="fu">predict</span>(JMfit_02, DF, <span class="at">interval =</span> <span class="st">"confidence"</span>, <span class="at">return =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(lattice)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="fu">xyplot</span>(pred <span class="sc">+</span> low <span class="sc">+</span> upp <span class="sc">~</span> obstime <span class="sc">|</span> drug, <span class="at">data =</span> Ps,</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">col =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">lwd =</span> <span class="dv">2</span>,</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="st">"Average log serum Bilirubin"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-06-01-survival-analysis-joint-modeling-r_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="the-joiner-package" class="level2">
+<h2 class="anchored" data-anchor-id="the-joiner-package">The {joineR} package</h2>
+<p>The {joineR} package is designed to facilitate the analysis of data from longitudinal studies, which involve collecting multiple measurements over time from the same subjects. Each subject’s data consists of a series of repeated measurements as well as a potentially censored time-to-event outcome, such as the time until a particular event occurs. To model the repeated measurements, the package utilizes a linear model that incorporates random effects, allowing for the analysis of individual variations over time. Additionally, a correlated error structure can be included to account for any dependencies among the measurements. For the time-to-event outcomes, the modeling framework employs a Cox proportional hazards model augmented with log-Gaussian frailty. This approach enables the analysis of the effects of covariates on the timing of events while accounting for unobserved heterogeneity among subjects. A key feature of this framework is the ability to capture stochastic dependence between the two components of the model. Specifically, it allows the Gaussian random effects from the linear model—representing subject-specific variations—to be correlated with the frailty term in the Cox proportional hazards model. This correlation can provide deeper insights into the relationships between the repeated measurements and the timing of events, leading to more comprehensive and nuanced interpretations of the</p>
+<section id="data-1" class="level3">
+<h3 class="anchored" data-anchor-id="data-1">Data</h3>
+<p>The <code>mental</code> data-set relates to a study in which 150 patients suffering from chronic mental illness were randomised amongst three different drug treatments: placebo and two active drugs. A questionnaire instrument was used to assess each patient’s mental state at weeks 0, 1, 2, 4, 6 and 8 post-randomization. The data can be loaded with the command:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(joineR)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">"mental"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>A total of 150 subjects were enrolled in the study, but only 68 of them completed all measurements at weeks 0, 1, 2, 4, 6, and 8. The remaining participants left the study early for various reasons, some of which were believed to be related to their mental state. As a result, the dropout rate may provide informative insights. The data from the first five subjects can be accessed as usual.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mental[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  id Y.t0 Y.t1 Y.t2 Y.t4 Y.t6 Y.t8 treat n.obs surv.time cens.ind
+1  1   55   NA   NA   NA   NA   NA     2     1     0.704        0
+2  2   44   NA   NA   NA   NA   NA     1     1     0.740        0
+3  3   65   67   NA   NA   NA   NA     2     2     1.121        1
+4  4   64   56   NA   NA   NA   NA     2     2     1.224        1
+5  5   47   48   NA   NA   NA   NA     2     2     1.303        0</code></pre>
+</div>
+</div>
+<p>The data is stored in a balanced format, consisting of 150 rows (one for each subject) and 11 columns. These columns include a subject identifier, the measured values from the questionnaire taken at each of the six scheduled follow-up times, the treatment allocation, the count of non-missing measured values, an imputed dropout time, and a censoring indicator. The censoring indicator is coded as 1 for subjects who dropped out for reasons believed to be related to their mental health state and as 0 for all others. It’s important to note the distinction made between potentially informative dropout and censoring, with the latter being regarded as uninformative. Thus, the command:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(mental<span class="sc">$</span>cens[<span class="fu">is.na</span>(mental<span class="sc">$</span>Y.t8)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ 0  1 
+21 61 </code></pre>
+</div>
+</div>
+<p>shows that 21 of the 82 dropouts did so for reasons unrelated to their mental health.</p>
+</section>
+<section id="converting-between-balanced-and-unbalanced-data-formats" class="level3">
+<h3 class="anchored" data-anchor-id="converting-between-balanced-and-unbalanced-data-formats">Converting between balanced and unbalanced data-formats</h3>
+<p>Two functions are provided for converting objects from one format to another. The code below demonstrates how to convert the <code>mental</code> dataset from a balanced format to an unbalanced format. It also includes a mnemonic renaming of the column that now contains all the repeated measurements.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>mental.unbalanced <span class="ot">&lt;-</span> <span class="fu">to.unbalanced</span>(mental, <span class="at">id.col =</span> <span class="dv">1</span>,</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>),</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">Y.col =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span>, <span class="at">other.col =</span> <span class="dv">8</span><span class="sc">:</span><span class="dv">11</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mental.unbalanced)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "id"        "time"      "Y.t0"      "treat"     "n.obs"     "surv.time"
+[7] "cens.ind" </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mental.unbalanced)[<span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="st">"Y"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The following code converts the new object back to the balanced format:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>mental.balanced <span class="ot">&lt;-</span> <span class="fu">to.balanced</span>(mental.unbalanced, <span class="at">id.col =</span> <span class="dv">1</span>,</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                               <span class="at">time.col =</span> <span class="dv">2</span>,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">Y.col =</span> <span class="dv">3</span>, <span class="at">other.col =</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">7</span>)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(mental.balanced)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 150  11</code></pre>
+</div>
+</div>
+<p>Once a data-set is in the balanced format (if it is unbalanced then to.balanced can be applied) then the mean, variance and correlation matrix of the responses can be extracted using <code>summarybal()</code>. An example is given below using the mental data-set:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarybal</span>(mental, <span class="at">Y.col =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span>, <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>), </span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$mean.vect
+     x        y
+Y.t0 0 55.77333
+Y.t1 1 53.03378
+Y.t2 2 50.37008
+Y.t4 4 48.62963
+Y.t6 6 46.94048
+Y.t8 8 46.02941
+
+$variance
+    Y.t0     Y.t1     Y.t2     Y.t4     Y.t6     Y.t8 
+132.1228 152.7403 167.5366 168.6653 228.8759 181.4917 
+
+$cor.mtx
+          [,1]      [,2]      [,3]      [,4]      [,5]      [,6]
+[1,] 1.0000000 0.5939982 0.4537496 0.4186798 0.3432355 0.2997679
+[2,] 0.5939982 1.0000000 0.7793311 0.6805021 0.6631543 0.6149448
+[3,] 0.4537496 0.7793311 1.0000000 0.7992470 0.7077238 0.6202277
+[4,] 0.4186798 0.6805021 0.7992470 1.0000000 0.8108585 0.7402240
+[5,] 0.3432355 0.6631543 0.7077238 0.8108585 1.0000000 0.8681933
+[6,] 0.2997679 0.6149448 0.6202277 0.7402240 0.8681933 1.0000000</code></pre>
+</div>
+</div>
+</section>
+<section id="exploring-covariance-structure" class="level3">
+<h3 class="anchored" data-anchor-id="exploring-covariance-structure">Exploring covariance structure</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(mental[, <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span>]) </span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="co"># converts mental from list format to numeric matrix format</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>means <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">3</span>, <span class="dv">6</span>)</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (trt <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>) {</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>   ysub <span class="ot">&lt;-</span> y[mental<span class="sc">$</span>treat <span class="sc">==</span> trt, ]</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>   means[trt,] <span class="ot">&lt;-</span> <span class="fu">apply</span>(ysub, <span class="dv">2</span>, mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">150</span>, <span class="dv">6</span>)</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">150</span>) {</span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>   residuals[i,] <span class="ot">&lt;-</span> y[i,] <span class="sc">-</span> means[mental<span class="sc">$</span>treat[i], ]</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="fu">cov</span>(residuals, <span class="at">use =</span> <span class="st">"pairwise"</span>)</span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> <span class="fu">cor</span>(residuals, <span class="at">use =</span> <span class="st">"pairwise"</span>)</span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">cbind</span>(<span class="fu">diag</span>(V), R), <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>        [,1]  [,2]  [,3]  [,4]  [,5]  [,6]  [,7]
+[1,] 131.774 1.000 0.612 0.472 0.464 0.391 0.321
+[2,] 142.171 0.612 1.000 0.766 0.663 0.650 0.603
+[3,] 159.711 0.472 0.766 1.000 0.792 0.712 0.624
+[4,] 153.364 0.464 0.663 0.792 1.000 0.799 0.738
+[5,] 198.350 0.391 0.650 0.712 0.799 1.000 0.861
+[6,] 167.886 0.321 0.603 0.624 0.738 0.861 1.000</code></pre>
+</div>
+</div>
+</section>
+<section id="creating-a-jointdata-object" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-jointdata-object">Creating a jointdata object</h3>
+<p>A <code>jointdata()</code> object is a list that can contain up to three data frames, including repeated measurement data, time-to-event data, and baseline covariate data. The repeated measurement data must be stored in an unbalanced format, while the time-to-event and baseline covariate data should be stored in a balanced format, meaning there should be one line for each subject. Each data frame must include a column for the subject ID, and these subject ID columns across all three data frames must match. The UniqueVariables function offers a convenient way to extract the time-to-event and baseline covariate data from an unbalanced data frame, as demonstrated in the following example.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>mental.long <span class="ot">&lt;-</span> mental.unbalanced[, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>mental.surv <span class="ot">&lt;-</span> <span class="fu">UniqueVariables</span>(mental.unbalanced, </span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>                               <span class="dv">6</span><span class="sc">:</span><span class="dv">7</span>, <span class="at">id.col =</span> <span class="dv">1</span>)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>mental.baseline <span class="ot">&lt;-</span> <span class="fu">UniqueVariables</span>(mental.unbalanced,</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>                                   <span class="dv">4</span>, <span class="at">id.col =</span> <span class="dv">1</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>mental.jd <span class="ot">&lt;-</span> <span class="fu">jointdata</span>(mental.long, </span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>                       mental.surv,</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>                       mental.baseline,</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>                       <span class="at">id.col =</span> <span class="st">"id"</span>, </span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>                       <span class="at">time.col =</span> <span class="st">"time"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="model-fitting" class="level3">
+<h3 class="anchored" data-anchor-id="model-fitting">Model Fitting</h3>
+<p>The package includes functions for fitting two different classes of model using maximum likelihood estimation. The first is an extended version of the random effects model proposed by Wulfsohn and Tsiatis (1997). See Henderson et al.&nbsp;(2000). The second is the transformation model described by Diggle et al.&nbsp;(2008).</p>
+<p>The random effects model is fitted using the <code>joint()</code> function. This generic function fits a joint model with random latent association, building on the formulation described in Wulfsohn and Tsiatis (1997) while allowing for the presence of longitudinal and survival covariates, and three choices for the latent process. The link between the longitudinal and survival processes can be proportional or separate. When failure is attributable to 2 separate causes, a competing risks joint model is fitted as per Williamson et al.&nbsp;(2008).</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>model.jointrandom <span class="ot">&lt;-</span> <span class="fu">joint</span>(mental.jd, Y <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> time <span class="sc">+</span> treat, </span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">Surv</span>(surv.time, cens.ind) <span class="sc">~</span> treat,</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">model =</span> <span class="st">"int"</span>)</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(model.jointrandom)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "coefficients" "sigma.z"      "sigma.u"      "hazard"       "loglik"      
+ [6] "numIter"      "convergence"  "model"        "sepassoc"     "sepests"     
+[11] "compRisk"     "sep.loglik"   "formulae"     "data"         "call"        </code></pre>
+</div>
+</div>
+<p>There is a <code>summary()</code> method for a model fitted using joint. This produces a summarized version of the model fit, omitting some of the information contained within the fitted object itself. The summary method for a joint object is demonstrated below:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model.jointrandom)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+joint(data = mental.jd, long.formula = Y ~ 1 + time + treat, 
+    surv.formula = Surv(surv.time, cens.ind) ~ treat, model = "int")
+
+Random effects joint model
+ Data: mental.jd 
+ Log-likelihood: -2884.045 
+
+Longitudinal sub-model fixed effects: Y ~ 1 + time + treat                      
+(Intercept) 61.9221415
+time        -0.5969329
+treat       -3.8544659
+
+Survival sub-model fixed effects: Surv(surv.time, cens.ind) ~ treat                
+treat -0.6001792
+
+Latent association:                  
+gamma_0 0.08654259
+
+Variance components:
+     U_0 Residual 
+99.84760 64.34334 
+
+Convergence at iteration: 32 
+
+Number of observations: 900 
+Number of groups: 150 </code></pre>
+</div>
+</div>
+<p>The function <code>jointSE()</code> provides standard errors and confidence intervals for the parameters defining the mean response profiles in a random effects joint model. Currently, the calculation of standard errors for the random effect parameters is not implemented. However, approximate standard errors can be obtained through a parametric bootstrap, which involves re-estimating the model parameters from simulated realizations of the fitted model. The first two arguments for <code>jointSE()</code> are the results from calling the <code>joint()</code> function, with the corresponding <code>jointdata</code> object automatically stored as part of the model fit. The second argument allows you to specify the number of bootstrap samples to be taken. The remaining arguments are included for completeness; they mirror the last four arguments of the <code>joint()</code> function and provide an additional option to control the level of output displayed in the R terminal. Be aware that with a sufficiently large number of bootstrap samples, this function can be slow to execute. If you run the function with only 100 bootstrap samples, the output will reflect this number, and the confidence limits will default to zero unless at least 100 bootstrap samples are taken.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>model.jointrandom.se <span class="ot">&lt;-</span> <span class="fu">jointSE</span>(model.jointrandom, <span class="at">n.boot =</span> <span class="dv">100</span>)</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>model.jointrandom.se</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>     Component   Parameter Estimate      SE 95%Lower 95%Upper
+1 Longitudinal (Intercept)  61.9221  2.2932  56.8931  66.0140
+2                     time  -0.5969  0.1993  -0.9304  -0.2398
+3                    treat  -3.8545  1.0423  -5.8642  -1.7523
+4      Failure       treat  -0.6002  0.2176  -1.1641  -0.2548
+5  Association     gamma_0   0.0865  0.0175   0.0608   0.1313
+6     Variance         U_0  99.8476 11.9674  76.9695 121.3286
+7                 Residual  64.3433  7.0281  52.1935  79.0215</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="summary-and-conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="summary-and-conclusions">Summary and Conclusions</h2>
+<p>This tutorial covered the essential concepts and practical applications of Standard (Shared Random Effects) Joint model of longitudinal and time-to-event data in R. We began by introducing the theoretical background of joint models and their relevance in clinical research. We then demonstrated how to fit univariate and multivariate joint models using {JM}, and {joineR} packages. We also discussed the importance of functional forms in joint models and how to specify them in the model fitting process. Additionally, we explored dynamic predictions and predictive accuracy metrics, such as ROC curves, calibration plots, and Brier scores. Finally, we introduced the concept of competing risks and illustrated how to fit joint models for competing risks data.</p>
+<p>This tutorial helps researchers and practitioners understand the principles of joint modeling and provides practical guidance on implementing these models in R. By following the step-by-step instructions and examples provided in this tutorial, users can gain a comprehensive understanding of joint models and apply them to their own longitudinal and time-to-event data.</p>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ol type="1">
+<li><p><a href="https://qcmb.psychopen.eu/index.php/qcmb/article/view/2979/2979.html">A Tutorial for Joint Modeling of Longitudinal and Time-to-Event Data in R</a></p></li>
+<li><p><a href="https://jmr.r-forge.r-project.org/">Joint Models for Longitudinal and Time-to-Event Data with Applications in R by Dimitris Rizopoulos</a></p></li>
+<li><p><a href="https://www.drizopoulos.com/courses/EMC/ESP72.pdf">Joint Models for Longitudinal and Time-to-Event Data</a></p></li>
+<li><p><a href="https://bookdown.org/sestelo/sa_financial/joint-models-for-longitudinal-and-time-to-event-data.html">Chapter 4 Joint Models for Longitudinal and Time-to-Event Data</a></p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/joineR/vignettes/joineR.html">joineR</a></p></li>
+<li><p><a href="https://www.drizopoulos.com/vignettes/multivariate%20joint%20models">Multivariate Joint Models</a></p></li>
+<li><p><a href="https://drizopoulos.github.io/JMbayes2/">JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data</a></p></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© CC-By Zia Ahmed, Unversity at Buffalo 2025</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

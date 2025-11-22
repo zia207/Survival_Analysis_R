@@ -1,0 +1,294 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_04_02_survival_analysis_prentice_williams_peterson_model_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_04_02_survival_analysis_prentice_williams_peterson_model.ipynb)
+:::
+
+# 4.2 Prentice-Williams-Peterson (PWP) Models {.unnumbered}
+
+In many longitudinal studies, subjects may experience **multiple occurrences of the same event**—such as hospital readmissions, seizures, or equipment failures. While the **Andersen-Gill (AG) model** treats all events as independent increments in a counting process, it ignores the **natural ordering and history** of events (e.g., time since last event or number of prior events).
+
+This tutorial explains the PWP framework, demonstrates how to implement both PWP-GT and PWP-TT models in R, covers data preparation, model fitting, diagnostics, and visualization of the **Mean Cumulative Function (MCF)**—the recurrent-event analog of the Cumulative Incidence Function (CIF).
+
+## Overview
+
+Prentice-Williams-Peterson (PWP) models are extensions of the Cox proportional hazards model specifically designed for analyzing recurrent event data, where the same type of event (e.g., infections, hospitalizations, or tumor recurrences) can occur multiple times for an individual. Unlike standard survival analysis for single events, PWP models account for the ordering and dependency of repeated events by stratifying the analysis based on the number of prior events. This stratification creates conditional risk sets: all subjects are at risk for the first event, but only those who experienced the first are at risk for the second, and so on.
+
+PWP models are particularly useful in epidemiology and clinical studies, such as tracking recurrent infections in patients with chronic conditions (e.g., cystic fibrosis or kidney disease) or repeated sports injuries. They allow for event-specific covariate effects, meaning the impact of predictors like treatment or age can vary across event orders. However, if the number of events is large, risk sets for later events may become small, leading to unstable estimates—often requiring truncation (e.g., analyzing only the first 3-4 events).
+
+
+
+There are two main variants:
+
+-   **PWP-TT (Total Time or Conditional Risk Set Model)**: Measures time from study entry to each event, similar to calendar time. It's suitable when the overall timeline matters, and it assumes a common baseline hazard within each stratum (event order) but allows covariate effects to differ.
+
+-   **PWP-GT (Gap Time Model)**: Measures the time between consecutive events (inter-event gaps), resetting the clock after each event. This assumes a renewal process and is ideal for focusing on waiting times between recurrences, such as predicting the time to the next event.
+
+| Model | Time Scale | Interpretation |
+|----|----|----|
+| **PWP-GT (Gap Time)** | Time since *previous* event | "What is the risk of the *k*-th event given the (*k–1*)-th occurred?" |
+| **PWP-TT (Total Time)** | Time since *study entry* | "What is the risk of the *k*-th event at calendar time *t*?" |
+
+The PWP model **stratifies by event number** (1st event, 2nd event, etc.), allowing the baseline hazard to differ across event orders. This acknowledges that the risk of a second event may differ from the first due to biological, behavioral, or mechanical factors.
+
+### Key Assumptions
+
+-   Subjects are **not at risk for the *k*-th event until the (*k–1*)-th event has occurred**.
+-   The baseline hazard is **unspecified and unique for each event order** (handled via stratification).
+-   Covariate effects (β) are often assumed **constant across event orders** (can be relaxed).
+
+### When to Use PWP
+
+-   Event history matters (e.g., risk changes after first recurrence)\
+-   Interest in **time between events** (PWP-GT) or **calendar-time risk of ordered events** (PWP-TT)\
+-   Events are **ordered and of the same type**
+
+> **Not suitable** if subjects can experience events without prior ones (e.g., simultaneous events).
+
+### Strengths
+
+-   Accounts for **event order** via stratification.
+-   Flexible: allows different baseline hazards per event.
+-   Can incorporate time-varying covariates.
+
+### Limitations
+
+-   **Does not model correlation** between gap times beyond stratification (frailty models may be better).
+-   **Excludes subjects** from risk sets for higher-order events until prior events occur (reduces power).
+-   Interpretation is **conditional on having reached that event order**.
+
+### PWP vs. AG Model
+
+| Feature | AG Model | PWP Model |
+|----|----|----|
+| **Time scale** | Calendar time | TT: calendar; GT: gap time |
+| **Event dependence** | Assumes independence (robust SEs) | Explicitly models order via strata |
+| **At-risk assumption** | Always at risk until censoring | Only at risk for *k*-th event after (*k–1*)-th occurs |
+| **Best for** | Event *rate* over time | Event *timing/order* |
+
+## Implementation in R
+
+We’ll use simulated recurrent event data and fit both PWP-GT and PWP-TT models using the `survival` package.
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'riskRegression',
+		 'reda'
+		 )
+
+```
+
+```{r 
+#| warning: false
+#| error: false
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+devtools::install_github("ItziarI/WeDiBaDis")
+``` 
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+We use the `surviva`l package and `bladder1` dataset, which contains recurrent bladder tumor data. The data set contains multiple rows per patient, with start and stop times for each interval, event indicators, and covariates.
+
+`id`:	Patient id
+`treatment`:	Placebo, pyridoxine (vitamin B6), or thiotepa
+`number`:	Initial number of tumours (8=8 or more)
+`size`:	Size (cm) of largest initial tumour
+`recur`:	Number of recurrences
+`start,stop`:	The start and end time of each time interval
+`status`:	End of interval code, 0=censored, 1=recurrence, 2=death from bladder disease, 3=death other/unknown cause
+`rtumor`:	Number of tumors found at the time of a recurrence
+`rsize`:	Size of largest tumor at a recurrence
+`enum`:	Event number (observation number within patient)
+
+```{r}
+# Load bladder1 (long format)
+data(bladder1)
+str(bladder1)
+```
+
+### Data Preparation
+
+We will create gaptime for PWP-GT and truncate to the first 4 events for stable risk sets:
+
+```{r}
+# Identify problematic rows
+invalid_intervals <- bladder1[bladder1$stop <= bladder1$start, ]
+invalid_status <- bladder1[!bladder1$status %in% c(0, 1), ]
+
+# Remove invalid rows
+bladder1_clean <- bladder1 %>%
+  filter(stop > start, status %in% c(0, 1))
+
+# Create gaptime for PWP-GT
+bladder1_clean <- bladder1_clean %>%
+  group_by(id) %>%
+  mutate(gaptime = stop - start) %>%
+  ungroup()
+
+# Truncate to first 4 events for PWP models
+bladder_trunc <- bladder1_clean[bladder1_clean$enum <= 4, ]
+
+# Verify
+head(bladder_trunc)
+```
+
+### Model Fitting
+
+#### PWP-TT (otal Time, stratified by event order) Model
+
+```{r}
+pwp_tt_fit <- coxph(Surv(start, stop, status) ~ treatment + number + size + strata(enum) + cluster(id), 
+                    data = bladder_trunc, robust = TRUE)
+summary(pwp_tt_fit)
+```
+
+#### PWP-GT (Gap Time, stratified by event order) Model
+
+```{r}
+pwp_gt_fit <- coxph(Surv(gaptime, status) ~ treatment + number + size + strata(enum) + cluster(id), 
+                    data = bladder_trunc, robust = TRUE)
+summary(pwp_gt_fit)
+```
+
+> **Note**: - `cluster(id)` provides robust standard errors. - `strata(event_order)` allows baseline hazard to vary by event number. - In PWP-GT, the **first event** is often analyzed separately (as it has no prior gap).
+
+
+### Model Diagnostic
+
+#### Proportional Hazards Check
+
+```{r}
+#| fig.width: 5
+#| fig.height: 8
+# For PWP-TT
+zph_tt <- cox.zph(pwp_tt_fit)
+print(zph_tt)
+ggcoxzph(zph_tt)
+```
+
+```{r}
+#| fig.width: 5
+#| fig.height: 8
+# For PWP-GT
+zph_gt <- cox.zph(pwp_gt_fit)
+print(zph_gt)
+ggcoxzph(zph_gt)
+```
+
+> If PH violated for a stratum, consider time-dependent effects or separate models per event order.
+
+#### Residuals
+
+Martingale residuals can be examined per stratum:
+
+```{r}
+#| fig.width: 5
+#| fig.height: 5
+res_PWP_tt <- residuals(pwp_tt_fit, type = "martingale", collapse = bladder_trunc$id)
+plot(res_PWP_tt ~bladder_trunc$number[match(names(res_PWP_tt), bladder_trunc$id)], 
+     xlab = "Initial Tumors", 
+     ylab = "Martingale Residuals",
+     main = "PWP-TT Model")
+abline(h = 0, lty = 2)
+```
+
+
+```{r}
+#| fig.width: 5
+#| fig.height: 5
+res_PWP_gt <- residuals(pwp_gt_fit, type = "martingale", collapse = bladder_trunc$id)
+plot(res_PWP_gt ~bladder_trunc$number[match(names(res_PWP_gt), bladder_trunc$id)], 
+     xlab = "Initial Tumors", 
+     ylab = "Martingale Residuals",
+     main = "PWP-GT Model")
+abline(h = 0, lty = 2)
+```
+
+### Estimating and Plotting the Mean Cumulative Function (MCF)
+
+While PWP models estimate **hazard ratios per event order**, the **Mean Cumulative Function (MCF)** shows the **average number of events per subject over time**—the recurrent-event analog of CIF.
+
+We’ll use the `reda` package:
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 5
+base_tt <- basehaz(pwp_tt_fit, centered = FALSE)
+plot(base_tt$hazard ~ base_tt$time, type = "s", xlab = "Time", ylab = "Cumulative Hazard", 
+     main = "CMF by Stratum (PWP-TT)")
+```
+
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 5
+base_gt <- basehaz(pwp_gt_fit, centered = FALSE)
+plot(base_gt$hazard ~ base_gt$time, type = "s", xlab = "Time", ylab = "Cumulative Hazard", 
+     main = "CMF by Stratum (PWP-GT)")
+```
+
+
+
+> **Note**: The MCF is **not directly output by PWP models**—it’s a descriptive summary of the event process, often used alongside modeling.
+
+## Summary & Conclusions
+
+This tutorial demonstrated how to implement Prentice-Williams-Peterson (PWP) models for recurrent event data in R, covering both PWP-TT and PWP-GT variants. Key steps included: data preparation, model fitting with `coxph()`, diagnostics, and visualization of the Mean Cumulative Function (MCF). This tutorial provides a foundational implementation. For full applications, consult the `survival` package vignettes or supplementary materials from epidemiological studies.
+
+## Resources
+
+**Books**
+
+-   *The Statistical Analysis of Recurrent Events* by Cook & Lawless\
+-   *Modeling Survival Data: Extending the Cox Model* by Therneau & Grambsch
+
+**R Packages**
+
+-   [`survival`](https://cran.r-project.org/package=survival): Core Cox models with `strata()`
+-   [`reda`](https://cran.r-project.org/package=reda): MCF estimation and recurrent event simulation
+-   [`frailtypack`](https://cran.r-project.org/package=frailtypack): Frailty models for recurrent events
+
+**Vignettes & Tutorials**
+
+-   `vignette("survival")` and `vignette("timedep", package = "survival")`
+-   `vignette("reda-intro", package = "reda")`
+-   Therneau’s [Advanced Survival Analysis Notes](https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf)

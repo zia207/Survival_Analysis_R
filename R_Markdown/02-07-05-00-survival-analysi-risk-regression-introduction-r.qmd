@@ -1,0 +1,166 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_04_00_survival_analysis_risk_regression_introduction_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_04_00_survival_analysis_risk_regression_introduction_python.ipynb)
+:::
+
+
+# Risk Regression {.unnumbered}
+
+Risk regression in survival analysis refers to a class of statistical models designed to estimate and predict the absolute risk (or probability) of an event occurring over time, often in the presence of competing risks—situations where multiple mutually exclusive events can prevent the event of interest from happening (e.g., death from other causes competing with disease relapse). Unlike traditional hazard-based models like the Cox proportional hazards model, which focus on the instantaneous rate of event occurrence (hazard), risk regression directly models the cumulative incidence function (CIF), which represents the marginal probability of the event accounting for competing risks and censoring. This approach is particularly useful for clinical prediction, as it provides interpretable absolute risks rather than relative hazards, and can incorporate time-dependent effects or use techniques like inverse probability of censoring weights (IPCW) or pseudo-observations to handle right-censoring. It can be applied in standard survival settings without competing risks by predicting risk as 1 minus the survival probability, but it is most prominently used in competing risks scenarios.
+
+## Types of Risk Regressions
+
+Risk regression encompasses several approaches, which can be broadly categorized into hazard-based models adapted for risks and direct regression on absolute risks. These often fall under transformation models, where different link functions relate the CIF to predictors, ensuring flexibility in interpretation and prediction. Key types include:
+
+### Cause-Specific Hazard Regression
+
+This models the cause-specific hazard (the rate of a specific event among those still at risk and event-free) for each competing event separately, typically using Cox proportional hazards models. The CIF is then derived by integrating the cause-specific hazards with the overall survival function. Coefficients represent hazard ratios for the effect of covariates on the event rate. It is ideal for etiologic questions (understanding causal mechanisms) but does not directly model absolute risks, which can lead to indirect interpretations in prediction. For example, in heart failure data, this approach might show no significant effect of cancer on cardiac death hazard.
+
+### Subdistribution Hazard Regression (Fine-Gray Model)
+
+This directly models the subdistribution hazard (the instantaneous risk of the event among those who have not yet experienced it, including those affected by competing events). It uses a complementary log-log link and allows covariates to influence the CIF directly. Coefficients are subdistribution hazard ratios, providing estimates of relative effects on event incidence after accounting for competitors. It is suited for prognostic purposes and absolute risk prediction, as predictions inherently respect the [0,1] probability bounds. In practice, it might reveal that a factor like cancer reduces the incidence of cardiac death by competing for non-cardiac outcomes.
+
+### Absolute Risk Regression (Direct CIF Modeling)
+
+This approach regresses the absolute risk (CIF) directly on covariates using various link functions within a transformation model framework. It offers straightforward interpretations (e.g., coefficients as relative risks or odds) and is implemented via methods like binomial regression on time-sequenced data, IPCW, or pseudo-values. 
+
+## Risk Regression in R
+
+Risk regression is commonly used in survival analysis, particularly in the presence of competing risks, to model the relationship between covariates and the cause-specific hazards or subdistribution hazards. There are several R packages that provide functionalities for risk regression, especially for competing risks and time-to-event data.
+
+Here are some of the key R packages for risk regression:
+
+[{riskRegression}](https://cran.r-project.org/web/packages/riskRegression/index.html): This package provides tools to compute risk regression models for time-to-event outcomes, including survival analysis and competing risks. It includes models for cause-specific hazards, subdistribution hazards (Fine-Gray model), and Cox proportional hazards regression.
+
+[{cmprsk}](https://cran.r-project.org/web/packages/cmprsk/index.html),: This package is widely used for performing competing risks regression analysis using the Fine-Gray model (subdistribution hazard). It also provides functions for cumulative incidence estimation and testing.
+
+[{tidycmprsk}](https://mskcc-epi-bio.github.io/tidycmprsk/): The package wraps the {cmprsk} package, and exports functions for univariate cumulative incidence estimates with `cuminc()` and competing risk regression with `crr()`
+
+[{timereg}](https://cran.r-project.org/web/packages/timereg/index.html): This package provides methods for parametric and semi-parametric regression models, including models for survival data with competing risks. It supports cumulative incidence models, Cox regression, and additive hazards models.
+
+Some Common Packages and their Use-Cases:
+
+| **Package**      | **Purpose**                                             | **Main Functions**                           |
+|------------------|---------------------------------------------------------|----------------------------------------------|
+| {riskRegression} | Risk regression models for competing risks and survival | `FGR()`, `CSC()`, `predictRisk()`, `Score()` |
+| {cmprsk}         | Competing risks analysis, Fine-Gray model               | `crr()`, `cuminc()`, `survfit()`             |
+| {survival}       | General survival analysis, cause-specific hazard models | `coxph()`, `Surv()`, `survfit()`             |
+| {timereg}        | Flexible time regression models, additive models        | `comp.risk()`, `cif()`, `addreg()`           |
+| {tidycmprsk}     | Estimation of CIF and risk regression                   | `cuminc()`, `crr()`                          |
+
+These packages provide a wide array of tools for analyzing competing risks and risk regression, allowing researchers to estimate hazards, cumulative incidence functions, and make predictions.
+
+### When to Use Which Method? (Quick Guide)
+
+| Goal | Recommended Approach | R Function |
+|------|----------------------|-----------|
+| Etiologic inference | Cause-specific hazard | `coxph(Surv(time, status == 1) ~ ...)` |
+| Absolute risk prediction | Fine–Gray model | `FGR()` or `crr()` |
+| Direct probability modeling (no PH) | Absolute Risk Regression | `ARR()` |
+| Model validation (AUC, Brier, calibration) | Risk prediction assessment | `Score()` |
+
+
+## Summary and Conclusions
+
+Risk regression in survival analysis is a powerful framework for modeling time-to-event data, especially in the presence of competing risks. By focusing on absolute risks rather than relative hazards, risk regression provides more interpretable and clinically relevant predictions. The choice of method—whether cause-specific hazards, Fine–Gray subdistribution hazards, or direct absolute risk regression—depends on the research question, whether it is etiologic understanding or prognostic prediction. The following section of this tutorials will delve deeper into practical implementations using R, showcasing how to fit these models, interpret results, and validate predictions effectively. 
+
+## Resources
+
+Here is a curated list of high-quality **resources on risk regression for survival analysis**, with an emphasis on **modern, clinically relevant methods** such as **cause-specific hazards**, **Fine–Gray (subdistribution hazard)**, **absolute risk regression (pseudovalues)**, and **model validation**.
+
+### **Books**
+
+1. **_Modeling Survival Data: Extending the Cox Model_**  
+   – Terry M. Therneau & Patricia M. Grambsch (2000)  
+   - Focus: Cox model extensions, time-dependent effects, diagnostics  
+   - R integration: `survival` package  
+   - [Springer Link](https://link.springer.com/book/10.1007/b97377)
+
+2. **_Competing Risks and Multistate Models with R_**  
+   – Jan Beyersmann, Arthur Allignol, & Martin Schumacher (2012)  
+   - Focus: Competing risks theory + practical R implementation  
+   - Covers: CIF, cause-specific, Fine–Gray, nonparametric estimation  
+   - [Springer Link](https://link.springer.com/book/10.1007/978-1-4419-6001-1)
+
+3. **_Clinical Prediction Models: A Practical Approach to Development, Validation, and Updating_**  
+   – Ewout W. Steyerberg (2019, 2nd ed.)  
+   - Focus: Risk prediction (including time-to-event outcomes)  
+   - Covers: Calibration, discrimination, competing risks, sample size  
+   - Strong emphasis on **absolute risk** and clinical utility  
+   - [Springer Link](https://link.springer.com/book/10.1007/978-3-030-16399-0)
+
+### **Key Papers**
+
+1. **Fine & Gray (1999)**  
+   - *A Proportional Hazards Model for the Subdistribution of a Competing Risk*  
+   - **JASA**, 94(446): 496–509  
+   - The foundational paper for the **Fine–Gray model**  
+   - [DOI](https://doi.org/10.1080/01621459.1999.10474144)
+
+2. **Andersen (2003)**  
+   - *Generalised linear models for correlated pseudo-observations...*  
+   - **Biometrika**, 90(1): 15–27  
+   - Introduces **pseudo-value regression** for direct CIF modeling  
+   - [DOI](https://doi.org/10.1093/biomet/90.1.15)
+
+3. **Putter, Fiocco & Geskus (2007)**  
+   - *Tutorial in biostatistics: Competing risks and multi-state models*  
+   - **Statistics in Medicine**, 26(11): 2389–2430  
+   - Excellent conceptual overview with practical guidance  
+   - [DOI](https://doi.org/10.1002/sim.2712)
+
+4. **Austin & Fine (2017)**  
+   - *Propensity scores and competing risks: a review*  
+   - **Pharmacoepidemiology and Drug Safety**, 26(2): 113–122  
+   - Discusses pitfalls and best practices in competing risks analysis  
+   - [DOI](https://doi.org/10.1002/pds.4103)
+
+
+###  **R Packages & Vignettes**
+
+1. **`riskRegression`** (Thomas A. Gerds et al.)  
+   - Implements **FGR()** (Fine–Gray), **ARR()** (Absolute Risk Regression), **Score()** (validation)  
+   - Vignettes:  
+     - `vignette("riskRegression")`  
+     - `vignette("CompetingRisks")`  
+   - CRAN: [https://cran.r-project.org/package=riskRegression](https://cran.r-project.org/package=riskRegression)
+
+2. **`survival`** (Terry Therneau)  
+   - Core survival tools; supports `coxph()` with competing risks (via cause-specific modeling)  
+   - Vignettes: `vignette("compete", package = "survival")`  
+   - CRAN: [https://cran.r-project.org/package=survival](https://cran.r-project.org/package=survival)
+
+3. **`cmprsk`** (Bob Gray)  
+   - Original implementation of **`crr()`** for Fine–Gray models  
+   - CRAN: [https://cran.r-project.org/package=cmprsk](https://cran.r-project.org/package=cmprsk)
+
+4. **`tidycmprsk`** (Ewen Harrison et al.)  
+   - Tidy interface for `cmprsk` objects (`tidy()`, `glance()`)  
+   - GitHub: [https://github.com/ellessenne/tidycmprsk](https://github.com/ellessenne/tidycmprsk)
+
+5. **`prodlim`**  
+   - Nonparametric CIF estimation (`Hist()`, `plot`)  
+   - Integrated with `riskRegression`
+
+### **Online Tutorials & Courses**
+
+1. **Thomas A. Gerds’ Course: “Risk Regression for Survival Analysis”**  
+   - University of Copenhagen  
+   - Slides, code, and case studies using `riskRegression`  
+   - [https://github.com/tagteam/riskRegression-course](https://github.com/tagteam/riskRegression-course)
+
+2. **Harvard T.H. Chan School of Public Health – Competing Risks**  
+   - Short video lectures + R code  
+   - [https://www.hsph.harvard.edu/](https://www.hsph.harvard.edu/) (search “competing risks”)
+
+3. **R Graph Gallery – Survival Analysis**  
+   - Visual examples of CIF plots, risk tables, etc.  
+   - [https://r-graph-gallery.com/survival.html](https://r-graph-gallery.com/survival.html)
+
+4. **Statistical Horizons – Paul Allison’s Webinars**  
+   - “Survival Analysis Using Stata/R” (includes competing risks)  
+   - [https://www.statisticalhorizons.com/](https://www.statisticalhorizons.com/)
+

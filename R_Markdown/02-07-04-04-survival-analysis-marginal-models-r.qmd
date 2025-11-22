@@ -1,0 +1,455 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right"
+width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_04_04_survival_analysis_marginal_models_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right"
+width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_04_04_survival_analysis_marginal_models_python.ipynb)
+:::
+
+# 4.4 Marginal Models for Recurrent Events {.unnumbered}
+
+Marginal models are a class of statistical approaches used in survival analysis to handle recurrent events data, where a subject can
+experience multiple events over time (e.g., repeated hospitalizations, infections, or seizures). These models focus on estimating the
+**population-averaged** (or marginal) effects of covariates on the event rate or mean number of events, without explicitly modeling the
+dependence structure among recurrent events within the same individual. Instead, they rely on robust variance estimators (e.g., sandwich
+estimators) to account for within-subject correlation, making them flexible when the exact form of dependence is unknown or complex.
+
+### Key Features of Marginal Models
+
+1.  **Population-Averaged Effects**: Marginal models estimate the average effect of covariates on the event rate across the entire
+    population, rather than subject-specific effects. This is useful for understanding overall treatment effects in clinical trials or
+    public health studies.
+
+2.  **Robust Variance Estimation**: They use robust (sandwich) variance estimators to adjust standard errors for within-subject correlation,
+    allowing valid inference even when the dependence structure is misspecified.
+
+3, **Unconditional Risk Sets**: Marginal models typically define risk sets that include all subjects at risk for each event stratum,
+ignoring the order of events. This contrasts with conditional models that may restrict risk sets based on prior event history.
+
+4.  **Flexible Covariate Effects**: Covariates can have different effects on different event strata (e.g., first vs. second recurrence),
+    allowing for heterogeneity in risk factors across events.
+
+## Common Marginal Models
+
+### Wei-Lin-Weissfeld (WLW) Model
+
+A popular marginal model that treats each event stratum as a separate process, allowing for different baseline hazards and covariate effects
+for each event. It uses a robust variance estimator to account for within-subject correlation.
+
+-   Proposed by **Wei, Lin & Weissfeld (1989)** for **ordered recurrent events**.
+
+-   Fits a **Cox proportional hazards model** for each event number (k):
+
+$$
+  \lambda_k(t | X) = \lambda_{k0}(t)\exp(\beta^\top X)
+$$
+
+-   Different baseline hazard for each event number (via `strata(event_number)`).
+
+-   Usually assumes a **common covariate effect** (\beta) across events, though it can vary by stratum.
+
+-   **Key features:**
+
+    -   Each event order analyzed *marginally* — subjects contribute to all event orders (even if earlier events not yet occurred).
+    -   **Death is treated as censoring** (no explicit handling as a terminal event).
+    -   Uses **robust (sandwich)** variance to account for within-subject correlation.
+
+-   **Interpretation:** WLW gives the *marginal hazard ratio* for the k-th event, adjusted for covariates, without modeling dependence
+    between events or death.
+
+### Marginal Mean Models
+
+These models directly estimate the marginal mean function of the number of events over time, often using counting process techniques and
+robust variance estimation.
+
+-   Developed by **Ghosh & Lin (2000, 2002)** to handle **recurrent events with a terminating event (death)**.
+
+-   It’s **not** a hazard model — it’s an *estimation procedure* for the **marginal mean number of recurrent events** by time (t):
+
+$$
+  M(t) = \int_0^t S(u), dR(u)
+$$ where:
+
+-   (S(u)): survival probability up to time (u)
+
+-   (R(u)): cumulative hazard (rate) of recurrent events among survivors.
+
+-   The two models (for death and recurrence) are fit separately (e.g., via `phreg()` in `mets`), and combined to estimate:
+
+$$
+  \widehat{M}(t) = \int_0^t \widehat{S}(u), d\widehat{R}(u)
+$$
+
+-   **Lin & Ghosh (2000)** derived *fast influence-function-based* standard errors for this estimator.
+
+-   **Key features:**
+
+    -   Explicitly incorporates **death as a terminal event** — no events after death.
+    -   Provides a **population-level mean curve**: expected number of recurrences up to time *t*, accounting for death.
+    -   Implemented in `mets::recurrentMarginal()`.
+
+-   **Interpretation:** Gives an **absolute, interpretable summary** — e.g., *“By 3 years, patients in group A have an expected 1.8
+    recurrences on average.”*
+
+### Key Differences Between WLW and Marginal Mean Models
+
+Both the **Wei–Lin–Weissfeld (WLW)** model and the **marginal mean method** deal with recurrent events, but they address **different
+scientific questions**, use **different estimands**, and rely on **different modeling frameworks**.
+
+| Aspect | **Wei–Lin–Weissfeld (WLW)** | **Lin & Ghosh (2000) Marginal Mean** |
+|:---------------------------------|:--------------------------------------------|:------------------------------------------------------------|
+| **Type of model** | *Cox regression model* (semiparametric hazard model) | *Nonparametric / semiparametric estimator* of cumulative mean function |
+| **Quantity estimated** | *Hazard ratio* for each event order | *Expected number (mean) of recurrent events* up to time *t* |
+| **Framework** | Regression modeling of time to each event | Marginal mean function accounting for death |
+| **Focus** | *Instantaneous rate* of event occurrence | *Cumulative number* of events over time |
+
+## Implementation in R
+
+The `mets` package in R provides tools for analyzing recurrent event data using both the WLW model and the marginal mean method. 
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code
+below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'riskRegression',
+		 'reda',
+		 'mets'
+		 )
+
+```
+
+`{r  #| warning: false #| error: false # Install missing packages new_packages <- packages[!(packages %in% installed.packages()[,"Package"])] if(length(new_packages)) install.packages(new_packages) devtools::install_github("ItziarI/WeDiBaDis")`
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Marginal Mean of Recurrent Events
+
+In studies where subjects may experience **repeated (recurrent) events** and eventually a **terminal event** (e.g., death), standard
+recurrence analysis is biased if death is ignored, since no further events can occur after death.
+
+To address this, the **marginal mean function** gives the *expected number of recurrent events by time* (t), accounting for both recurrence
+and death processes.
+
+Let
+
+-   $R(t)$: cumulative hazard (rate) of recurrent events among survivors,
+-   $S(t)$: survival probability (probability of being alive at time $t$).
+
+Then the **marginal mean number of recurrent events** up to time $t$ is
+
+$$
+M(t) = \int_0^t S(u), dR(u)
+$$
+
+Two proportional hazards (Cox-type) models are fitted:
+
+1.  **Recurrent event model:**
+
+$$
+   \lambda_r(t|x) = \lambda_{r0}(t)\exp(x^\top \beta_r)
+$$
+
+2.  **Death (terminal event) model:**
+
+$$
+   \lambda_d(t|x) = \lambda_{d0}(t)\exp(x^\top \beta_d)
+$$
+
+The **baseline survival function** is estimated from the death model as
+
+$$
+\widehat{S}(t|x=0) = \exp!\left(-\widehat{\Lambda}_d(t|x=0)\right)
+$$
+
+where $\widehat{\Lambda}_d(t|x=0)$ is the estimated cumulative baseline hazard for death.
+
+The **cumulative recurrence rate** among survivors is estimated as
+
+$\widehat{R}(t|x=0) = \widehat{\Lambda}_r(t|x=0$.
+
+`Estimator of the Marginal Mean`
+
+The estimator of $M(t)$ for the baseline group $(x=0)$ is
+
+$$
+\widehat{M}(t) = \int_0^t \widehat{S}(u|x=0), d\widehat{R}(u|x=0)
+$$
+
+In discrete form (numerical integration):
+
+$$
+\widehat{M}(t) \approx \sum_{u_i \le t} \widehat{S}(u_i), \Delta \widehat{R}(u_i)
+$$
+
+`Variance Estimation`
+
+The **Lin and Ghosh (2000)** method provides a *fast, robust variance estimator* for $\widehat{M}(t)$, combining the variability from both
+the recurrent and death models through a **sandwich (influence function) approach**.
+
+`Interpretation`
+
+$\widehat{M}(t)$ gives the **expected number of recurrent events** a typical subject would experience by time $t$, properly adjusted for
+the fact that **death stops further recurrences**.
+
+#### Data
+
+The **`bladder1`** dataset in `survival` contains data from a bladder cancer study with *recurrent tumor events* and *death or censoring*.
+
+
+```{r}
+data(bladder1)
+```
+
+
+####  Prepare the data
+
+Make sure time variables are compatible (entry, exit, event). The `bladder1` dataset already has a **counting process format**:
+`Surv(start, stop, event)`.
+
+We’ll rename and clean it for clarity.
+
+```{r}
+bl <- bladder1
+bl$id <- as.numeric(bl$id)
+bl$treatment <- as.factor(bl$treatment)
+```
+
+
+#### Fit the recurrent and death models
+
+You’ll fit two separate **Cox models** (via `phreg` from `mets`):
+
+```{r}
+# recurrent event model
+xr <- phreg(Surv(start, stop, status == 1) ~ cluster(id), data = bl)
+# death model
+dr <- phreg(Surv(start, stop, status == 2) ~ cluster(id), data = bl)
+```
+
+#### Plot baseline hazards
+
+```{r}
+# plot baseline hazards
+par(mfrow = c(1, 2))
+plot(dr, se = TRUE)
+title(main = "Death model baseline hazard")
+plot(xr, se = TRUE)
+title(main = "Recurrent event baseline hazard")
+```
+
+
+#### Compute marginal mean using `recurrentMarginal`
+
+Now apply `recurrentMarginal` directly using the `Event()` object:
+
+```{r}
+out <- recurrentMarginal(Event(start, stop, status) ~ cluster(id), 
+                         data = bl, 
+                         cause = 1,       # recurrence
+                         death.code = 2)  # death
+```
+
+
+#### Summarize and plot the marginal mean function
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 5
+plot(out, se = TRUE, col = 2, ylab = "Marginal mean number of recurrences")
+summary(out, times = seq(1, 10, by = 1))
+```
+
+#### Add treatment stratification
+
+If you want to compare by treatment (`rx`):
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 5
+out_strata <- recurrentMarginal(Event(start, stop, status) ~ strata(treatment) + cluster(id),
+                                data = bl, cause = 1, death.code = 2)
+summary(out_strata, times = seq(1, 10, by = 1))
+```
+
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 5
+plot(out_strata, se = TRUE, ylab = "Marginal mean", col = 1:3)
+legend("topleft", legend = levels(bl$treatment), col = 1:3, lty = 1)
+```
+
+
+Above plots show the **expected number of recurrences** by time (t) for each treatment group, accounting for death. For example, at 5 years: 
+* Treatment 1 has an expected ~1.5 recurrences,
+* Treatment 2 has ~1.2 recurrences,
+* Treatment 3 has ~0.9 recurrences.
+This suggests treatment 3 may be more effective in reducing recurrences, but formal statistical tests or confidence intervals should be used to confirm.
+
+
+### WLW model — common covariate effect across event orders
+
+The WLW model is a **marginal Cox-type model** for analyzing ordered recurrent events. Key points:
+
+* It treats the (k)-th event for each subject as a separate (marginal) survival process.
+
+* The hazard for the (k)-th event is modeled as
+
+$$
+  \lambda_k(t \mid X) = \lambda_{k0}(t),\exp(\beta^\top X),
+$$
+
+where ($\lambda_{k0}(t)$) is the baseline hazard for event order $k$.
+
+* WLW typically **allows different baseline hazards** for different event orders (via stratification on event number) but **assumes a common regression coefficient** $beta$ across event orders unless you explicitly let (\beta) vary with (k).
+
+* Because each subject contributes multiple correlated observations, standard errors must be adjusted; WLW uses a **robust (sandwich) variance estimator** (clustered by subject).
+
+* **Risk sets** in WLW include all subjects who are under observation at time (t) for that particular event order — importantly, WLW does **not** require that subjects have experienced earlier events to be in the risk set for higher-order events (this is a marginal feature; contrasts with PWP conditional models).
+
+**When to use**: when you want a marginal population-average effect of covariates on the hazard of recurrent events, and when you want separate baseline hazards for each event order.
+
+You can implement WLW with `survival::coxph()` using:
+
+* `strata(event_number)` to allow a different baseline hazard for each event order (k),
+* `cluster(id)` to request robust standard errors (sandwich variance by subject),
+* `Surv(start, stop, event)` (counting-process style) or `Surv(time, event)` depending on your data.
+
+
+#### Data
+
+```{r}
+data(bladder1)         # survival::bladder1
+bl <- bladder1
+
+# create indicator for recurrence (1 = recurrence of interest)
+bl$recur <- as.integer(bl$status == 1)
+
+# event order variable (exists in bladder1 as 'enum')
+table(bl$enum)
+```
+####  Fit WLW model with common covariate effect
+
+```{r}
+# WLW: different baseline hazards by event order, common beta across orders
+wlw_fit <- coxph(Surv(start, stop, recur) ~ strata(enum) 
+                 + treatment 
+                 + cluster(id), data = bl)
+summary(wlw_fit)
+```
+
+* `strata(enum)` gives separate baseline hazards λ_{k0}(t) for each event number `k`.
+* The coefficient for `treatment` is a **marginal (population-average) log hazard ratio** for recurrence, assumed the same across event orders.
+* `cluster(id)` yields robust (sandwich) standard errors accounting for within-subject correlation.
+
+
+
+####  Allow covariate effects to differ by event order
+
+If you suspect the covariate effect differs by event number (k), include interactions between `rx` and a factor of `enum`. Keep `strata(enum)` so each stratum has its own baseline hazard:
+
+```{r}
+# let treatemnt effect vary by event number
+wlw_fit_vary <- coxph(Surv(start, stop, recur) ~ strata(enum) 
+                      + treatment:factor(enum) 
+                      + cluster(id), data = bl)
+summary(wlw_fit_vary)
+```
+
+
+```{r}
+# Alternatively specify main effects and interactions explicitly:
+wlw_fit_vary2 <- coxph(Surv(start, stop, recur) ~ strata(enum) + 
+                         treatment * factor(enum) 
+                       - treatment + cluster(id), data = bl)
+# (rx * factor(enum) - rx keeps only the interactions while keeping strata-based baselines)
+```
+
+
+
+* `treatemnt:factor(enum)` fits separate log-hazard effects of `rx` for each event order.
+
+
+
+#### Model diagnostics & notes
+
+* Check proportional hazards within each stratum (e.g., `cox.zph()` on each stratum separately).
+* If you want standard (model-based) SEs, remove `cluster(id)` — but **do not**: you should use robust SEs for WLW.
+* Compare WLW to alternatives:
+
+  * **PWP (Prentice–Williams–Peterson)**: conditional on having had the previous event (risk sets restricted) — use `strata(enum)` *and* only put subjects at risk for k-th event after (k−1)-th event time or use `id` counting process with appropriate construction. Implement via `coxph(..., ties=...)` with start/stop editing or packages that directly implement PWP.
+  * **Andersen–Gill (AG)**: treats recurrent events as one counting process (works via `coxph` with `cluster(id)` but assumes independent increments/  multiplicative intensity; interprets differently).
+
+
+#### Short interpretation example (from the `summary()`)
+
+Suppose `summary(wlw_fit)` gives for `treatment`:
+
+* coef = -0.4, exp(coef) = 0.67, robust SE, p-value < 0.05.
+
+Then: on average across event orders, the treatment `treatment` is associated with a **33% reduction** in the hazard of recurrence (WLW marginal hazard ratio ≈ 0.67), accounting for within-subject correlation via robust SEs.
+
+
+#### Quick checklist when doing WLW in practice
+
+* Use counting-process style (`Surv(start, stop, status)`) if you have interval data.
+* Use `strata(enum)` to let baseline hazards vary by event order.
+* Use `cluster(id)` for robust variance.
+* Decide whether effects should be common across orders or allowed to vary (interactions).
+* Compare to PWP and AG models if you need conditional or subject-specific interpretations.
+
+
+## Summary and Conclusion
+
+Marginal models provide a flexible framework for analyzing recurrent event data, focusing on population-average effects while accounting for within-subject correlation. The **Wei–Lin–Weissfeld (WLW)** model is a popular choice for estimating marginal hazard ratios for ordered recurrent events, allowing different baseline hazards for each event order but typically assuming a common covariate effect. In contrast, the **marginal mean method** of Lin and Ghosh estimates the expected number of recurrent events over time while properly accounting for terminal events like death.
+
+When choosing between these approaches, consider your scientific question: 
+
+* If you want to understand how covariates affect the instantaneous risk of recurrence, WLW is appropriate.
+* If you want to estimate the expected number of recurrences over time while accounting for death, the marginal mean method is more suitable.
+
+Both methods rely on robust variance estimation to handle within-subject correlation, making them practical for real-world recurrent event data. Always check model assumptions and consider alternative models (e.g., PWP, AG) based on your research goals. 
+
+## Resources
+
+* **Wei, Lin & Weissfeld (1989)** – *JASA*: Introduced the **WLW model**, treating each recurrent event as a separate process (marginal Cox model).
+* **Ghosh & Lin (2000)** – *Biometrics*: Proposed **marginal mean model** for recurrent events accounting for death.
+* **Cook & Lawless (2007)** – *The Statistical Analysis of Recurrent Events* (book): Comprehensive reference on WLW, PWP, AG, and marginal mean models.
+* **`survival`** → WLW and related models (`coxph()` with `strata(event)` and `cluster(id)`).
+* **`mets`** → Fast marginal mean estimator (`recurrentMarginal()`).
+* **`frailtypack`** → Joint frailty models for recurrent + terminal events.
+

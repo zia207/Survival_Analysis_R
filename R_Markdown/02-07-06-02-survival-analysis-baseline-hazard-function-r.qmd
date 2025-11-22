@@ -1,0 +1,356 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_02_survival_analysis_baseline_hazard_function_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_02_survival_analysis_baseline_hazard_function_python.ipynb)
+:::
+
+
+# 6.2  Baseline Hazard Function of Joint Models {.unnumbered}
+
+In **joint models** for longitudinal and time-to-event data, we simultaneously model:
+
+- A **longitudinal submodel** (e.g., CD4 cell count over time),
+- An **event submodel** (e.g., time to death).
+
+The event submodel is typically a **relative risk (Cox-type) model** of the form:
+
+$$
+h_i(t) = h_0(t) \exp\bigl( \mathbf{w}_i^\top \boldsymbol{\alpha} + \text{association terms} \bigr)
+$$
+
+- $ h_i(t) $: hazard for individual $i$ at time $t$,
+- $ h_0(t) $: **baseline hazard function** — the hazard when all covariates and association terms are zero,
+- $ \mathbf{w}_i $: baseline covariates (e.g., treatment),
+- The **association terms** link the longitudinal process to the event risk (e.g., current value of a biomarker).
+
+### How is this different from a "standard" shared random effects joint model?
+
+- In **classical joint models**, $ h_0(t) $ is often left **unspecified** (semi-parametric, like in Cox regression) or approximated via splines.
+- In **`JMbayes2`**, the baseline hazard is **explicitly modeled** using flexible parametric forms (e.g., B-splines, piecewise constants, Weibull).
+
+- This allows:
+
+  - Full Bayesian inference,
+  - Smooth estimation of $ h_0(t) $,
+  - Extrapolation beyond observed event times (with appropriate bases),
+  - Stratified or heterogeneous baseline hazards.
+
+Crucially, **`JMbayes2` does not use a Cox partial likelihood**. Instead, it **fully parametrizes** $ h_0(t) $, which is essential for:
+
+- Dynamic predictions,
+- Proper posterior inference,
+- Integration with Stan-based MCMC sampling.
+
+## Implementing Different Baseline Hazard Specifications in R
+
+Baseline Hazard can be implemented using the {JMbayes2} package in R for **Bayesian joint modeling of longitudinal and time-to-event (survival) data**. It enables simultaneous analysis of repeated longitudinal measurements (e.g., biomarker trajectories) and event outcomes (e.g., death or disease progression) by linking them through shared random effects or other association structures. Built on **Stan** for efficient Hamiltonian Monte Carlo sampling, {JMbayes2} supports flexible model specifications, including linear, generalized linear, or nonlinear mixed-effects models for the longitudinal submodel and Cox or accelerated failure time models for the survival submodel.
+
+![](Image/jbbyaes2_logo.png){width="120"}
+
+
+We’ll use the **AIDS dataset** included in `JMbayes2`, which contains:
+
+- Longitudinal CD4 cell counts (square-root transformed),
+- Time-to-death with censoring,
+- Treatment group (`drug`: ddC or ddI).
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression',
+		 'prodlim',
+		 'lava',
+		 'mstate',
+		 'regplot',
+		 'cmprskcoxmsm',
+		 'GLMMadaptive',
+		 'nlme',
+		 'lme4',
+		 'lattice',
+		 'JM',
+		 'joineR',
+		 'joineRML',
+		 'JMbayes2'
+		 
+		 )
+
+```
+
+```{r         
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+#devtools::install_github("ItziarI/WeDiBaDis")
+```
+
+### Verify Installation
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Load data
+
+```{r}
+data(aids)
+data(aids.id)  # baseline/event data (one row per patient)
+```
+
+### Fit a longitudinal submodel
+
+We model square-root CD4 counts with a natural spline for time and treatment interaction:
+
+```{r}
+fm <- lme(sqrt(CD4) ~ ns(obstime, 2) * drug,
+          data = aids,
+          random = list(patient = pdDiag(~ ns(obstime, 2))))
+```
+
+### Fit a Cox model for the event process
+
+```{r}
+CoxFit <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+```
+
+> Note: `coxph()` is only used to **extract design information** (covariates, event times). `JMbayes2` will **replace** the baseline hazard with its own parametric form.
+
+
+### Different Baseline Hazard Specifications
+
+All models below use the same longitudinal and covariate structure but differ in how $ h_0(t) $ is modeled.
+
+#### Penalized B-splines (Quadratic, on Original Time Scale) - Default
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Fit joint model with default B-splines baseline hazard
+jointFit1 <- jm(CoxFit, fm, time_var = "obstime")
+summary(jointFit1)
+```
+
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Plot estimated baseline hazard
+JMbayes2:::plot_hazard(jointFit1) 
+```
+
+- **Basis**: Quadratic B-splines (`Bsplines_degree = 2`),
+- **Knots**: 9 equidistant knots in $ (10^{-8}, T_{\max}) $,
+- **Penalty**: Second-order difference penalty on spline coefficients,
+- **Prior on smoothing**: $ \tau \sim \text{Gamma}(5, 0.5) $.
+
+> Smooth, flexible, default choice.
+
+
+####  Natural Cubic Splines on Log(Time)
+
+Avoids issues with $ H_0(0) > 0 $ and improves behavior near time zero.
+
+```{r}
+#| warning: false
+# update joint model with natural cubic splines on log(time)
+jointFit2 <- update(jointFit1, base_hazard = "log time, ns")
+summary(jointFit2)
+```
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Plot estimated baseline hazard with natural cubic splines on log(time)
+JMbayes2:::plot_hazard(jointFit2)
+```
+
+- Equivalent to:
+
+```{r}
+#| warning: false
+update(jointFit1, 
+         timescale_base_hazard = "log", 
+         basis = "ns")
+```
+
+- **Natural cubic splines** enforce linearity beyond boundary knots,
+- Works on **log(time)**, which often better captures hazard dynamics in chronic diseases.
+
+> Recommended for extrapolation and improved boundary behavior.
+
+
+#### Piecewise Constant Hazard
+
+Assumes hazard is constant within intervals (like in Poisson models).
+
+```{r}
+#| warning: false
+jointFit3 <- update(jointFit1, 
+                    base_hazard = "piecewise constant",
+                    base_hazard_segments = 5L)
+summary(jointFit3)
+```
+
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+JMbayes2:::plot_hazard(jointFit3)
+```
+
+- Splits follow-up into 5 equal-length intervals,
+- Estimates one hazard level per interval,
+- **Not smooth**, but simple and interpretable.
+
+>  Use for robustness checks or when smoothness is not critical.
+
+#### Piecewise Linear Hazard (on Log Time)
+
+Connects hazard estimates with straight lines.
+
+```{r}
+#| warning: false
+jointFit4 <- update(jointFit1,
+                    base_hazard = "piecewise linear, log time",
+                    base_hazard_segments = 3L,
+                    priors = list(penalized_bs_gammas = FALSE))
+```
+
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+JMbayes2:::plot_hazard(jointFit4)
+```
+
+- Uses 3 segments → 4 knots → 3 linear pieces,
+- **No penalization** (flat normal prior on coefficients),
+- Less smooth than splines but more flexible than piecewise constant.
+
+
+#### Weibull Baseline Hazard
+
+Parametric, assumes $ h_0(t) = \lambda \rho t^{\rho - 1} $.
+
+```{r}
+#| warning: false
+jointFit5 <- update(jointFit1, base_hazard = "weibull")
+summary(jointFit5)
+```
+
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+JMbayes2:::plot_hazard(jointFit5)
+```
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Extrapolate to month 24
+JMbayes2:::plot_hazard(jointFit5, tmax = 24)
+```
+
+- Equivalent to modeling $ \log h_0(t) = \beta_0 + \beta_1 \log t $,
+- **Fully parametric** → enables reliable extrapolation,
+- Only 2 parameters → less flexible but more stable with small samples.
+
+> Ideal when proportional hazards and Weibull shape are plausible.
+
+
+#### Stratified Baseline Hazards
+
+Allow different $ h_0(t) $ per group (e.g., by treatment).
+
+```{r}
+#| warning: false
+# Refit Cox model with stratification
+CoxFit2 <- coxph(Surv(Time, death) ~ strata(drug), data = aids.id)
+
+# Fit joint model with different baseline hazards per stratum
+jointFit6 <- jm(CoxFit2, fm, time_var = "obstime",
+                base_hazard = c("weibull", "log time, ns"))
+summary(jointFit6)
+```
+
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Plot both strata
+# JMbayes2:::plot_hazard(jointFit6)
+```
+
+- First element (`"weibull"`) → for first level of `drug` (e.g., ddC),
+- Second (`"log time, ns"`) → for second level (e.g., ddI),
+- Use `NA` to apply the default to a stratum: `c("weibull", NA)`.
+
+> Useful when proportional hazards assumption is violated across groups.
+
+#### Summary Table of Options
+
+| Specification                | `base_hazard` value               | Smooth? | Extrapolation? | Notes |
+|-----------------------------|-----------------------------------|--------|----------------|------|
+| Default B-splines           | (default)                         | Yes     | Limited        | Quadratic, penalized |
+| Natural cubic splines (log) | `"log time, ns"`                  | No     | Yes             | Recommended default |
+| Piecewise constant          | `"piecewise constant"`            | No     | No             | Simple, robust |
+| Piecewise linear            | `"piecewise linear, log time"`    | -     | -              | Linear segments |
+| Weibull                     | `"weibull"`                       | Yes     | es             | Fully parametric |
+| Stratified                  | `c("weibull", "log time, ns")`    | Depends| Depends        | Per-group flexibility |
+
+
+###  Practical Tips
+
+- **Start with `"log time, ns"`** — it often provides the best balance of flexibility and stability.
+- Use **Weibull** if you need to **extrapolate** (e.g., for long-term survival predictions).
+- Always **inspect `plot_hazard()`** to assess smoothness and plausibility.
+- For **stratified models**, ensure your `coxph()` model uses `strata()`.
+
+## Summary and Conclusion
+
+In joint modeling of longitudinal and time-to-event data, the **baseline hazard function** $ h_0(t) $ plays a crucial role in defining the risk of an event over time. The {JMbayes2} package in R provides flexible options to specify and estimate $ h_0(t) $, allowing researchers to tailor the model to their data and research questions. By choosing appropriate baseline hazard specifications—ranging from penalized B-splines to parametric forms like Weibull—analysts can capture the underlying hazard dynamics effectively, leading to more accurate inferences and predictions. Careful consideration of the baseline hazard structure, along with thorough model diagnostics, is essential for robust joint modeling analyses. 
+
+## Resources
+
+- Rizopoulos, D. (2025). *Baseline Hazard Function*. `JMbayes2` Vignette.  
+  https://drizopoulos.github.io/JMbayes2/articles/Baseline_Hazard.html
+- Rizopoulos, D. (2012). *Joint Models for Longitudinal and Time-to-Event Data*. Chapman & Hall/CRC.
+
+

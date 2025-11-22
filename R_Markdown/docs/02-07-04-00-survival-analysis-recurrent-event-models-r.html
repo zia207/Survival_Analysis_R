@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>survival-analysis-recurrent-event-models-r – Survival Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-3e0287c6c42128026c316e6e81ca3353.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Survival Analysis</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://sites.google.com/view/r-data-sci-env/home"> <i class="bi bi-house" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/zia207/r-colab"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/zia-ahmed207"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./zia207@gmail.com"> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block"></header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./Image/chapter_logo_survival_analysis_r.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Survival Analysis</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Non-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-00-survival-analysis-non-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Non-Parametric Methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-01-survival-analysis-kaplan-meier-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-02-survival-analysis-nelson-aalen-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nelson-Aalen Estimator</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Semi-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction Semi-Parametric Methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-01-survival-analysis-cox-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cox Proportional Hazards Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis with Time-Dependent Covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-03-survival-analysis-stratified-cox-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stratified Cox Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text"><strong>Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-00-survival-analysis-parametric-introduction-r.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction Parametric Methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-survival-analysis-landmark-analysis-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. Landmark Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-survival-analysis-aalen-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. Aalen’s Additive Regression Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-survival-analysis-risk-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Risk Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-survival-analysis-joint-modeling-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Joint Modeling of Longitudinal and Time-to-Event Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-07-survival-analysis-conditional-function-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Conditional Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-08-survival-analysis-time-dependent-covariates-r.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Time-Dependent Covariates</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#recurrent-event-models" id="toc-recurrent-event-models" class="nav-link active" data-scroll-target="#recurrent-event-models">Recurrent Event Models</a>
+  <ul>
+  <li><a href="#andersen-gill-ag-model" id="toc-andersen-gill-ag-model" class="nav-link" data-scroll-target="#andersen-gill-ag-model">Andersen-Gill (AG) Model</a></li>
+  <li><a href="#prentice-williams-peterson-pwp-model" id="toc-prentice-williams-peterson-pwp-model" class="nav-link" data-scroll-target="#prentice-williams-peterson-pwp-model">Prentice-Williams-Peterson (PWP) Model</a></li>
+  <li><a href="#frailty-models" id="toc-frailty-models" class="nav-link" data-scroll-target="#frailty-models">Frailty models</a></li>
+  <li><a href="#marginal-models-e.g.-wei-lin-weissfeld" id="toc-marginal-models-e.g.-wei-lin-weissfeld" class="nav-link" data-scroll-target="#marginal-models-e.g.-wei-lin-weissfeld">Marginal Models (e.g., Wei-Lin-Weissfeld)</a></li>
+  <li><a href="#choosing-the-right-model" id="toc-choosing-the-right-model" class="nav-link" data-scroll-target="#choosing-the-right-model">Choosing the Right Model</a></li>
+  <li><a href="#key-differences-between-models" id="toc-key-differences-between-models" class="nav-link" data-scroll-target="#key-differences-between-models">Key Differences Between Models</a></li>
+  </ul></li>
+  <li><a href="#comparison-with-survival-analysis-with-time-dependent-covariates" id="toc-comparison-with-survival-analysis-with-time-dependent-covariates" class="nav-link" data-scroll-target="#comparison-with-survival-analysis-with-time-dependent-covariates">Comparison with Survival Analysis with Time-Dependent Covariates</a>
+  <ul>
+  <li><a href="#summary-and-key-takeaways" id="toc-summary-and-key-takeaways" class="nav-link" data-scroll-target="#summary-and-key-takeaways">Summary and Key Takeaways</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_04_00_survival_analysis_recurrent_event_models_introduction_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_04_00_survival_analysis_recurrent_event_models_introduction_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<section id="recurrent-event-models" class="level1 unnumbered">
+<h1 class="unnumbered">Recurrent Event Models</h1>
+<p>Recurrent event models are statistical techniques used in survival analysis to study situations where the same event can occur multiple times for an individual subject over the observation period. These models extend traditional survival methods to account for the dependency and correlation between repeated events, such as multiple asthma attacks, recurrent infections, or repeated hospitalizations.Common approaches include:</p>
+<section id="andersen-gill-ag-model" class="level3">
+<h3 class="anchored" data-anchor-id="andersen-gill-ag-model">Andersen-Gill (AG) Model</h3>
+<p>The AG model is an extension of the Cox PH model that treats recurrent events as independent observations within a subject, adjusted for intra-subject correlation using a robust variance estimator (clustering by subject ID). It assumes that the hazard for each event depends on covariates and the time since the study start (or a reset time).</p>
+<ul>
+<li><strong>Key Features</strong>:
+<ul>
+<li><strong>Data Format</strong>: Uses the counting process format <code>(tstart, tstop, event)</code>, where each row represents a time interval for a subject, with <code>tstart</code> and <code>tstop</code> defining the interval and <code>event</code> indicating whether an event occurred at <code>tstop</code> (1 = event, 0 = censored).</li>
+<li><strong>Assumption</strong>: Baseline hazard is the same for all events within a subject, and events are conditionally independent given covariates. The robust variance accounts for correlation between events.</li>
+<li><strong>Use Case</strong>: When events are frequent and correlation between events is not the primary focus (e.g., repeated asthma attacks).</li>
+</ul></li>
+<li><strong>Hazard Function</strong>:</li>
+</ul>
+<p><span class="math display">\[
+h_i(t) = h_0(t) \exp(\beta' X_i(t)),
+\]</span></p>
+<p>where <span class="math inline">\(h_0(t)\)</span> is the baseline hazard, ( X_i(t) ) are covariates (possibly time-dependent), and ( <span class="math inline">\(\beta\)</span> ) are the regression coefficients. The <code>cluster(id)</code> term adjusts standard errors for intra-subject correlation.</p>
+<ul>
+<li><p><strong>Strengths</strong>: Flexible for time-dependent covariates; straightforward to implement.</p></li>
+<li><p><strong>Limitations</strong>: Assumes the same baseline hazard for all events; may not fully capture event dependence.</p></li>
+</ul>
+</section>
+<section id="prentice-williams-peterson-pwp-model" class="level3">
+<h3 class="anchored" data-anchor-id="prentice-williams-peterson-pwp-model">Prentice-Williams-Peterson (PWP) Model</h3>
+<p>The PWP model accounts for event order by stratifying the hazard function by event number (e.g., first event, second event) or conditioning on the time since the previous event. Two versions exist:</p>
+<ul>
+<li><p><strong>PWP-Total Time (PWP-TT)</strong>: Time is measured from the study start (like AG), but the hazard is stratified by event number.</p></li>
+<li><p><strong>PWP-Gap Time (PWP-GT)</strong>: Time is reset to zero after each event, modeling the hazard for the time to the next event (gap time).</p></li>
+<li><p><strong>Key Features</strong>:</p>
+<ul>
+<li><strong>Data Format</strong>: Similar to AG, uses <code>(tstart, tstop, event)</code>, but includes a <code>stratum</code> variable indicating event number (e.g., 1 for first event, 2 for second).</li>
+<li><strong>Assumption</strong>: The hazard function differs by event number (PWP-TT) or resets after each event (PWP-GT); accounts for event order explicitly.</li>
+<li><strong>Use Case</strong>: When event order matters (e.g., first vs.&nbsp;subsequent cancer recurrences).</li>
+</ul></li>
+<li><p><strong>Hazard Function</strong>:</p>
+<ul>
+<li>PWP-TT:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[
+h_{ik}(t) = h_{0k}(t) \exp(\beta' X_i(t)),
+\]</span></p>
+<p>where <span class="math inline">\(h_{0k}(t)\)</span> is the baseline hazard for the <span class="math inline">\(k\)</span>-th event.</p>
+<ul>
+<li>PWP-GT:</li>
+</ul>
+<p>$$ h_{ik}(u) = h_{0k}(u) (’ X_i(u)),</p>
+<p>$$</p>
+<p>where</p>
+<ul>
+<li><p><span class="math inline">\(u\)</span> = t</p></li>
+<li><p><span class="math inline">\(t_{k-1}\)</span> is the gap time since the previous event.</p></li>
+<li><p><strong>Strengths</strong>: Explicitly models event order or gap times; better for ordered events with distinct hazards.</p></li>
+<li><p><strong>Limitations</strong>: Requires sufficient events per stratum; more complex to interpret than AG.</p></li>
+</ul>
+</section>
+<section id="frailty-models" class="level3">
+<h3 class="anchored" data-anchor-id="frailty-models">Frailty models</h3>
+<p>Fraitlty models account for unobserved heterogeneity or clustering in survival data by introducing a random effect, termed “frailty.” The frailty represents unobserved factors that influence the hazard of an event, such as unmeasured patient characteristics or clustering effects (e.g., patients within hospitals). These models are particularly useful for handling correlated survival times, such as in recurrent event data, clustered data (e.g., family studies), or multi-center trials.</p>
+<ul>
+<li><strong>Hazard Function</strong>:</li>
+</ul>
+<p><span class="math display">\[
+  h_{ij}(t) = z_j h_0(t) \exp(\beta' X_{ij}(t)),
+\]</span> where: - <span class="math inline">\(h_0(t)\)</span>): Baseline hazard (unspecified in semi-parametric models like Cox). - <span class="math inline">\(z_j\)</span>: Frailty term for cluster <span class="math inline">\(j\)</span>, typically <span class="math inline">\(z_j \sim \text{Gamma}(1, \theta)\)</span> or <span class="math inline">\(z_j \sim \text{Log-Normal}(0, \sigma^2)\)</span>. - <span class="math inline">\(X_{ij}(t)\)</span>: Covariates (possibly time-dependent). - <span class="math inline">\(\beta\)</span>: Regression coefficients.</p>
+<ul>
+<li><p><strong>Assumption</strong>: Frailty terms are independent and identically distributed across clusters, capturing unobserved heterogeneity.</p></li>
+<li><p><strong>Use Case</strong>: Modeling recurrent events (e.g., repeated tumor recurrences), clustered data (e.g., patients within hospitals), or family studies where unobserved genetic factors influence survival</p></li>
+<li><p><strong>Strengths</strong>: Accounts for unobserved heterogeneity; models correlation within clusters.</p></li>
+<li><p><strong>Limitations</strong>: More complex estimation; requires assumptions about frailty distribution; interpretation of frailty effects can be challenging.</p></li>
+</ul>
+</section>
+<section id="marginal-models-e.g.-wei-lin-weissfeld" class="level3">
+<h3 class="anchored" data-anchor-id="marginal-models-e.g.-wei-lin-weissfeld">Marginal Models (e.g., Wei-Lin-Weissfeld)</h3>
+<p>Marginal models, such as the Wei-Lin-Weissfeld (WLW) approach, analyze recurrent event data by treating each event type as a separate process while accounting for the correlation between events within the same subject. This method uses robust variance estimation to adjust for intra-subject correlation without explicitly modeling the dependence structure.</p>
+<ul>
+<li><strong>Hazard Function</strong>:</li>
+</ul>
+<p><span class="math display">\[
+h_{ik}(t) = h_0(t) \exp(\beta' X_i(t)),
+\]</span></p>
+<p>where: - <span class="math inline">\(h_0(t)\)</span>: Baseline hazard (common across events). - <span class="math inline">\(X_i(t)\)</span>: Covariates (possibly time-dependent). - <span class="math inline">\(\beta\)</span>: Regression coefficients. - <strong>Key Features</strong>: - <strong>Data Format</strong>: Similar to AG, uses <code>(tstart, tstop,  event)</code>, with each row representing a time interval for a subject.</p>
+<ul>
+<li><strong>Assumption</strong>: Treats each event type as a separate process; uses robust variance to account for correlation.</li>
+<li><strong>Use Case</strong>: When interested in overall effects of covariates on recurrent events without focusing on event order or gap times.</li>
+<li><strong>Strengths</strong>: Simple to implement; flexible for time-dependent covariates.</li>
+<li><strong>Limitations</strong>: May not capture event dependence as explicitly as PWP models.</li>
+</ul>
+</section>
+<section id="choosing-the-right-model" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-the-right-model">Choosing the Right Model</h3>
+<p>The choice of recurrent event model depends on the research question, data structure, and assumptions about event dependence. Key considerations include:</p>
+<ul>
+<li><strong>Event Dependence</strong>: If event order matters, consider PWP models; if not , AG or marginal models may suffice.</li>
+<li><strong>Data Structure</strong>: Ensure data is in the appropriate format (e.g., counting process format for AG and PWP).</li>
+<li><strong>Covariates</strong>: Consider whether covariates are time-dependent and how they influence the hazard.</li>
+</ul>
+</section>
+<section id="key-differences-between-models" class="level2">
+<h2 class="anchored" data-anchor-id="key-differences-between-models">Key Differences Between Models</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 25%">
+<col style="width: 18%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Andersen-Gill (AG)</th>
+<th>Prentice-Williams-Peterson (PWP)</th>
+<th>Frailty Models</th>
+<th>Marginal Models (WLW)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Baseline Hazard</strong></td>
+<td>Single <span class="math inline">\(h_0(t)\)</span></td>
+<td>Stratified <span class="math inline">\(h_{0k}(t)\)</span> or gap time <span class="math inline">\(h_{0k}(u)\)</span></td>
+<td>Single <span class="math inline">\(h_0(t)\)</span> with frailty term</td>
+<td>Single <span class="math inline">\(h_0(t)\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Covariates</strong></td>
+<td>Fixed or time-dependent</td>
+<td>Fixed or time-dependent</td>
+<td>Fixed or time-dependent</td>
+<td>Fixed or time-dependent</td>
+</tr>
+<tr class="odd">
+<td><strong>Event Dependence</strong></td>
+<td>Assumes independence given covariates</td>
+<td>Models event order or gap times explicitly</td>
+<td>Accounts for unobserved heterogeneity</td>
+<td>Treats events as separate processes</td>
+</tr>
+<tr class="even">
+<td><strong>Data Structure</strong></td>
+<td>Counting process format</td>
+<td>Counting process format with stratum</td>
+<td>Standard survival format with clustering</td>
+<td>Counting process format</td>
+</tr>
+<tr class="odd">
+<td><strong>Primary Purpose</strong></td>
+<td>Handle recurrent events</td>
+<td>Handle ordered recurrent events</td>
+<td>Account for unobserved heterogeneity</td>
+<td>Analyze overall effects of recurrent events</td>
+</tr>
+<tr class="even">
+<td><strong>Effect Estimation</strong></td>
+<td>Single <span class="math inline">\(\boldsymbol{\beta}\)</span></td>
+<td>Single <span class="math inline">\(\ boldsymbol{\beta}\)</span> per stratum</td>
+<td>Single <span class="math inline">\(\boldsymbol{\beta}\)</span> with frailty variance</td>
+<td>Single <span class="math inline">\(\boldsymbol{\beta}\)</span></td>
+</tr>
+<tr class="odd">
+<td><strong>Correlation Handling</strong></td>
+<td>Robust variance (cluster by subject)</td>
+<td>Stratification by event number</td>
+<td>Random effect (frailty term)</td>
+<td>Robust variance (cluster by subject)</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="comparison-with-survival-analysis-with-time-dependent-covariates" class="level1">
+<h1>Comparison with Survival Analysis with Time-Dependent Covariates</h1>
+<p>While both are extensions of survival analysis (often based on the Cox model) and can overlap—recurrent event models frequently incorporate time-dependent covariates—their primary distinctions lie in purpose, data handling, and assumptions. Below is a comparison:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 44%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Recurrent Event Models</th>
+<th>Survival Analysis with Time-Dependent Covariates</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Primary Focus</strong></td>
+<td>Multiple occurrences of the same event per subject (e.g., repeated infections).</td>
+<td>Time to a single event, with predictors that change over time (e.g., varying blood pressure).</td>
+</tr>
+<tr class="even">
+<td><strong>Event Handling</strong></td>
+<td>Accounts for correlations and dependencies between repeated events using stratification, frailty, or counting processes.</td>
+<td>Assumes independent or single events; does not inherently model recurrence.</td>
+</tr>
+<tr class="odd">
+<td><strong>Data Structure</strong></td>
+<td>Multiple rows per subject for each event interval; supports counting multiple events.</td>
+<td>Multiple rows per subject for covariate change intervals; typically one event per subject.</td>
+</tr>
+<tr class="even">
+<td><strong>Common Models</strong></td>
+<td>Andersen-Gill, PWP-CP/GT, frailty, marginal models.</td>
+<td>Extended Cox PH model with time-varying covariates.</td>
+</tr>
+<tr class="odd">
+<td><strong>Assumptions</strong></td>
+<td>Handles intra-subject correlation (e.g., via clustering or random effects); events are dependent.</td>
+<td>Proportional hazards with time-varying effects; events are independent across subjects.</td>
+</tr>
+<tr class="even">
+<td><strong>Applications</strong></td>
+<td>Longitudinal studies with repeated outcomes, like chronic diseases or hospitalizations.</td>
+<td>Studies where predictors evolve, but the outcome is a one-time event (e.g., progression-free survival with changing biomarkers).</td>
+</tr>
+<tr class="odd">
+<td><strong>Challenges</strong></td>
+<td>Model selection based on event dependence (e.g., PWP-CP for conditional risks); potential for bias if correlations ignored.</td>
+<td>Avoiding bias from future-dependent covariates; interpretation complexity with varying effects.</td>
+</tr>
+<tr class="even">
+<td><strong>Overlap/Extensions</strong></td>
+<td>Can include time-dependent covariates; uses similar interval encoding.</td>
+<td>Can be adapted for recurrent events by combining with recurrent models (e.g., AG model with time-varying predictors).</td>
+</tr>
+</tbody>
+</table>
+<p>In summary, recurrent event models are specialized for repeated events and their interdependencies, whereas survival analysis with time-dependent covariates emphasizes dynamic predictors for typically singular events. Choosing between them depends on whether the research question involves recurrence or time-varying influences.</p>
+<section id="summary-and-key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="summary-and-key-takeaways">Summary and Key Takeaways</h2>
+<ul>
+<li>Recurrent event models extend traditional survival analysis to handle multiple occurrences of the same event per subject, accounting for dependencies between events.</li>
+<li>Common recurrent event models include Andersen-Gill (AG), Prentice-Williams-Pet erson (PWP), frailty models, and marginal models (e.g., Wei-Lin-Weissfeld).</li>
+<li>Each model has unique assumptions, data structures, and applications, making them suitable for different research contexts.</li>
+<li>Recurrent event models can incorporate time-dependent covariates, but their primary focus is on event recurrence rather than solely on changing predictors.</li>
+<li>Choosing the appropriate model depends on the research question, data characteristics, and assumptions about event dependence</li>
+<li>Understanding the distinctions between recurrent event models and survival analysis with time-dependent covariates is crucial for accurate modeling and interpretation in survival analysis studies.</li>
+</ul>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ol type="1">
+<li><strong>Book: “The Statistical Analysis of Recurrent Events” by Cook &amp; Lawless (2007)</strong>
+<ul>
+<li>Covers PWP models with theory and R examples.<br>
+</li>
+<li>Access: Springer or libraries (ISBN: 978-0-387-69809-0).</li>
+</ul></li>
+<li><strong>R “survival” Package Vignette (CRAN)</strong>
+<ul>
+<li>Guides PWP model fitting with <code>coxph()</code> and datasets like <code>bladder</code>.<br>
+</li>
+<li>Access: <code>vignette("survival")</code> or CRAN website.</li>
+</ul></li>
+<li><strong>Article: Cook &amp; Lawless (2002)</strong>
+<ul>
+<li>Reviews PWP-TT/GT models and applications.<br>
+</li>
+<li>Access: PubMed or Sage Journals (DOI: 10.1191/0962280202sm295ra).</li>
+</ul></li>
+<li><strong>UCLA Tutorial: Recurrent Event Analysis in R</strong>
+<ul>
+<li>Step-by-step R code for PWP models using <code>survival</code>.<br>
+</li>
+<li>Access: https://stats.idre.ucla.edu/r/seminars/recurrent-events/.</li>
+</ul></li>
+<li><strong>Book: “Survival Analysis” by Klein &amp; Moeschberger (2003, Ch. 12)</strong>
+<ul>
+<li>Explains PWP models and counting processes.<br>
+</li>
+<li>Access: Springer or libraries (ISBN: 978-0-387-95399-1).</li>
+</ul></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© CC-By Zia Ahmed, Unversity at Buffalo 2024</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

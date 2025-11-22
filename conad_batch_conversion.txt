@@ -1,0 +1,12 @@
+cd ~/Dropbox/WebSites/R_Website/Survival_Analysis_R
+
+python batch_qmd_to_ipynb.py
+# → Folder: R_Markdown
+# → Output folder: Colab_Notebooks
+
+python rmd_to_colab.py ./rmd_sources ./colab_notebooks
+
+python rmd_to_colab.py ./home/zia207/Dropbox/WebSites/R_Website/Survival_Analysis_R/R_Markdown ./home/zia207/Dropbox/WebSites/R_Website/Survival_Analysis_R/Colab_Notebook
+
+
+python rmd_to_colab.py R_Markdown Colab_Notebook

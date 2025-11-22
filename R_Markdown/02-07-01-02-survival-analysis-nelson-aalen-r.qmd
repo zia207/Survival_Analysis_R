@@ -1,0 +1,449 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_02_survival_analysis_non_parametric_kaplan_meier_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_01_02_survival_analysis_non_parametric_nelson_aalen_python.ipynb)
+:::
+
+
+# 1.2 The Nelson-Aalen Estimator {.unnumbered}
+
+This tutorial provides a hands-on introduction to the Nelson-Aalen estimator, a key non-parametric method in survival analysis. We'll use the `lung` dataset from the `survival` package in R, which contains data from a clinical trial on lung cancer patients. The tutorial is structured to guide you step-by-step, from theory to practical implementation. By the end, you'll be able to compute cumulative hazard estimates, plot survival curves, and compare groups.
+
+All code examples can be run in R or RStudio. Ensure you have the `survival` package installed (`install.packages("survival")` if needed).
+
+## Overview
+
+Survival analysis studies the time until an event of interest occurs, such as patient death or disease recurrence. A challenge is handling **censoring**, where the event is not observed for all subjects (e.g., patients still alive at study end). Non-parametric methods like the Kaplan-Meier estimator for survival probability and the Nelson-Aalen estimator for the cumulative hazard function are foundational tools.
+
+In this tutorial, we'll focus on the **Nelson-Aalen estimator**, which estimates the cumulative hazard function $H(t)$, representing the accumulated risk up to time $t$. The survival probability $S(t)$ relates to it via $S(t) = \exp(-H(t))$. We'll apply it to the `lung` dataset:
+
+- **Dataset Overview**: 228 observations from a lung cancer trial (1960s). Key variables:
+
+  - `time`: Survival time in days.
+  - `status`: Event indicator (1 = death, 0 = censored).
+  - `sex`: Patient sex (1 = male, 2 = female).
+  - Other covariates: `age`, `ph.ecog` (performance status), etc.
+
+We'll compute estimates, plot curves, find medians, and compare male vs. female survival using the log-rank test.
+
+
+The Nelson-Aalen estimator is a non-parametric estimate of the cumulative hazard function $H(t) = \int_0^t h(u) \, du$, where $h(u)$ is the hazard rate (instantaneous risk of event at time $u$, given survival to $u$.
+
+Under the assumption of independent censoring, the estimator is:
+
+$$
+\hat{H}(t) = \sum_{t_i \leq t} \frac{d_i}{n_i}
+$$
+
+- $t_i$: Distinct event times (ordered).
+- $d_i$: Number of events (deaths) at $t_i$.
+- $n_i$: Number of individuals at risk just before $t_i$ (those who haven't experienced the event or been censored yet).
+
+This is a step function that jumps at each event time by $d_i / n_i$. The variance estimate is $\hat{\sigma}^2(t) = \sum_{t_i \leq t} \frac{d_i}{n_i (n_i - d_i)} $, useful for confidence intervals.
+
+Unlike the Kaplan-Meier (which estimates $(t)$ directly and handles ties differently), Nelson-Aalen focuses on the hazard and is more straightforward for cumulative risk. It's implemented in R's `survival` package via `survfit()`.
+
+## Nelson-Aalen estimator from Scratch 
+
+In this tutorial, we’ll implement the **Nelson-Aalen Estimator** from scratch in R using the `lung` dataset from the `survival` package. We'll avoid directly using `survfit(..., type = "aalen")` for the core computation, instead manually calculating the cumulative hazard function $ \hat{H}(t) = \sum_{t_i \leq t} \frac{d_i}{n_i} $. We’ll then derive the survival function, compute confidence intervals, estimate x-year survival probabilities, plot the survival curve, calculate the median survival time, and compare survival between groups (male vs. female) using the log-rank test. The `survival` package will be used for data handling and the log-rank test, but the Nelson-Aalen computation will be coded manually.
+
+### Data 
+
+```{r}
+#| warning: false
+library(survival)
+# Load the lung dataset
+data(lung)
+# Create a data frame with time, status, and sex
+data <- data.frame(
+  time = lung$time,
+  status = lung$status,  # 1 = event (death), 0 = censored
+  sex = lung$sex         # 1 = male, 2 = female
+)
+```
+
+
+### Function to compute Nelson-Aalen estimator from scratch
+
+```{r}
+# Function to compute Nelson-Aalen estimator from scratch
+nelson_aalen <- function(time, status) {
+  # Ensure data is sorted by time
+  ord <- order(time)
+  time <- time[ord]
+  status <- status[ord]
+  
+  # Identify unique event times (where status == 1)
+  event_times <- unique(time[status == 1])
+  event_times <- sort(event_times)
+  
+  # Initialize vectors
+  n_risk <- numeric(length(event_times))  # Number at risk
+  n_event <- numeric(length(event_times)) # Number of events
+  cumhaz <- numeric(length(event_times))  # Cumulative hazard
+  variance <- numeric(length(event_times))# Variance of cumhaz
+  
+  # Compute n_i (at risk) and d_i (events) at each event time
+  for (i in seq_along(event_times)) {
+    t_i <- event_times[i]
+    n_risk[i] <- sum(time >= t_i)  # Subjects still at risk
+    n_event[i] <- sum(time == t_i & status == 1)  # Events at t_i
+    cumhaz[i] <- ifelse(i == 1, 0, cumhaz[i-1]) + n_event[i] / n_risk[i]
+    variance[i] <- ifelse(i == 1, 0, variance[i-1]) + n_event[i] / (n_risk[i] * (n_risk[i] - n_event[i]))
+  }
+  
+  return(list(
+    time = event_times,
+    n.risk = n_risk,
+    n.event = n_event,
+    cumhaz = cumhaz,
+    variance = variance
+  ))
+}
+```
+
+### Compute Nelson-Aalen for the entire dataset
+
+```{r}
+# Compute Nelson-Aalen for the entire dataset
+na_fit <- nelson_aalen(data$time, data$status)
+summary(na_fit)
+```
+
+### Derive survival function S(t) = exp(-H(t))
+
+```{r}
+# Derive survival function S(t) = exp(-H(t))
+survival <- exp(-na_fit$cumhaz)
+
+# Confidence intervals (95%) for cumulative hazard
+z <- qnorm(0.975)  # Z-score for 95% CI
+lower_haz <- na_fit$cumhaz - z * sqrt(na_fit$variance)
+upper_haz <- na_fit$cumhaz + z * sqrt(na_fit$variance)
+lower_surv <- exp(-upper_haz)  # Survival CI: exp(-upper_haz) is lower bound
+upper_surv <- exp(-lower_haz)  # exp(-lower_haz) is upper bound
+
+# Estimating x-Year Survival
+# For 1-year (365 days) and 5-year (1825 days) survival
+t_1yr <- 365
+t_5yr <- 1825
+
+# Find closest time points
+idx_1yr <- max(which(na_fit$time <= t_1yr))
+idx_5yr <- max(which(na_fit$time <= t_5yr))
+
+s_1yr <- survival[idx_1yr]
+s_5yr <- survival[idx_5yr]
+
+cat("1-Year Survival Probability:", round(s_1yr, 3), "\n")
+cat("5-Year Survival Probability:", round(s_5yr, 3), "\n")
+```
+
+###  Plot Survival Curve
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Plot Survival Curve
+plot(na_fit$time, survival, type = "s", col = "red", lwd = 2,
+     xlab = "Time (days)", ylab = "Survival Probability S(t)",
+     main = "Nelson-Aalen Survival Curve (Lung Dataset)")
+lines(na_fit$time, lower_surv, col = "red", lty = 2)
+lines(na_fit$time, upper_surv, col = "red", lty = 2)
+legend("topright", c("S(t)", "95% CI"), col = "red", lty = c(1, 2), lwd = c(2, 1))
+```
+
+### Median Survival Time
+
+```{r}
+# Median Survival Time
+# Find time where S(t) <= 0.5
+median_idx <- min(which(survival <= 0.5))
+median_time <- na_fit$time[median_idx]
+cat("Median Survival Time:", median_time, "days\n")
+```
+
+###  Survival Times Between Groups (Male vs. Female)
+
+```{r}
+# Survival Times Between Groups (Male vs. Female)
+# Subset data by sex
+data_male <- subset(data, sex == 1)
+data_female <- subset(data, sex == 2)
+
+# Compute Nelson-Aalen for each group
+na_male <- nelson_aalen(data_male$time, data_male$status)
+na_female <- nelson_aalen(data_female$time, data_female$status)
+
+# Derive survival curves
+surv_male <- exp(-na_male$cumhaz)
+surv_female <- exp(-na_female$cumhaz)
+```
+
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Survival Times Between Groups (Male vs. Female)
+# Plot survival curves by group
+plot(na_male$time, surv_male, type = "s", col = "blue", lwd = 2,
+     xlab = "Time (days)", ylab = "Survival Probability",
+     main = "Survival Curves by Sex (Male: Blue, Female: Red)")
+lines(na_female$time, surv_female, col = "red", lwd = 2)
+legend("topright", c("Male", "Female"), col = c("blue", "red"), lwd = 2)
+```
+
+### Log-rank test for group comparison
+
+```{r}
+# Log-rank test for group comparison
+surv_obj <- Surv(time = data$time, event = data$status)
+logrank_test <- survdiff(surv_obj ~ data$sex)
+print(logrank_test)
+```
+
+```{r}
+# remove all objects
+rm(list=ls())
+```
+
+
+## Nelson-Aalen estimato in R
+
+In this section, we will demonstrate how to compute the Nelson-Aalen estimator using R's `survival` package. We'll cover loading the data, calculating the estimator, estimating x-year survival probabilities, plotting survival curves, calculating median survival time, and comparing survival between groups using the log-rank test.
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'gtsummary',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'riskRegression'
+		 )
+
+```
+
+
+``` 
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+ devtools::install_github("ItziarI/WeDiBaDis")
+``` 
+ 
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+ 
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+First, load the necessary package and dataset. We'll inspect the data and create a survival object.
+
+
+```{r}
+#| warning: false
+# Load the lung dataset
+data(lung)
+# Create a data frame with relevant variables
+data <- data.frame(
+  time = lung$time,
+  status = lung$status,  # 1 = event (death), 0 = censored
+  sex = lung$sex         # 1 = male, 2 = female
+)
+```
+
+
+### Ctrate a survival object
+
+```{r}
+# Create a survival object
+surv_obj <- Surv(time = data$time, event = data$status)
+```
+
+
+### Calculating the Nelson-Aalen Estimator
+
+```{r}
+# Calculating the Nelson-Aalen Estimator
+# Use survfit to compute the cumulative hazard (Nelson-Aalen estimator)
+fit_na <- survfit(surv_obj ~ 1, type = "fh")  # 'fh' specifies Fleming-Harrington (Nelson-Aalen)
+```
+
+
+###  Extract key components
+
+```{r}
+na_summary <- summary(fit_na)
+times <- na_summary$time
+n_risk <- na_summary$n.risk
+n_event <- na_summary$n.event
+cumhaz <- na_summary$cumhaz
+std_err <- na_summary$std.chaz  # Standard error of cumhaz
+
+# Derive survival function S(t) = exp(-H(t))
+survival <- exp(-cumhaz)
+
+# Compute 95% confidence intervals for cumulative hazard and survival
+z <- qnorm(0.975)  # Z-score for 95% CI
+lower_haz <- cumhaz - z * std_err
+upper_haz <- cumhaz + z * std_err
+lower_surv <- exp(-upper_haz)  # Lower survival bound
+upper_surv <- exp(-lower_haz)  # Upper survival bound
+
+# Print a few rows of the results
+cat("Sample of Nelson-Aalen Estimates:\n")
+print(data.frame(Time = times[1:5], N_Risk = n_risk[1:5], N_Event = n_event[1:5], CumHaz = cumhaz[1:5]))
+```
+
+
+
+
+
+### Estimating x-Year Survival
+
+The x-year survival probability is \( \hat{S}(t) = \exp(-\hat{H}(t)) \). For 1-year (365 days) and 5-year (1825 days) survival:
+
+```{r}
+# Extract cumhaz at specific times
+t_1yr <- 365
+t_5yr <- 1825
+
+# Find the closest time points and compute S(t)
+cumhaz_1yr <- approx(fit_na$time, fit_na$cumhaz, xout = t_1yr, method = "constant", rule = 2)$y
+cumhaz_5yr <- approx(fit_na$time, fit_na$cumhaz, xout = t_5yr, method = "constant", rule = 2)$y
+
+s_1yr <- exp(-cumhaz_1yr)
+s_5yr <- exp(-cumhaz_5yr)
+
+cat("1-Year Survival Probability:", round(s_1yr, 3), "\n")
+cat("5-Year Survival Probability:", round(s_5yr, 3), "\n")
+```
+
+### Plot Survival Curve
+
+Plot the cumulative hazard directly or derive the survival curve.
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Plot cumulative hazard (Nelson-Aalen)
+plot(fit_na, fun = "cumhaz", xlab = "Time (days)", ylab = "Cumulative Hazard H(t)",
+     main = "Nelson-Aalen Cumulative Hazard Estimate", col = "blue", lwd = 2)
+```
+
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Alternatively, plot survival curve (derived from Nelson-Aalen)
+plot(fit_na, xlab = "Time (days)", ylab = "Survival Probability S(t)",
+     main = "Survival Curve (from Nelson-Aalen)", col = "red", lwd = 2)
+```
+
+The cumulative hazard plot shows a rising step function, while the survival plot decreases toward 0.
+
+### Median Survival Time
+
+The median is the time where $\hat{S}(t) = 0.5$, or $\hat{H}(t) = \ln(2) \approx 0.693$.
+
+```{r}
+# Median from survival curve
+median_time <- median(fit_na)
+cat("Median Survival Time:", median_time, "days\n")
+
+# Or manually: find time where cumhaz >= log(2)
+log2 <- log(2)
+median_idx <- min(which(fit_na$cumhaz >= log2))
+median_manual <- fit_na$time[median_idx]
+cat("Manual Median (days):", median_manual, "\n")
+```
+
+### Survival Times Between Groups (Male/Female) Using the Log-Rank Test
+
+Compare groups by sex. Fit stratified models and use `survdiff()` for the log-rank test (tests if survival curves differ).
+
+```{r}
+# Fit Nelson-Aalen by sex
+fit_by_sex <- survfit(surv_obj ~ sex, data = data)
+# Summary of
+summary(fit_by_sex)
+```
+
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Plot survival curves by group
+plot(fit_by_sex, col = c("blue", "red"), lwd = 2, 
+     xlab = "Time (days)", ylab = "Survival Probability",
+     main = "Survival Curves by Sex (Male: Blue, Female: Red)")
+
+legend("topright", c("Male", "Female"), col = c("blue", "red"), lwd = 2)
+```
+
+```{r}
+# Log-rank test
+logrank_test <- survdiff(surv_obj ~ sex, data = lung)
+print(logrank_test)
+# Medians by group
+summary(fit_by_sex)$table  # Includes medians
+```
+
+
+Females show better survival (higher p-value indicates difference). Medians: Males ~252 days, Females ~426 days.
+
+## Summary and Conclusion
+
+In this tutorial, we explored the Nelson-Aalen estimator using the `lung` dataset. We covered its theory as a cumulative hazard estimator, data preparation with `Surv()`, computation via `survfit()`, x-year survival estimates, plotting, median calculation, and group comparisons with the log-rank test. Key takeaways:
+
+- Nelson-Aalen is robust and non-parametric, ideal for exploratory analysis.
+- It complements Kaplan-Meier by focusing on hazard accumulation.
+- In the `lung` data, overall median survival is ~310 days, with females faring better (log-rank p=0.0065).
+
+This method is foundational for more advanced models like Cox regression. Practice with your own data to build intuition.
+
+## Resources
+
+- **Books**:
+  - Klein, J. P., & Moeschberger, M. L. (2003). *Survival Analysis: Techniques for Censored and Truncated Data*. Springer.
+  - Therneau, T. M., & Grambsch, P. M. (2000). *Modeling Survival Data: Extending the Cox Model*. Springer.
+
+- **Online**:
+  - R `survival` package vignette: `vignette("survival")`.
+  - UCLA IDRE Tutorial: https://stats.idre.ucla.edu/r/dae/non-parametric-survival-analysis-using-r/.
+  - Datacamp: "Survival Analysis in R" course.
+

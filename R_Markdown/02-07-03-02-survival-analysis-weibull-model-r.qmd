@@ -1,0 +1,494 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_03_02_survival_analysis_weibull_model_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_03_02_survival_analysis_weibull_model_python.ipynb)
+:::
+
+# 3.2 The Weibull Model for Survival Analysis {.unnumbered}
+
+This tutorial demonstrates how to fit and interpret a Weibull model for survival analysis in R. The Weibull model is a flexible parametric model that allows for increasing, decreasing, or constant hazard rates, making it more versatile than the exponential model.
+
+## Overview
+
+The Weibull model is a versatile parametric model in survival analysis, capable of modeling increasing, decreasing, or constant hazard rates. Below, I derive the key mathematical functions for the Weibull distribution—**probability density function (PDF)**, **survival function**, **hazard function**, and **cumulative hazard function**—starting from first principles. I’ll keep the derivation clear and concise, focusing on the standard two-parameter Weibull distribution commonly used in survival analysis.
+
+### Parameters
+The Weibull distribution is characterized by two parameters:
+
+- $\lambda > 0$: **Scale parameter**, related to the characteristic life or spread of the distribution.
+- $(p > 0$: **Shape parameter**, which determines the behavior of the hazard function:
+  - $p > 1$: Increasing hazard (e.g., aging systems).
+  - $p < 1$: Decreasing hazard (e.g., early failures).
+  - $p = 1$: Constant hazard (reduces to the exponential model).
+
+The random variable $T$ represents the survival time ($T\geq 0$).
+
+### Probability Density Function (PDF)
+
+The PDF, $f(t)$, describes the probability density of the event occurring at time $t$.
+
+**Derivation**:
+
+The Weibull PDF is defined as:
+
+$$
+f(t) = p \lambda^p t^{p-1} e^{-(\lambda t)^p}, \quad t \geq 0, \quad \lambda, p > 0
+$$
+
+- **Origin**: The Weibull distribution generalizes the exponential distribution. For the exponential ($p = 1$), the PDF is $f(t) = \lambda e^{-\lambda t}$. The Weibull introduces the shape parameter $p$, which modifies the time scale via $t^{p-1}$ and the exponential term via $(\lambda t)^p$.
+
+- **Normalization**: To ensure $f(t)$ is a valid PDF, it must integrate to 1 over $[0, \infty)$:
+
+$$
+  \int_0^\infty f(t) \, dt = \int_0^\infty p \lambda^p t^{p-1} e^{-(\lambda t)^p} \, dt
+$$
+  Substitute $u = (\lambda t)^p$, so $t = u^{1/p} / \lambda$, $dt = \frac{1}{p} \lambda^{-1} u^{1/p - 1} \, du$:
+
+$$
+  \int_0^\infty p \lambda^p \left(\frac{u^{1/p}}{\lambda}\right)^{p-1} e^{-u} \cdot \frac{1}{p} \lambda^{-1} u^{1/p - 1} \, du
+$$
+  Simplify:
+$$
+  = \int_0^\infty p \lambda^p \cdot \lambda^{1-p} u^{(p-1)/p} \cdot \frac{1}{p} \lambda^{-1} u^{1/p - 1} e^{-u} \, du
+  = \int_0^\infty \lambda^{p - (p-1) - 1} u^{(p-1)/p + 1/p - 1} e^{-u} \, du
+  = \int_0^\infty e^{-u} \, du = 1
+$$
+  This confirms the PDF is properly normalized.
+
+### Survival Function
+
+The survival function, $S(t) = P(T > t)$, is the probability of surviving past time $t$. It is derived from the cumulative distribution function (CDF), $F(t) = P(T \leq t)$.
+
+**Derivation**:
+
+The CDF is the integral of the PDF:
+
+$$
+F(t) = \int_0^t f(u) \, du = \int_0^t p \lambda^p u^{p-1} e^{-(\lambda u)^p} \, du
+$$
+Using the same substitution as above, $v = (\lambda u)^p$, $u = v^{1/p} / \lambda$, $du = \frac{1}{p} \lambda^{-1} v^{1/p - 1} \, dv$:
+
+$$
+F(t) = \int_0^{(\lambda t)^p} p \lambda^p \left(\frac{v^{1/p}}{\lambda}\right)^{p-1} e^{-v} \cdot \frac{1}{p} \lambda^{-1} v^{1/p - 1} \, dv
+= \int_0^{(\lambda t)^p} e^{-v} \, dv = \left[ -e^{-v} \right]_0^{(\lambda t)^p} = 1 - e^{-(\lambda t)^p}
+$$
+Thus, the survival function is:
+$$
+S(t) = 1 - F(t) = e^{-(\lambda t)^p}
+$$
+- **Properties**:
+
+  - $S(0) = e^0 = 1$ (100% survival at $t = 0$).
+  
+  - As $t \to \infty$, $S(t) \to 0$.
+  
+  - When $p = 1$, $S(t) = e^{-\lambda t}$, recovering the exponential survival function.
+
+### Hazard Function
+
+The hazard function, $h(t)$, is the instantaneous rate of the event occurring at time $t$, given survival up to $t$. It is defined as:
+
+$$
+h(t) = \frac{f(t)}{S(t)}
+$$
+
+**Derivation**:
+Using the PDF and survival function:
+
+$$
+h(t) = \frac{p \lambda^p t^{p-1} e^{-(\lambda t)^p}}{e^{-(\lambda t)^p}} = p \lambda^p t^{p-1}
+$$
+Simplify:
+
+$$
+h(t) = p \lambda^p t^{p-1} = \lambda p (\lambda t)^{p-1}
+$$
+- **Properties**:
+
+  - The hazard depends on $t^{p-1}$:
+  
+    - If $p > 1$, $h(t)$ increases with time (e.g., wear-out failures).
+    
+    - If $p < 1$, $h(t)$ decreases (e.g., early failures).
+    
+    - If $p = 1$, $h(t) = \lambda$, constant (exponential model).
+    
+  - The term $\lambda^p$ scales the hazard, and $p$ shapes its time dependency.
+
+###  Cumulative Hazard Function
+
+The cumulative hazard function, $H(t)$, is the integral of the hazard function over time:
+
+$$
+H(t) = \int_0^t h(u) \, du
+$$
+
+**Derivation**:
+
+$$
+h(u) = p \lambda^p u^{p-1}
+$$
+Integrate:
+
+$$
+H(t) = \int_0^t p \lambda^p u^{p-1} \, du = \lambda^p \left[ u^p \right]_0^t = \lambda^p t^p = (\lambda t)^p
+$$
+
+- **Relationship to Survival**: The survival function can be expressed as:
+
+$$
+S(t) = e^{-H(t)} = e^{-(\lambda t)^p}
+$$
+  This confirms consistency across the functions.
+
+### Summary of Weibull Functions
+
+- **PDF**: $f(t) = p \lambda^p t^{p-1} e^{-(\lambda t)^p}$
+- **Survival Function**: $S(t) = e^{-(\lambda t)^p}$
+- **Hazard Function**: $h(t) = p \lambda^p t^{p-1} = \lambda p (\lambda t)^{p-1}$
+- **Cumulative Hazard**: $H(t) = (\lambda t)^p$
+
+### Additional Notes
+
+- **Mean and Variance**:
+
+  - Mean: $E[T] = \lambda^{-1} \Gamma(1 + 1/p)$, where $\Gamma$ is the gamma function.
+  
+  - Variance: $\text{Var}(T) = \lambda^{-2} \left[ \Gamma(1 + 2/p) - \Gamma(1 + 1/p)^2 \right]$.
+  
+- **Special Case**: When $p = 1$, the Weibull reduces to the exponential model ($f(t) = \lambda e^{-\lambda t}$, $S(t) = e^{-\lambda t}$, $h(t) = \lambda$.
+
+- **Practical Use**: In R’s `survreg` (from the `survival` package), the Weibull model is fit with `dist = "weibull"`. The scale parameter is $\lambda = \exp(-\text{Intercept}/\text{scale})$, and the shape parameter is $p = 1/\text{scale}$.
+
+- **Flexibility**: The Weibull’s ability to model non-constant hazards makes it widely applicable in reliability engineering, medical survival analysis, and more.
+
+These derivations show how the Weibull functions are interconnected, with the shape parameter \(p\) providing flexibility over the exponential model.
+
+
+## Implementation in R
+
+ We'll use the `survival` package to fit the model, interpret results, make predictions, and visualize outputs. We'll use the `lung` dataset from the `survival` package for demonstration.
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'flexsurv',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression'
+		 )
+
+```
+
+``` 
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+devtools::install_github("ItziarI/WeDiBaDis")
+
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+We'll use the built-in `lung` dataset from the `survival` package for demonstration. This dataset contains survival times for patients with advanced lung cancer. Key variables:
+
+   - `time`: Survival time in days.
+   - `status`: Censoring indicator (1 = censored, 2 = dead; we'll recode it to 0/1 for standard use).
+   - Covariates like `age`, `sex`, etc.
+
+
+```{R}
+data(lung)
+head(lung)  # View the first few rows
+```
+
+
+### Preparing the Data
+
+Create a survival object using the `Surv()` function to handle time and censoring.
+
+```{R}
+# Recode status: 1 = censored (0), 2 = dead (1)
+lung$status <- lung$status - 1
+
+# Create survival object
+surv_object <- Surv(time = lung$time, event = lung$status)
+```
+
+### Fitting the Weibull Model
+
+The Weibull model is fit using `survreg()` with `dist = "weibull"`. The Weibull model can be parameterized as an Accelerated Failure Time (AFT) model, where the survival time follows a Weibull distribution. The model estimates a scale parameter ($\lambda$) and a shape parameter ($p$), where:
+
+- $p > 1$: Increasing hazard rate.
+- $p < 1$: Decreasing hazard rate.
+- $p = 1$: Constant hazard (equivalent to exponential).
+
+### Without Covariates (Intercept-Only Model)
+
+Fit a basic Weibull model to estimate baseline survival.
+
+```{R}
+# Fit the Weibull model
+weibull_model <- survreg(surv_object ~ 1, data = lung, dist = "weibull")
+# View summary
+summary(weibull_model)
+```
+
+**Output interpretation**:
+
+- **Intercept**: Log of the scale parameter ($log(\lambda)$).
+
+- **Log(scale)**: Related to the shape parameter ($p = 1 / \text{scale}$). If $\log(\text{scale}) < 0$, then $p > 1$, indicating an increasing hazard.
+
+- **Hazard function**: $h(t) = \lambda p (\lambda t)^{p-1}$, where $\lambda = \exp(-\text{Intercept}/\text{scale})$.
+
+- **Survival function**: $S(t) = \exp(-(\lambda t)^p)$.
+
+### With Covariates
+
+Include covariates like `age` and `sex` (1 = male, 2 = female) to model their effect on survival time.
+
+```{R}
+# Fit Weibull model with covariates
+weibull_model_cov <- survreg(Surv(time, status) ~ age + sex, data = lung, dist = "weibull")
+# View summary
+summary(weibull_model_cov)
+```
+
+**Interpretation**:
+
+- Coefficients are on the log-time scale (AFT model). A positive coefficient increases survival time (decreases hazard).
+
+- For example, a positive coefficient for `sex` suggests females have longer survival times.
+
+- Hazard ratio for a covariate: $\exp(-\text{coefficient} / \text{scale})$.
+
+- The shape parameter ($p = 1 / \text{scale}$) determines the hazard's behavior over time.
+
+To test model significance:
+
+```{R}
+anova(weibull_model_cov)
+```
+
+### Interpreting the Results
+
+- **Shape Parameter**: Extract $p = 1 / \exp(\log(\text{scale}))$.
+
+```{R}
+p <- 1 / exp(weibull_model_cov$scale)
+p  # Shape parameter
+```
+ 
+  If \(p > 1\), the hazard increases over time; if \(p < 1\), it decreases.
+
+- **Scale Parameter**: \(\lambda = \exp(-\text{Intercept} / \text{scale})\).
+
+```{R}
+lambda <- exp(-coef(weibull_model)[1] / weibull_model_cov$scale)
+lambda
+```
+
+- **Goodness-of-Fit**: Compare AIC to other models (e.g., exponential).
+
+```{R}
+exp_model_cov <- survreg(Surv(time, status) ~ age + sex, data = lung, dist = "exponential")
+AIC(weibull_model_cov, exp_model_cov)
+```
+ 
+  Lower AIC indicates a better fit. Weibull often outperforms exponential due to its flexibility.
+
+- **Confidence Intervals**:
+
+```{R}
+confint(weibull_model_cov)
+```
+
+### Making Predictions
+
+#### Predicted Survival Times
+
+Predict median survival times for individuals.
+
+```{R}
+# Predict median survival times for the fitted model
+predict(weibull_model_cov, type = "response")
+
+# For new data (e.g., a 60-year-old male)
+new_data <- data.frame(age = 60, sex = 1)
+predict(weibull_model_cov, newdata = new_data, type = "response")
+```
+
+### Survival Probabilities
+
+Calculate survival probabilities at specific times.
+
+```{R}
+# Survival probability at t=500 days for the new data
+t <- 500
+linear_predictor <- predict(weibull_model_cov, newdata = new_data, type = "lp")
+p <- 1 / weibull_model_cov$scale
+surv_prob <- exp(-(t / exp(linear_predictor))^p)
+surv_prob
+```
+
+### Plotting and Visualization
+
+Visualize survival curves and check model fit.
+
+#### Survival Curve
+
+Compare the Weibull model to the non-parametric Kaplan-Meier estimate.
+
+```{R}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Fit Kaplan-Meier for comparison
+km_fit <- survfit(surv_object ~ 1)
+
+# Plot KM curve
+plot(km_fit, main = "Kaplan-Meier vs Weibull Survival Curve", 
+     xlab = "Time (days)", ylab = "Survival Probability", 
+     col = "black", lwd = 2)
+
+# Add Weibull curve (null model)
+t_seq <- seq(0, max(lung$time), length.out = 100)
+lambda <- exp(-coef(weibull_model)[1] / weibull_model$scale)
+p <- 1 / weibull_model$scale
+surv_weibull <- exp(-(lambda * t_seq)^p)
+lines(t_seq, surv_weibull, col = "red", lwd = 2)
+legend("topright", c("Kaplan-Meier", "Weibull"), col = c("black", "red"), lwd = 2)
+```
+
+If the Weibull curve closely follows the Kaplan-Meier curve, the model fits well.
+
+#### Hazard Plot
+
+Plot the hazard function to visualize its shape.
+
+```{R}
+#| fig.width: 5.5
+#| fig.height: 4.5
+#| 
+# Hazard function: h(t) = lambda * p * (lambda * t)^(p-1)
+t_seq <- seq(0.1, max(lung$time), length.out = 100)
+hazard <- lambda * p * (lambda * t_seq)^(p - 1)
+plot(t_seq, hazard, type = "l", col = "blue", lwd = 2,
+     main = "Weibull Hazard Function", xlab = "Time (days)", ylab = "Hazard Rate")
+```
+
+#### Diagnostic Plot
+
+Check residuals to assess model fit.
+
+```{R}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Residual plot
+plot(predict(weibull_model_cov, type = "response"), residuals(weibull_model_cov), 
+     xlab = "Fitted Values", ylab = "Residuals", main = "Residual Plot")
+abline(h = 0, col = "red")
+```
+
+## Advanced Topics and Tips
+
+- **Including More Covariates**: Add variables like `ph.ecog` (performance status) to the model.
+
+```{R}
+  weibull_model_full <- survreg(Surv(time, status) ~ age + sex + ph.ecog, data = lung, dist = "weibull")
+  summary(weibull_model_full)
+```
+
+
+- **Alternative Packages**: The `flexsurv` package offers more flexibility for Weibull and other distributions, including proportional hazards parameterization.
+
+```{R}
+#install.packages("flexsurv")
+library(flexsurv)
+flexsurv_model <- flexsurvreg(Surv(time, status) ~ age + sex, data = lung, dist = "weibull")
+# summary(flexsurv_model)
+```
+
+- **Checking Assumptions**: Use cumulative hazard plots or log-log plots to check the Weibull assumption. For log-log:
+
+```{R}
+#| fig.width: 5.5
+#| fig.height: 4.5
+km_loglog <- survfit(surv_object ~ 1)
+plot(km_loglog, fun = "cloglog", main = "Log-Log Plot for Weibull Assumption")
+```
+ 
+A straight line suggests Weibull is appropriate.
+
+- **Limitations**: If hazards are non-monotonic, consider log-normal or log-logistic models. If the shape parameter is unstable, check data quality or try semi-parametric models (e.g., Cox).
+
+- **Resources**: See the `survival` vignette (`vignette("survival")`) or "Applied Survival Analysis" by Hosmer and Lemeshow.
+
+
+## Summary and Conclusion
+
+The Weibull model is a powerful and flexible tool for survival analysis, capable of modeling various hazard shapes. This tutorial covered: 
+- Fitting Weibull models with and without covariates using `survreg()`.
+- Interpreting model parameters, including the shape and scale.
+- Making predictions for survival times and probabilities.
+- Visualizing survival curves and hazard functions to assess model fit.
+- Checking model assumptions and exploring advanced topics.
+
+With practice, the Weibull model can provide valuable insights into time-to-event data across various fields, from medical research to engineering reliability. This tutorial serves as a foundation for applying and interpreting Weibull survival models in R.
+
+
+## Resources
+
+- **R Documentation**:
+  - `survreg`: [https://rdrr.io/r/stats/survreg.html](https://rdrr.io/r/stats/survreg.html)
+  - `flexsurvreg`: [https://cran.r-project.org/web/packages/flexsurv/flexsurv.pdf](https://cran.r-project.org/web/packages/flexsurv/flexsurv.pdf)
+- **Books**:
+  - "Survival Analysis: Techniques for Censored and Truncated Data" by Klein & Moeschberger
+  - "Applied Survival Analysis" by Hosmer, Lemeshow, & May
+- **Tutorials**:
+  - UCLA IDRE Survival Analysis with R: [https://stats.idre.ucla.edu/r/seminars/survival-analysis-with-r/](https://stats.idre.ucla.edu/r/seminars/survival-analysis-with-r/)
+  - R-bloggers: [https://www.r-bloggers.com/](https://www.r-bloggers.com/)
+- **Online Courses**:
+  - Coursera: "Survival Analysis in R" by Duke University
+  - edX: "Survival Analysis" by Harvard University
+
+
+```{r}
+rm(list = ls())
+```

@@ -1,0 +1,223 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_00_survival_analysis_introduction_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_00_survival_analysis_introduction_python.ipynb)
+:::
+
+# Survival Analysis {.unnumbered}
+
+Survival analysis is a statistical method that examines the time until a specific event occurs, such as death, disease relapse, or machine failure. It is valuable for studying event timing and accounts for cases where some individuals do not experience the event during the study period, known as censoring. This chapter will cover the key concepts, functions, and types of survival analysis, along with their applications in different fields.
+
+## Overview
+
+Survival analysis is a branch of statistics that focuses on analyzing time-to-event data. It is commonly used to study the duration until a specific event occurs, such as time until death, disease relapse, or machine failure. This method is especially useful when the timing of the event is the primary concern, and it accounts for cases where some individuals may not experience the event during the study period, a situation known as censoring. 
+
+## Key Concepts
+
+1.  **Event**: Survival Analysis typically focuses on *time to event data*. In the most general sense, it consists of techniques for positive-valued random variables, such as
+
+    -   time to death
+
+    -   time to onset (or relapse) of a disease
+
+    -   length of a contract
+
+    -   duration of a policy
+
+    -   money paid by health insurance
+
+    -   viral load measurements
+
+    -   time to finishing a master thesis
+
+2.  **Survival Time**: The time from the starting point (like diagnosis or study enrollment) to the event of interest. For individuals who don’t experience the event during the study, this time is considered *censored*.
+
+3.  **Censoring**: Occurs when the event of interest has not happened for some subjects during the observation period.
+
+   ![](Image/censoring.png){width="551"}
+
+   ::: callout-note
+    RICH JT, NEELY JG, PANIELLO RC, VOELKER CCJ, NUSSENBAUM B, WANG EW. A PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES. Otolaryngology head and neck surgery: official journal of American Academy of Otolaryngology Head and Neck Surgery. 2010;143(3):331-336. <doi:10.1016/j.otohns.2010.05.007>.
+    :::
+
+   There are three common types:
+
+  -   **Right censoring**: The most common type, where the event hasn't occurred by the end of the study, or the subject is lost to follow-up.
+
+  -   **Left censoring**: The event happened before the subject entered the study, but the exact time is unknown.
+
+  -   **Interval censoring**: The event happened within a certain interval, but the exact timing is unclear.
+
+    ![](Image/types_censoring.png){width="543"}
+
+## Functions Used in Survival Analysis
+
+1.  **Survival Function** $(S(t))$
+
+  -   This gives the probability that the time to event is greater than some time $t$.
+
+    -   Mathematically: $S(t)=P(T>t)$
+
+    -   It starts at 1 (all subjects are "surviving" at time $(0)$ and decreases over time.
+
+2.  **Hazard Function** $(h(t))$
+
+   -   This describes the instantaneous rate at which events occur, given that the subject has survived up to time $t$.
+
+    -   Mathematically: $h(t)=\frac{f(t)}{S(t)}$, where $f(t)$ is the probability density function of the event time.
+
+    -   It's a measure of the event risk over time.
+
+3.  **Cumulative Hazard Function** $(H(t))$
+
+    -   It sums the hazard over time, giving a total risk of experiencing the event by time $t$.
+
+   -   Mathematically: $H(t) = \int_0^t h(u) \, du$
+
+The survival function is generally considered to be smooth in a theoretical context; however, when examining real-world data, we find that events often occur at discrete points in time.
+
+The **survival probability**, represented as $S(t)$, indicates the likelihood of surviving beyond a particular time threshold. This probability is conditional upon the individual having survived up until that moment. To estimate this survival probability, we take the number of patients who remain alive and have not been lost to follow-up at that specific time and divide it by the total number of patients who were alive just prior to that time.
+
+The **Kaplan-Meier** estimator provides a method to calculate the survival probability at any given time by multiplying these conditional probabilities from the start of the observation period up to that moment.
+
+At the very beginning, or at time zero, the survival probability is set at 1, which implies that $S(t_0) = 1$, indicating that all individuals are alive at the start of the study.ory, the survival function is smooth; in practice, we observe events on a discrete time scale.
+
+The **survival probability** at a certain time, $S(t)$, is a conditional probability of surviving beyond that time, given that an individual has survived just prior to that time. The survival probability can be estimated as the number of patients who are alive without loss to follow-up at that time, divided by the number of patients who were alive just prior to that time.
+
+The **Kaplan-Meier** estimate of survival probability at a given time is the product of these conditional probabilities up until that given time.
+
+At time 0, the survival probability is 1, i.e. $S(t_0)=1$.
+
+## Types of Survival Analysis
+
+Survival analysis methods are broadly categorized based on their approach to modeling the survival or hazard function. Below are the main types:
+
+### **Non-parametric Methods**
+
+These methods make no assumptions about the underlying distribution of survival times. They’re used to estimate the survival function or compare survival curves between groups.
+
+ - `Kaplan-Meier Estimator`: Estimates the survival function $(t)$ by calculating the proportion of subjects surviving past each event time. It produces a step-function survival curve. Visualize survival probabilities over time, compare groups (e.g., treatment vs. control).
+ - `Nelson-Aalen Estimator`: Estimates the cumulative hazard function, which can be used to derive the survival function. Provides an alternative to Kaplan-Meier for hazard-focused analysis.
+ - `Log-Rank Test`: Compares survival distributions between two or more groups to test if they differ significantly. Testing if a new drug improves survival compared to a placebo.
+
+
+### **Semi-parametric Methods**
+
+These methods assume a specific form for the relationship between covariates and the hazard but don’t require a specific distribution for survival times.
+
+- `Cox Proportional Hazards Model`: Models the hazard function as $h(t|X) = h_0(t) \exp(\beta X)$, where $h_0(t)$ is the baseline hazard and $X$ are covariates. Assumes the hazard ratios are constant over time (proportional hazards assumption).Assess the effect of covariates (e.g., age, treatment) on survival.
+- `Time-dependent Cox Model` Allows covariates or hazard ratios to vary over time.
+- `Stratified Cox Model`: Handles non-proportional hazards by stratifying on variables.
+
+### **Parametric Methods**
+
+ These methods assume a specific distribution for survival times (e.g., exponential, Weibull, log-normal or Log-normal or Log-logistic, Gompertz, Gamma Model, Generalized Gamma Model). They model both the survival/hazard function and the effect of covariates.
+ 
+- `Exponential`: Assumes a constant hazard rate over time. Simple but often unrealistic. Modeling events with constant risk, like radioactive decay.
+- `Weibull`: Allows hazard to increase or decrease over time, parameterized by shape and scale. Flexible for modeling accelerating or decelerating risks, like equipment failure.
+- `Log-normal or Log-logistic`: Models survival times with a skewed distribution, often used for biological processes. When survival times are log-normally distributed, like recovery times.
+- `Gompertz`: Models hazards that increase exponentially with time, common in aging studies. Analyzing human mortality patterns.
+- `Gamma Model`: Another flexible model, though less commonly used than Weibull.
+- `Generalized Gamma Model`: A very flexible model that encompasses exponential, Weibull, and log-normal as special cases.
+
+
+### Comparison of Major Types of Survival Analysis
+
+| Type              | Description                                                                 | Key Methods/Techniques                                                                 | Assumptions/Strengths                                                                 | Common Applications                  |
+|-------------------|-----------------------------------------------------------------------------|----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------|
+| **Non-Parametric** | Makes no assumptions about the hazard function shape; focuses on empirical estimates from data. | - Kaplan-Meier (KM) estimator: Plots survival curves.<br>- Log-rank test: Compares survival between groups. | - No distributional assumptions.<br>- Robust to outliers; handles censoring well.<br>- Weakness: Less powerful for small samples or covariates. | Descriptive analysis of survival curves (e.g., comparing treatment groups in clinical trials). |
+| **Semi-Parametric** | Assumes proportional hazards (constant hazard ratio over time) but no specific distribution. | - Cox proportional hazards model: Estimates hazard ratios for covariates. | - Flexible for covariates.<br>- No need for full hazard shape.<br>- Requires proportional hazards assumption (testable via Schoenfeld residuals). | Modeling effects of predictors (e.g., age, treatment) on survival in observational studies. |
+| **Parametric**    | Assumes a specific probability distribution for survival times (e.g., exponential, Weibull). | - Exponential model: Constant hazard.<br>- Weibull model: Allows increasing/decreasing hazards.<br>- Log-normal or log-logistic models. | - Provides full likelihood estimates.<br>- Good for extrapolation beyond data.<br>- Requires correct distribution choice (misspecification can bias results). | Predictive modeling with short follow-up (e.g., reliability engineering for machine failure times). 
+
+
+## Adavanced Extensions
+
+Additionally, advanced extensions include:
+
+
+### Competing Risks Analysis
+
+- `Cause-specific Hazard Models`: Models the hazard for each specific event type, treating other events as censoring. Estimating risk of death from a specific cause.
+-  `Cumulative Incidence Function (CIF)`: Estimates the probability of a specific event occurring before others.  Comparing the probability of different failure types in engineering.
+- `Fine-Gray Model`: A semi-parametric model that directly models the CIF, accounting for competing risks.
+- `Subdistribution Hazard Models`: Focuses on the hazard of a specific event type while accounting for the presence of competing events. Analyzing time to cardiovascular death in the presence of non-cardiovascular deaths.
+- `Multi-state Models`: Models transitions between multiple states (e.g., healthy, diseased, dead) over time. Studying disease progression with competing risks.
+- `Landmark Analysis`: Evaluates the effect of covariates at specific time points, accounting for competing risks. Assessing treatment effects at a landmark time in cancer studies.
+- `Aalen's Additive regression model` for competing risks: A flexible approach that allows for time-varying effects of covariates on the hazard of different event types. Modeling the impact of risk factors on different causes of failure in mechanical systems.
+
+### Recurrent Event Analysis
+
+ Models multiple events occurring over time for the same subject (e.g., repeated hospitalizations).
+ 
+- `Andersen-Gill Model`: Extends the Cox model to count multiple events, assuming independence between events conditional on covariates. Analyzing recurrent asthma attacks.
+- `Prentice-Williams-Peterson (PWP) Model`: Accounts for the order of events, modeling the time to the k-th event. Studying repeated infections.
+- `Marginal Models`: Treats each event as a separate observation, adjusting for correlation within subjects. Studying repeated equipment failures.
+- `Gap Time Models`: Focus on the time between events (gap times). Modeling time between hospital readmissions.
+- `Frailty Models`: Incorporates random effects to account for unobserved heterogeneity in recurrent events. Analyzing repeated seizures in epilepsy patients.
+
+### Machine Learning Approaches
+
+Survival analysis in ML extends traditional methods by leveraging computational power and flexibility to handle complex, high-dimensional, and time-varying data. Applications span healthcare, engineering, finance, and marketing, with ML models like random survival forests, deep learning, and competing risks models driving innovation
+
+`Tree-Based Methods`: Random survival forests and gradient-boosted survival trees  handle non-linear relationships and high-dimensional data, outperforming traditional Cox models in complex datasets.
+
+`Deep Learning`: Neural network-based survival models like DeepSurv, DeepHit, or Nnet-survival integrate survival analysis with deep learning, capturing complex patterns in large-scale data (e.g., electronic health records).
+
+`Time-Series Integration`: Recurrent neural networks (RNNs) or transformers adapt survival analysis for sequential data, such as IoT sensor streams or user activity logs.
+
+`Handling Censoring`: ML models explicitly account for censoring (e.g., patients lost to follow-up) using loss functions tailored for partial likelihood or rank-based objectives.
+
+
+### Practical Considerations
+
+- `Choosing a Method`: Depends on the study’s goal, data structure, and assumptions. Non-parametric methods are good for exploration, semi-parametric for covariate effects, and parametric for specific distributional assumptions.
+- `Software`: Tools like R (survival, survminer), Python (lifelines, scikit-survival), or SAS support these analyses.
+- `Challenges`: Censoring, time-dependent covariates, and violations of assumptions (e.g., proportional hazards) require careful handling.
+
+If you’d like a deeper dive into any specific method, an example with data, or a chart to visualize survival curves, let me know!
+
+
+## Applications of Survival Analysis
+
+1.  **Medical Research**:
+
+    -   To study the time until a patient dies or relapses after treatment.
+
+    -   To assess the impact of various treatments or risk factors on survival times.
+
+2.  **Reliability Engineering**:
+
+    -   To model the time until failure for mechanical systems or components, and to predict lifespans.
+
+3.  **Customer Retention**:
+
+    -   To understand how long a customer remains active with a company before "churning" (leaving the service).
+
+4.  **Economics**:
+
+    -   To analyze the time until an event like unemployment, bankruptcy, or loan default occurs.
+
+### Major Types of Survival Analysis
+
+Survival analysis is a statistical branch focused on time-to-event data, handling issues like censoring (incomplete observations). While it encompasses a range of techniques, the major types are broadly categorized into **non-parametric**, **semi-parametric**, and **parametric** methods. These differ in their assumptions about the underlying hazard function (the instantaneous risk of the event occurring). Below, I outline the primary types, their key characteristics, and common applications, based on established statistical practices.
+
+|
+
+Additionally, advanced extensions include:
+- **Tree-Based Models**: Such as survival trees or random survival forests, which handle non-linear interactions and are useful for high-dimensional data.
+- **Competing Risks Models**: Accounts for multiple possible events (e.g., death from different causes), using methods like the Fine-Gray model.
+- **Frailty Models**: Incorporates unobserved heterogeneity (e.g., random effects for clustered data like family studies).
+
+Choosing a type depends on data characteristics (e.g., sample size, censoring rate) and goals (e.g., estimation vs. comparison). For instance, start with non-parametric for exploration, then move to semi-parametric for covariate adjustment. These methods are implemented in software like R (e.g., `survival` package) or Python (e.g., `lifelines` library).
+
+## References
+
+1.  "Survival Analysis: Techniques for Censored and Truncated Data" by John P. Klein and Melvin L. Moeschberger: This book provides comprehensive coverage of both parametric and non-parametric methods in survival analysis.
+
+2.  "Applied Survival Analysis: Regression Modeling of Time-to-Event Data" by David W. Hosmer, Stanley Lemeshow, and Susanne May: This is another authoritative source on the topic, especially on the Cox model and its extensions.
+
+3.  [Survival data analysis](https://www.karlin.mff.cuni.cz/~pesta/NMFM404/survival.html)
+
+4.  [Survival Analysis in R](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html)

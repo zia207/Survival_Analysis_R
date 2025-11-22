@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Survival Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./02-07-05-04-survival-analysis-aalen-model-r.html" rel="next">
+<link href="./02-07-05-02-survival-analysis-subdistribution-hazard-regression.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Survival Analysis</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://sites.google.com/view/r-data-sci-env/home"> <i class="bi bi-house" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/zia207/r-colab"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/zia-ahmed207"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./zia207@gmail.com"> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./02-07-05-00-survival-analysi-risk-regression-introduction-r.html"><strong>Risk Regression</strong></a></li><li class="breadcrumb-item"><a href="./02-07-05-03-survival-analysis-absolute-risk-regression-r.html">Absolute Risk Regression (Direct CIF Modeling)</a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./Image/chapter_logo_survival_analysis_r.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text"><strong>Survival Analysis</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text"><strong>Non-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-00-survival-analysis-non-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Non-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-01-survival-analysis-kaplan-meier-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-01-02-survival-analysis-nelson-aalen-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nelson-Aalen Estimator</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+ <span class="menu-text"><strong>Semi-Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-00-survival-analysis-semi-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Semi-Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-01-survival-analysis-cox-regression-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cox Proportional Hazards Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-02-survival-analysis-time-dependent-covariates-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis with Time-Dependent Covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-02-03-survival-analysis-stratified-cox-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stratified Cox Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+ <span class="menu-text"><strong>Parametric Methods</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-00-survival-analysis-parametric-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Parametric Survival Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-01-survival-analysis-exponential-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exponential Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-02-survival-analysis-weibull-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Weibull Model for Survival Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-03-survival-analysis-log-normal-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Normal Survival Model f</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-04-survival-analysis-log-logistic-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Log-Logistic Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-05-survival-analysis-generalized-gamma-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Gamma Survival Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-03-06-survival-analysis-gompertz-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gompertz Survival Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+ <span class="menu-text"><strong>Recurrent Event Models</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-00-survival-analysis-recurrent-event-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Recurrent Event Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-01-survival-analysis-andersen-gill-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andersen-Gill (AG) Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prentice-Williams-Peterson (PWP) Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-03-survival-analysis-frailty-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frailty Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-04-04-survival-analysis-marginal-models-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Marginal Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+ <span class="menu-text"><strong>Risk Regression</strong></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-00-survival-analysi-risk-regression-introduction-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to Risk Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-01-survival-analysis-cause-specific-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cause-Specific Hazard Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-02-survival-analysis-subdistribution-hazard-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Subdistribution Hazard Regression (Fine-Gray Model)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-03-survival-analysis-absolute-risk-regression-r.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Absolute Risk Regression (Direct CIF Modeling)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-05-04-survival-analysis-aalen-model-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aalen’s Additive Regression Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#absolute-risk-regression-direct-cif-modeling" id="toc-absolute-risk-regression-direct-cif-modeling" class="nav-link active" data-scroll-target="#absolute-risk-regression-direct-cif-modeling">5.3 Absolute Risk Regression (Direct CIF Modeling)</a>
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#what-is-absolute-risk" id="toc-what-is-absolute-risk" class="nav-link" data-scroll-target="#what-is-absolute-risk">What is Absolute Risk?</a></li>
+  <li><a href="#advantages" id="toc-advantages" class="nav-link" data-scroll-target="#advantages">Advantages</a></li>
+  <li><a href="#challenges" id="toc-challenges" class="nav-link" data-scroll-target="#challenges">Challenges</a></li>
+  </ul></li>
+  <li><a href="#absolute-risk-regression-in-r" id="toc-absolute-risk-regression-in-r" class="nav-link" data-scroll-target="#absolute-risk-regression-in-r">Absolute Risk Regression in R</a>
+  <ul class="collapse">
+  <li><a href="#install-required-r-packages" id="toc-install-required-r-packages" class="nav-link" data-scroll-target="#install-required-r-packages">Install Required R Packages</a></li>
+  <li><a href="#verify-installation" id="toc-verify-installation" class="nav-link" data-scroll-target="#verify-installation">Verify installation</a></li>
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load Packages</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">Data Preparation</a></li>
+  <li><a href="#prepare-data-and-event-definition" id="toc-prepare-data-and-event-definition" class="nav-link" data-scroll-target="#prepare-data-and-event-definition">Prepare Data and Event Definition</a></li>
+  </ul></li>
+  <li><a href="#absolute-risk-regression-with-timereg" id="toc-absolute-risk-regression-with-timereg" class="nav-link" data-scroll-target="#absolute-risk-regression-with-timereg">Absolute Risk Regression with <code>timereg</code></a>
+  <ul class="collapse">
+  <li><a href="#fit-absolute-risk-model" id="toc-fit-absolute-risk-model" class="nav-link" data-scroll-target="#fit-absolute-risk-model">Fit Absolute Risk Model</a></li>
+  <li><a href="#model-additive-additive-on-logit-scale-default" id="toc-model-additive-additive-on-logit-scale-default" class="nav-link" data-scroll-target="#model-additive-additive-on-logit-scale-default"><code>model = "additive"</code> — <strong>Additive on Logit Scale (Default)</strong></a></li>
+  <li><a href="#model-prop-proportional-absolute-risk" id="toc-model-prop-proportional-absolute-risk" class="nav-link" data-scroll-target="#model-prop-proportional-absolute-risk"><code>model = "prop"</code> — <strong>Proportional Absolute Risk</strong></a></li>
+  <li><a href="#model-rcif-relative-cumulative-incidence-function" id="toc-model-rcif-relative-cumulative-incidence-function" class="nav-link" data-scroll-target="#model-rcif-relative-cumulative-incidence-function"><code>model = "rcif"</code> — <strong>Relative Cumulative Incidence Function</strong></a></li>
+  <li><a href="#model-logistic-logistic-proportional-odds-on-cif" id="toc-model-logistic-logistic-proportional-odds-on-cif" class="nav-link" data-scroll-target="#model-logistic-logistic-proportional-odds-on-cif"><code>model = "logistic"</code> — <strong>Logistic (Proportional Odds on CIF)</strong></a></li>
+  <li><a href="#which-model-to-choose" id="toc-which-model-to-choose" class="nav-link" data-scroll-target="#which-model-to-choose">Which Model to Choose?</a></li>
+  </ul></li>
+  <li><a href="#absolute-risk-regression-with-riskregression-package" id="toc-absolute-risk-regression-with-riskregression-package" class="nav-link" data-scroll-target="#absolute-risk-regression-with-riskregression-package">Absolute Risk Regression with ’riskRegression` package</a>
+  <ul class="collapse">
+  <li><a href="#absolute-risk-regression---single-binary-factor" id="toc-absolute-risk-regression---single-binary-factor" class="nav-link" data-scroll-target="#absolute-risk-regression---single-binary-factor">Absolute Risk Regression - single binary factor</a></li>
+  <li><a href="#absolute-risk-regression---single-continous-variable" id="toc-absolute-risk-regression---single-continous-variable" class="nav-link" data-scroll-target="#absolute-risk-regression---single-continous-variable">Absolute Risk Regression - single continous variable</a></li>
+  <li><a href="#absolute-risk-regression---multiple-covariates" id="toc-absolute-risk-regression---multiple-covariates" class="nav-link" data-scroll-target="#absolute-risk-regression---multiple-covariates">Absolute Risk Regression - multiple covariates</a></li>
+  <li><a href="#absolute-risk-regression---stratified-model" id="toc-absolute-risk-regression---stratified-model" class="nav-link" data-scroll-target="#absolute-risk-regression---stratified-model">Absolute risk regression - stratified model</a></li>
+  <li><a href="#logistic-absolute-risk-regression" id="toc-logistic-absolute-risk-regression" class="nav-link" data-scroll-target="#logistic-absolute-risk-regression">Logistic Absolute Risk Regression</a></li>
+  </ul></li>
+  <li><a href="#summary-and-conclusion" id="toc-summary-and-conclusion" class="nav-link" data-scroll-target="#summary-and-conclusion">Summary and Conclusion</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_05_03_survival_analysis_absolute_risk_regression_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_05_03_survival_analysis_absolute_risk_regression_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<section id="absolute-risk-regression-direct-cif-modeling" class="level1 unnumbered">
+<h1 class="unnumbered">5.3 Absolute Risk Regression (Direct CIF Modeling)</h1>
+<p>Absolute Risk Regression** — also known as Direct CIF (Cumulative Incidence Function) Modeling— is a statistical approach used in competing risks survival analysis to model the absolute risk (probability)` of a specific event occurring by a certain time, directly. Unlike traditional regression models that often focus on relative risks (how much more or less likely an event is in one group compared to another), absolute risk models aim to provide a direct estimate of the actual risk of an event.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>In competing risks survival data, an individual can experience <code>multiple types of events</code> — e.g., death from melanoma vs.&nbsp;death from other causes. The <strong>Absolute Risk Regression (ARR)</strong> model directly models the <strong>Cumulative Incidence Function (CIF)</strong> — that is, the absolute probability of a specific event by time <code>t</code>, given covariates. Unlike hazard models (Cox or Fine–Gray), ARR gives <code>direct probabilities</code>, which are easier to interpret in clinical and public health contexts. In competing risks, individuals may fail from one of several mutually exclusive causes (e.g., death from cancer vs.&nbsp;death from heart disease).</p>
+<section id="what-is-absolute-risk" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-absolute-risk">What is Absolute Risk?</h3>
+<p>Imagine you’re trying to predict the chance of someone developing a certain disease in the next 10 years.</p>
+<p><code>Relative Risk</code>: If Group A has a relative risk of 2 compared to Group B, it means people in Group A are twice as likely to develop the disease. However, if the baseline risk in Group B is very low (e.g., 1 in 10,000), then being “twice as likely” still means a very small absolute risk (2 in 10,000).</p>
+<p><code>Absolute Risk</code>: This is the actual probability. For example, “There is a 5% chance that this individual will develop the disease in the next 10 years.” This is often more intuitive and directly relevant for patients and clinicians.</p>
+<p>In contrast to the <strong>Cox proportional hazards model</strong>, which estimates <em>relative risk</em> (how much more likely one group is to experience an event compared to another), <strong>absolute risk models estimate the actual risk (or hazard) on an absolute scale</strong>, often expressed as:</p>
+<ul>
+<li><strong>Instantaneous event rate (hazard)</strong> at time <em>t</em>, or<br>
+</li>
+<li><strong>Cumulative incidence</strong>: the probability of experiencing the event by time <em>t</em>.</li>
+</ul>
+<p>This makes them especially useful in <strong>clinical decision-making</strong>, <strong>public health planning</strong>, and <strong>personalized risk prediction</strong>, where knowing the <em>actual risk</em> (e.g., “You have a 15% chance of recurrence in 5 years”) is more actionable than a relative measure (e.g., “Your risk is 2× higher”).</p>
+<p>In survival analysis with <strong>competing risks</strong>, absolute risk is quantified by the <strong>Cumulative Incidence Function (CIF)</strong> for event type (k):</p>
+<p><span class="math display">\[
+F_k(t) = P(T \leq t, \text{cause} = k)
+\]</span></p>
+<p><strong>Direct CIF modeling</strong> regresses <span class="math inline">\(F_k(t)\)</span> directly on covariates <span class="math inline">\(\mathbf{X}\)</span>, bypassing hazard modeling. A common approach uses <strong>pseudo-values</strong>:</p>
+<ol type="1">
+<li>Compute jackknife pseudo-values of the nonparametric CIF at fixed time points <span class="math inline">\(t_1, \dots, t_K\)</span>:</li>
+</ol>
+<p><span class="math display">\[
+   \hat{\theta}_{i}(t) = n \hat{F}_k(t) - (n-1) \hat{F}_{k,-i}(t)
+\]</span> where <span class="math inline">\(\hat{F}_{k,-i}(t)\)</span> is the CIF leaving out subject <span class="math inline">\(i\)</span>.</p>
+<ol start="2" type="1">
+<li>Regress pseudo-values on <span class="math inline">\(\mathbf{X}\)</span> using generalized estimating equations (GEE):</li>
+</ol>
+<p><span class="math display">\[
+   g\big( E[\hat{\theta}_{i}(t) \mid \mathbf{X}_i] \big) = \alpha(t) + \boldsymbol{\beta}(t)^\top \mathbf{X}_i
+\]</span> where <span class="math inline">\(g(\cdot)\)</span> is a link function (e.g., identity or logit).</p>
+</section>
+<section id="advantages" class="level3">
+<h3 class="anchored" data-anchor-id="advantages">Advantages</h3>
+<ul>
+<li><strong>Direct clinical interpretation</strong>: “This treatment reduces absolute risk by 3% over 5 years.”</li>
+<li><strong>No proportional hazards assumption</strong> (in time-varying versions).</li>
+<li>Better for <strong>heterogeneous populations</strong> where baseline risk varies widely.</li>
+<li>Naturally accommodates <strong>time-varying effects</strong>.</li>
+</ul>
+</section>
+<section id="challenges" class="level3">
+<h3 class="anchored" data-anchor-id="challenges">Challenges</h3>
+<ul>
+<li>The hazard <span class="math inline">\(\lambda(t \mid \mathbf{X})\)</span> <strong>must remain non-negative</strong>—additive models can sometimes predict negative hazards if covariate effects are large (requires careful checking).</li>
+<li>Less familiar to many researchers compared to Cox models.</li>
+<li>Software implementation is less standardized (though <code>timereg</code>, <code>riskRegression</code>, and <code>cmprsk</code> in R support them).</li>
+</ul>
+</section>
+</section>
+<section id="absolute-risk-regression-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="absolute-risk-regression-in-r">Absolute Risk Regression in R</h2>
+<p>We’ll use the <strong><code>Melanoma</code></strong> dataset from the <strong><code>riskRegression</code></strong> package. This dataset contains survival data on patients with malignant melanoma, including competing risks of death from melanoma vs.&nbsp;other causes.</p>
+<section id="install-required-r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-required-r-packages">Install Required R Packages</h3>
+<p>Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span><span class="fu">c</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidyverse'</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survival'</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">'survminer'</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggsurvfit'</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">'tidycmprsk'</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">'ggfortify'</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">'timereg'</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">'cmprsk'</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">'condSURV'</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">'riskRegression'</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">'prodlim'</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>         <span class="st">'lava'</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         <span class="st">'mstate'</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>         <span class="st">'regplot'</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>         <span class="st">'cmprskcoxmsm'</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>         <span class="st">'timereg'</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| error: false</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Install missing packages</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>new_packages <span class="ot">&lt;-</span> packages[<span class="sc">!</span>(packages <span class="sc">%in%</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>])]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(new_packages)) <span class="fu">install.packages</span>(new_packages)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a> devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"ItziarI/WeDiBaDis"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="verify-installation" class="level3">
+<h3 class="anchored" data-anchor-id="verify-installation">Verify installation</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Installed packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Installed packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sapply</span>(packages, requireNamespace, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'riskRegression':
+  method        from 
+  nobs.multinom broom</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     tidyverse       survival      survminer      ggsurvfit     tidycmprsk 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+     ggfortify        timereg         cmprsk       condSURV riskRegression 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+       prodlim           lava         mstate        regplot   cmprskcoxmsm 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+       timereg 
+          TRUE </code></pre>
+</div>
+</div>
+</section>
+<section id="load-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages">Load Packages</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages with suppressed messages</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check loaded packages</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Successfully loaded packages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Successfully loaded packages:</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">search</span>()[<span class="fu">grepl</span>(<span class="st">"package:"</span>, <span class="fu">search</span>())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "package:cmprskcoxmsm"   "package:regplot"        "package:mstate"        
+ [4] "package:lava"           "package:prodlim"        "package:riskRegression"
+ [7] "package:condSURV"       "package:cmprsk"         "package:timereg"       
+[10] "package:ggfortify"      "package:tidycmprsk"     "package:ggsurvfit"     
+[13] "package:survminer"      "package:ggpubr"         "package:survival"      
+[16] "package:lubridate"      "package:forcats"        "package:stringr"       
+[19] "package:dplyr"          "package:purrr"          "package:readr"         
+[22] "package:tidyr"          "package:tibble"         "package:ggplot2"       
+[25] "package:tidyverse"      "package:stats"          "package:graphics"      
+[28] "package:grDevices"      "package:utils"          "package:datasets"      
+[31] "package:methods"        "package:base"          </code></pre>
+</div>
+</div>
+</section>
+<section id="data-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation">Data Preparation</h3>
+<p>n the period 1962-77, 205 patients with malignant melanoma (cancer of the skin) had a radical operation performed at Odense University Hospital, Denmark. All patients were followed until the end of 1977 by which time 134 were still alive while 71 had died (of out whom 57 had died from cancer and 14 from other causes).</p>
+<p><code>time</code>: time in days from operation</p>
+<p><code>status</code>: a numeric with values 0=censored 1=death.malignant.melanoma 2=death.other.causes</p>
+<p><code>event</code>: a factor with levels censored death.malignant.melanoma death.other.causes</p>
+<p><code>invasion</code>: a factor with levels level.0, level.1, level.2</p>
+<p><code>ici</code>: inflammatory cell infiltration (IFI): 0, 1, 2 or 3</p>
+<p><code>epicel</code>: a factor with levels not present present</p>
+<p><code>ulcer</code>: a factor with levels not present present</p>
+<p><code>thick</code>: tumour thickness (in 1/100 mm)</p>
+<p><code>sex</code>: a factor with levels Female Male</p>
+<p><code>age</code>: age at operation (years)</p>
+<p><code>logthick</code>: tumour thickness on log-scale</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(Melanoma, <span class="at">package =</span> <span class="st">"riskRegression"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(Melanoma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  time status                    event invasion ici      epicel       ulcer
+1   10      2       death.other.causes  level.1   2     present     present
+2   30      2       death.other.causes  level.0   0 not present not present
+3   35      0                 censored  level.1   2 not present not present
+4   99      2       death.other.causes  level.0   2 not present not present
+5  185      1 death.malignant.melanoma  level.2   2     present     present
+6  204      1 death.malignant.melanoma  level.2   2 not present     present
+  thick    sex age   logthick
+1  6.76   Male  76  1.9110229
+2  0.65   Male  56 -0.4307829
+3  1.34   Male  41  0.2926696
+4  2.90 Female  71  1.0647107
+5 12.08   Male  52  2.4915512
+6  4.84   Male  28  1.5769147</code></pre>
+</div>
+</div>
+</section>
+<section id="prepare-data-and-event-definition" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-data-and-event-definition">Prepare Data and Event Definition</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define event of interest: death from melanoma</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>Melanoma<span class="sc">$</span>event <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(Melanoma<span class="sc">$</span>status <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">ifelse</span>(Melanoma<span class="sc">$</span>status <span class="sc">==</span> <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">0</span>))</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>Melanoma<span class="sc">$</span>event <span class="ot">&lt;-</span> <span class="fu">factor</span>(Melanoma<span class="sc">$</span>event, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                         <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"censored"</span>, <span class="st">"melanoma"</span>, <span class="st">"other"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+<section id="absolute-risk-regression-with-timereg" class="level2">
+<h2 class="anchored" data-anchor-id="absolute-risk-regression-with-timereg">Absolute Risk Regression with <code>timereg</code></h2>
+<p>The <code>timereg</code> package fits <strong>semiparametric additive hazard models</strong> for survival data, allowing covariate effects to be <strong>time-varying</strong> (Aalen model) or <strong>constant</strong> (Lin–Ying model). Unlike Cox regression, it models <strong>absolute risk</strong> (hazard differences), not relative risk, and does not require proportional hazards. Ideal for flexible, interpretable survival analysis with time-dependent effects.</p>
+<p>Install: <code>install.packages("timereg")</code>.</p>
+<section id="fit-absolute-risk-model" class="level3">
+<h3 class="anchored" data-anchor-id="fit-absolute-risk-model">Fit Absolute Risk Model</h3>
+<p>Unlike Cox models (which model <strong>relative risk</strong>), <strong>absolute risk models</strong> directly model the <strong>instantaneous risk (hazard)</strong> as a sum of baseline hazard and covariate effects:</p>
+<p><span class="math display">\[
+\lambda(t | X) = \lambda_0(t) + \beta_1 X_1 + \beta_2 X_2 + \dots
+\]</span></p>
+<p>This model assumes the hazard is the sum of a time-varying baseline and linear covariate effects. comp.risk() from <code>timereg</code> fits such models for competing risks data.</p>
+<p>In the <strong><code>timereg</code></strong> package, the <code>comp.risk()</code> function supports <strong>several models</strong> for <strong>absolute risk (cumulative incidence) regression</strong> in <strong>competing risks</strong>. These are specified via the <code>model =</code> argument.</p>
+<p>By default, <code>model = "additive"</code> (logit-additive), but you can choose:</p>
+<table class="table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 22%">
+<col style="width: 30%">
+<col style="width: 32%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th><code>model =</code></th>
+<th>Link Function</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Additive (logit)</strong></td>
+<td><code>"additive"</code></td>
+<td><code>logit(p) = α(t) + Xᵀβ(t)</code></td>
+<td><strong>Default</strong>, most common</td>
+</tr>
+<tr class="even">
+<td><strong>Proportional</strong></td>
+<td><code>"prop"</code></td>
+<td><code>p(t\|X) = 1 - [1 - p₀(t)]^{exp(Xᵀβ)}</code></td>
+<td>Proportional CIFs</td>
+</tr>
+<tr class="odd">
+<td><strong>Relative cumulative incidence (rcif)</strong></td>
+<td><code>"rcif"</code></td>
+<td><code>log(-log(1-p(t\|X))) = log(-log(1-p₀(t))) + Xᵀβ</code></td>
+<td>Fine-Gray–like on log-cum hazard scale</td>
+</tr>
+<tr class="even">
+<td><strong>Logistic</strong></td>
+<td><code>"logistic"</code></td>
+<td><code>logit(p(t\|X)) = logit(p₀(t)) + Xᵀβ</code></td>
+<td>Proportional odds on CIF</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="model-additive-additive-on-logit-scale-default" class="level3">
+<h3 class="anchored" data-anchor-id="model-additive-additive-on-logit-scale-default"><code>model = "additive"</code> — <strong>Additive on Logit Scale (Default)</strong></h3>
+<p><span class="math display">\[
+\text{logit}(P(T \leq t, D=1 \mid \mathbf{X})) = \text{logit}(P_0(t)) + \mathbf{X}^T \boldsymbol{\beta}(t)
+\]</span> - <strong>Baseline CIF</strong>: <span class="math inline">\(P_0(t)\)</span> is the cumulative incidence at baseline. - Covariates <strong>additively shift the logit of CIF</strong> over time. - <strong>Interpretation</strong>: β(t) = change in log-odds of event by time t per unit increase in covariate.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit absolute risk model</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>fit_abs <span class="ot">&lt;-</span> <span class="fu">comp.risk</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Event</span>(time, event) <span class="sc">~</span> <span class="fu">const</span>(age) <span class="sc">+</span> <span class="fu">const</span>(sex) <span class="sc">+</span> <span class="fu">const</span>(thick),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> Melanoma,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cause =</span> <span class="dv">1</span>,                     <span class="co"># event of interest</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">"additive"</span>,            <span class="co"># additive on logit scale</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.sim =</span> <span class="dv">1000</span>,                  <span class="co"># for confidence bands</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">resample.iid =</span> <span class="dv">1</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit_abs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          5.59                   0
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                         0.269                           0
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                          35.6                           0
+
+Parametric terms : 
+                   Coef.       SE Robust SE     z    P-val lower2.5% upper97.5%
+const(age)      9.26e-07 7.93e-07  7.93e-07  1.17 2.43e-01 -6.28e-07   2.48e-06
+const(sex)Male -4.10e-05 2.84e-05  2.84e-05 -1.44 1.50e-01 -9.67e-05   1.47e-05
+const(thick)   -1.62e-05 2.97e-06  2.97e-06 -5.46 4.90e-08 -2.20e-05  -1.04e-05
+   </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coefficient estimates (on logit scale)</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>fit_abs<span class="sc">$</span>gamma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                        [,1]
+const(age)      9.262402e-07
+const(sex)Male -4.096830e-05
+const(thick)   -1.619786e-05</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard errors</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>fit_abs<span class="sc">$</span>se.gamma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>NULL</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cumulative baseline (intercept function)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fit_abs, <span class="at">score =</span> <span class="dv">0</span>, <span class="at">xlab =</span> <span class="st">"Time (years)"</span>, </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Logit cumulative baseline"</span>, <span class="at">main =</span> <span class="st">"Baseline Logit Risk"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-05-03-survival-analysis-absolute-risk-regression-r_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="model-prop-proportional-absolute-risk" class="level3">
+<h3 class="anchored" data-anchor-id="model-prop-proportional-absolute-risk"><code>model = "prop"</code> — <strong>Proportional Absolute Risk</strong></h3>
+<p><span class="math display">\[
+P(T \leq t, D=1 \mid \mathbf{X}) = 1 - \left[1 - P_0(t)\right]^{\exp(\mathbf{X}^T \boldsymbol{\beta})}
+\]</span></p>
+<ul>
+<li><strong>Baseline CIF</strong>: <span class="math inline">\(P_0(t)\)</span> is the cumulative incidence at baseline.</li>
+<li>Covariates <strong>scale the survival probability</strong> from the event of interest.</li>
+<li><strong>Interpretation</strong>: A positive β means <strong>higher absolute risk</strong> at all times.</li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>fit_prop <span class="ot">&lt;-</span> <span class="fu">comp.risk</span>(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Event</span>(time, event) <span class="sc">~</span> <span class="fu">const</span>(age) <span class="sc">+</span> <span class="fu">const</span>(sex),</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> Melanoma,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cause =</span> <span class="dv">1</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">"prop"</span>,          <span class="co"># &lt;-- proportional model</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.sim =</span> <span class="dv">1000</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit_prop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          6.93                   0
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                          2.23                           0
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                          2530                           0
+
+Parametric terms : 
+                   Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
+const(age)      0.000604 0.00557   0.00557  0.108 0.914   -0.0103    0.01150
+const(sex)Male -0.394000 0.20200   0.20200 -1.950 0.051   -0.7900    0.00191
+   </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot baseline CIF:</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fit_prop, <span class="at">score =</span> <span class="dv">0</span>, <span class="at">xlab =</span> <span class="st">"Years"</span>, <span class="at">ylab =</span> <span class="st">"Baseline CIF"</span>, </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Proportional Model: Baseline Risk"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-05-03-survival-analysis-absolute-risk-regression-r_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p><strong>Use when</strong>: You assume <strong>proportionality of CIFs</strong> (like proportional hazards, but for CIF).</p>
+</blockquote>
+</section>
+<section id="model-rcif-relative-cumulative-incidence-function" class="level3">
+<h3 class="anchored" data-anchor-id="model-rcif-relative-cumulative-incidence-function"><code>model = "rcif"</code> — <strong>Relative Cumulative Incidence Function</strong></h3>
+<p><span class="math display">\[
+\log\left(-\log(1 - F_1(t|\mathbf{X}))\right) = \log\left(-\log(1 - F_{10}(t))\right) + \mathbf{X}^T \boldsymbol{\beta}
+\]</span></p>
+<ul>
+<li>Equivalent to <strong>Fine-Gray model</strong> on the <strong>subdistribution hazard</strong> scale.</li>
+<li>But here, <strong>directly models CIF</strong>.</li>
+<li><strong>Interpretation</strong>: exp(β) = <strong>subdistribution hazard ratio</strong>.</li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>fit_rcif <span class="ot">&lt;-</span> <span class="fu">comp.risk</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Event</span>(time, event) <span class="sc">~</span> <span class="fu">const</span>(age) <span class="sc">+</span> <span class="fu">const</span>(thick),</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> Melanoma,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cause =</span> <span class="dv">1</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">"rcif"</span>,          <span class="co"># &lt;-- Fine-Gray–like</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.sim =</span> <span class="dv">1000</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit_rcif)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          7.37                   0
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                          2.01                           0
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                          1320                           0
+
+Parametric terms : 
+                Coef.      SE Robust SE      z    P-val lower2.5% upper97.5%
+const(age)    0.00177 0.00364   0.00364  0.488 6.26e-01  -0.00536     0.0089
+const(thick) -0.17100 0.04080   0.04080 -4.190 2.77e-05  -0.25100    -0.0910
+   </code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p><strong>Note</strong>: This is <strong>very similar</strong> to <code>cmprsk::crr()</code>, but allows <strong>time-varying effects</strong>.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p><strong>Use when</strong>: You want <strong>Fine-Gray interpretation</strong> but with <strong>flexible time-varying effects</strong>.</p>
+</blockquote>
+</section>
+<section id="model-logistic-logistic-proportional-odds-on-cif" class="level3">
+<h3 class="anchored" data-anchor-id="model-logistic-logistic-proportional-odds-on-cif"><code>model = "logistic"</code> — <strong>Logistic (Proportional Odds on CIF)</strong></h3>
+<p><span class="math display">\[
+\text{logit}(F_1(t|\mathbf{X})) = \text{logit}(F_{10}(t)) + \mathbf{X}^T \boldsymbol{\beta}
+\]</span></p>
+<ul>
+<li><strong>Proportional odds</strong> for the <strong>cumulative incidence</strong>.</li>
+<li>Covariates <strong>shift the logit of CIF</strong> by a constant.</li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>fit_logistic <span class="ot">&lt;-</span> <span class="fu">comp.risk</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Event</span>(time, event) <span class="sc">~</span> <span class="fu">const</span>(sex) <span class="sc">+</span> <span class="fu">const</span>(thick),</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> Melanoma,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cause =</span> <span class="dv">1</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">"logistic"</span>,      <span class="co"># &lt;-- logistic model</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.sim =</span> <span class="dv">1000</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit_logistic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          6.29                   0
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                           2.5                           0
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                          4230                           0
+
+Parametric terms : 
+                Coef.     SE Robust SE     z    P-val lower2.5% upper97.5%
+const(sex)Male -0.250 0.2810    0.2810 -0.89 0.374000    -0.801      0.301
+const(thick)   -0.274 0.0746    0.0746 -3.67 0.000241    -0.420     -0.128
+   </code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p><strong>Use when</strong>: You want <strong>proportional odds</strong> assumption on the <strong>absolute risk</strong>.</p>
+</blockquote>
+</section>
+<section id="which-model-to-choose" class="level3">
+<h3 class="anchored" data-anchor-id="which-model-to-choose">Which Model to Choose?</h3>
+<table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 29%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th><code>model =</code></th>
+<th>Assumption</th>
+<th>Interpretation</th>
+<th>Best For</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Additive</strong></td>
+<td><code>"additive"</code></td>
+<td>Additive on logit scale</td>
+<td>Flexible, no proportionality</td>
+<td><strong>Prediction</strong>, time-varying effects</td>
+</tr>
+<tr class="even">
+<td><strong>Proportional</strong></td>
+<td><code>"prop"</code></td>
+<td>CIFs are proportional</td>
+<td>exp(β) = ratio of (1 - S)</td>
+<td>Risk stratification</td>
+</tr>
+<tr class="odd">
+<td><strong>RCIF</strong></td>
+<td><code>"rcif"</code></td>
+<td>Proportional subdistribution hazard</td>
+<td>exp(β) = subdistribution HR</td>
+<td><strong>Compare with Fine-Gray</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Logistic</strong></td>
+<td><code>"logistic"</code></td>
+<td>Proportional odds on CIF</td>
+<td>Odds ratio for cumulative risk</td>
+<td>Clinical interpretation</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="absolute-risk-regression-with-riskregression-package" class="level2">
+<h2 class="anchored" data-anchor-id="absolute-risk-regression-with-riskregression-package">Absolute Risk Regression with ’riskRegression` package</h2>
+<p>The <code>riskRegression</code> package provides functions for fitting various absolute risk regression models, including the <strong>Additive Hazards Model</strong> and <strong>Cumulative Incidence Regression</strong> for competing risks data. It allows for flexible modeling of absolute risk (CIF) directly, with options for time-varying effects and different link functions. This is a wrapper for the function <code>comp.risk</code> from the <code>timereg</code>package. The main difference is one marks variables in the formula that should have a time-dependent effect whereas in comp.risk one marks variables that should have a time constant (proportional) effect.</p>
+<p><code>ARR</code> function fits absolute risk regression models for competing risks data, directly modeling the cumulative incidence function (CIF) for a specific event type. It allows for flexible covariate effects and provides interpretable estimates of absolute risk.</p>
+<section id="absolute-risk-regression---single-binary-factor" class="level3">
+<h3 class="anchored" data-anchor-id="absolute-risk-regression---single-binary-factor">Absolute Risk Regression - single binary factor</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># absolute risk regression - single binary factor</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>fit.arr <span class="ot">&lt;-</span> <span class="fu">ARR</span>(<span class="fu">Hist</span>(time,status)<span class="sc">~</span>sex,<span class="at">data=</span>Melanoma,<span class="at">cause=</span><span class="dv">1</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fit.arr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks regression model 
+
+IPCW weights: marginal Kaplan-Meier for the censoring distribution.
+Link: 'log' yielding absolute risk ratios
+No covariates with time-varying coefficient specified.
+
+Time constant regression coefficients:
+ Variable Levels Coef Lower Upper  Pvalue
+      sex   Male 1.87  1.17  3.01 0.00927
+
+
+Note: The coefficients (Coef) are absolute risk ratios </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># show predicted cumulative incidences</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fit.arr,<span class="at">col=</span><span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>,<span class="at">newdata=</span><span class="fu">data.frame</span>(<span class="at">sex=</span><span class="fu">c</span>(<span class="st">"Female"</span>,<span class="st">"Male"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-05-03-survival-analysis-absolute-risk-regression-r_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="absolute-risk-regression---single-continous-variable" class="level3">
+<h3 class="anchored" data-anchor-id="absolute-risk-regression---single-continous-variable">Absolute Risk Regression - single continous variable</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Single continuous factor</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="do">## tumor thickness on the log-scale</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>Melanoma<span class="sc">$</span>logthick <span class="ot">&lt;-</span> <span class="fu">log</span>(Melanoma<span class="sc">$</span>thick)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="do">## absolute risk regression </span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>fit2.arr <span class="ot">&lt;-</span> <span class="fu">ARR</span>(<span class="fu">Hist</span>(time,status)<span class="sc">~</span>logthick,<span class="at">data=</span>Melanoma,<span class="at">cause=</span><span class="dv">1</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fit2.arr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks regression model 
+
+IPCW weights: marginal Kaplan-Meier for the censoring distribution.
+Link: 'log' yielding absolute risk ratios
+No covariates with time-varying coefficient specified.
+
+Time constant regression coefficients:
+ Variable Levels Coef Lower Upper Pvalue
+ logthick        1.87  1.49  2.35 &lt;1e-04
+
+
+Note: The coefficients (Coef) are absolute risk ratios </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># show predicted cumulative incidences</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fit2.arr,<span class="at">col=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="at">newdata=</span><span class="fu">data.frame</span>(<span class="at">logthick=</span><span class="fu">quantile</span>(Melanoma<span class="sc">$</span>logthick)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-07-05-03-survival-analysis-absolute-risk-regression-r_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="absolute-risk-regression---multiple-covariates" class="level3">
+<h3 class="anchored" data-anchor-id="absolute-risk-regression---multiple-covariates">Absolute Risk Regression - multiple covariates</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># absolute risk model with multiple covariates</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>multi.arr <span class="ot">&lt;-</span> <span class="fu">ARR</span>(<span class="fu">Hist</span>(time,status)<span class="sc">~</span>logthick<span class="sc">+</span>sex<span class="sc">+</span>age<span class="sc">+</span>ulcer,<span class="at">data=</span>Melanoma,<span class="at">cause=</span><span class="dv">1</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multi.arr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks regression model 
+
+IPCW weights: marginal Kaplan-Meier for the censoring distribution.
+Link: 'log' yielding absolute risk ratios
+No covariates with time-varying coefficient specified.
+
+Time constant regression coefficients:
+ Variable  Levels Coef Lower Upper  Pvalue
+ logthick         1.56 1.156  2.10 0.00358
+      sex    Male 1.28 0.809  2.03 0.28973
+      age         1.00 0.986  1.01 0.99484
+    ulcer present 2.48 1.349  4.57 0.00348
+
+
+Note: The coefficients (Coef) are absolute risk ratios </code></pre>
+</div>
+</div>
+</section>
+<section id="absolute-risk-regression---stratified-model" class="level3">
+<h3 class="anchored" data-anchor-id="absolute-risk-regression---stratified-model">Absolute risk regression - stratified model</h3>
+<p>Stratified model allow different baseline hazards for different levels of a factor variable.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># stratified model allowing different baseline risk for the two gender</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>multi.arr <span class="ot">&lt;-</span> <span class="fu">ARR</span>(<span class="fu">Hist</span>(time,status)<span class="sc">~</span>thick<span class="sc">+</span><span class="fu">strata</span>(sex)<span class="sc">+</span>age<span class="sc">+</span>ulcer,<span class="at">data=</span>Melanoma,<span class="at">cause=</span><span class="dv">1</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(multi.arr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Competing risks regression model 
+
+IPCW weights: marginal Kaplan-Meier for the censoring distribution.
+Link: 'log' yielding absolute risk ratios
+Covariates with time-varying effects:
+
+ sexMale (numeric)
+
+Time constant regression coefficients:
+ Variable  Levels Coef Lower Upper   Pvalue
+    thick         1.08 1.026  1.13 0.002219
+      age         1.00 0.986  1.02 0.956937
+    ulcer present 3.08 1.733  5.49 0.000129
+
+
+Note: The coefficients (Coef) are absolute risk ratios </code></pre>
+</div>
+</div>
+</section>
+<section id="logistic-absolute-risk-regression" class="level3">
+<h3 class="anchored" data-anchor-id="logistic-absolute-risk-regression">Logistic Absolute Risk Regression</h3>
+<p><code>LRR</code> function fits logistic absolute risk regression models for competing risks data, directly modeling the cumulative incidence function (CIF) for a specific event type using a logistic link. It provides interpretable estimates of absolute risk in terms of odds ratios.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># logistic absolute risk regression</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>fit.lrr <span class="ot">&lt;-</span> <span class="fu">LRR</span>(<span class="fu">Hist</span>(time,status)<span class="sc">~</span>thick,<span class="at">data=</span>Melanoma,<span class="at">cause=</span><span class="dv">1</span>)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit.lrr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+riskRegression: Competing risks regression model 
+
+IPCW estimation. The weights are based on
+the Kaplan-Meier estimate for the censoring distribution.
+
+Link function: 'logistic' yielding odds ratios, see help(riskRegression).
+
+Covariates with time-varying effects:
+
+ Intercept (numeric)
+
+The effects of these variables depend on time.The column 'Intercept' is the baseline risk where all the covariates have value zero
+
+     (Intercept)
+230  "1.007"    
+770  "1.050"    
+1100 "1.098"    
+1700 "1.158"    
+3300 "1.347"    
+
+Shown are selected time points, use
+
+plot.riskRegression
+
+to investigate the full shape.
+
+
+Covariates with time-constant effects:
+
+ thick (numeric)
+
+Time constant regression coefficients:
+
+ Factor   Coef exp(Coef) StandardError      z         CI_95  Pvalue
+  thick 0.1942    1.2143        0.0477 4.0690 [1.106;1.333] &lt; 1e-04
+
+
+Note: The values exp(Coef) are odds ratios </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="summary-and-conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="summary-and-conclusion">Summary and Conclusion</h2>
+<p><strong>Absolute Risk Regression</strong> (Direct CIF Modeling) directly estimates the <strong>probability of event occurrence</strong> by a given time under competing risks. It’s especially valuable for <strong>clinical decision-making</strong>, <strong>risk communication</strong>, and <strong>prediction</strong>, where absolute probabilities (not just relative hazards) matter.</p>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ul>
+<li><p>Gerds, T. A., &amp; Andersen, P. K. (2012). <em>Absolute risk regression for competing risks: interpretation, link functions, and prediction.</em> <strong>Statistics in Medicine</strong>, 31(29), 3921–3930.</p></li>
+<li><p><code>riskRegression</code> package documentation (CRAN): <a href="https://cran.r-project.org/package=riskRegression">https://cran.r-project.org/package=riskRegression</a></p></li>
+<li><p>Martinussen, T., &amp; Scheike, T. H. (2006). <em>Dynamic Regression Models for Survival Data</em>. Springer.</p></li>
+<li><p><code>timereg</code> package vignette: <code>vignette("timereg")</code></p></li>
+<li><p><code>riskRegression</code> package documentation</p></li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./02-07-05-02-survival-analysis-subdistribution-hazard-regression.html" class="pagination-link" aria-label="Subdistribution Hazard Regression (Fine-Gray Model)">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Subdistribution Hazard Regression (Fine-Gray Model)</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./02-07-05-04-survival-analysis-aalen-model-r.html" class="pagination-link" aria-label="Aalen's Additive Regression Model">
+        <span class="nav-page-text">Aalen’s Additive Regression Model</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© CC-By Zia Ahmed, Unversity at Buffalo 2025</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

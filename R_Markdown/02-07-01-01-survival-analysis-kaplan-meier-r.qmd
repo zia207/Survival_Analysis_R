@@ -1,0 +1,516 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_01_survival_analysis_non_parametric_kaplan_meier_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_01_01_survival_analysis_non_parametric_kaplan_meier_python.ipynb)
+:::
+
+
+# 1.1 Kaplan-Meier Estimator {.unnumbered}
+
+This tutorial provides a hands-on introduction to the Kaplan-Meier estimator, a key non-parametric method in survival analysis. We'll use the `lung` dataset from the `survival` package in R, which contains data from a clinical trial on lung cancer patients. The tutorial is structured to guide you step-by-step, from theory to practical implementation. By the end, you'll be able to compute survival estimates, plot survival curves, and interpret results.
+
+## Overview
+
+The **Kaplan-Meier estimator** is a non-parametric statistic used to estimate the survival function from time-to-event data. It is particularly valuable when some data points are **censored**, meaning the event of interest (e.g., death, equipment failure) has not occurred for some subjects at the end of the study period.
+
+
+The survival function $S(t)$ estimates the probability that an individual survives beyond time $t$. The Kaplan-Meier estimator provides a step function that drops at each event time (e.g., death, failure). The survival probability at a given time is calculated as:
+
+$$ \hat{S}(t) = \prod_{t_i \leq t} \left( \frac{n_i - d_i}{n_i} \right) $$
+
+Where: - $t_i$ is the time of the $i$-th event (e.g., death). - $n_i$ is the number of subjects still at risk just before time $t_i$. - $d_i$ is the number of events (e.g., deaths) at time $t_i$. - The product of the ratios $\frac{n_i - d_i}{n_i}$ across all event times up to $t$ gives the estimated survival probability at time ( t ).
+
+### Features of Kaplan-Meier Estimation
+
+-   **Non-parametric**: The Kaplan-Meier estimator does not assume any specific distribution of the survival times.
+-   **Stepwise Survival Curve**: The survival curve is a step function that drops at each event time and stays flat between events.
+-   **Censoring**: The Kaplan-Meier method can handle right-censored data, where we do not observe the event of interest for some subjects by the time the study ends. Censoring is denoted by ticks on the survival curve, showing the points where individuals were lost to follow-up or their event had not occurred by the study's end.
+
+### Kaplan-Meier Survival Curve Interpretation
+
+-   The curve starts at 1 (100% survival probability) and decreases over time as events occur. At each event time (e.g., death or failure), the curve steps down.
+-   The **Y-axis** shows the estimated survival probability, and the **X-axis** represents time.
+-   The rate of decline in the curve reflects the frequency of events (e.g., if there is a rapid decline, the event is occurring more frequently).
+-   **Censored data** points are marked with tick marks or other indicators along the curve. These represent individuals who did not experience the event during the study but were lost to follow-up or had not yet experienced the event at the end of the study.
+
+
+## Kaplan-Meier Esimator from Scratch 
+
+This is a manual calculation of the **Kaplan-Meier** estimator, without using any external R packages. The steps involve create a dataset, determining the number of individuals at risk, calculating the survival probability at each event time, and then plotting the results. You can compare these manually calculated results with those obtained from {estimation} analysis packages to verify accuracy. This exercise help you to understand theory behind **Kaplan-Meier** estimation.
+
+***Steps***:
+
+-   **Create a dataset**: We'll created a simulated dataset similar to the `lung` dataset in the {survival} package.
+
+-   **Sort Data by Time**: Organize the dataset based on event times.
+
+-   **Calculate Risk Set and Survival Probabilities**: For each unique event time, manually calculate the Kaplan-Meier survival probabilities.
+
+-   **Plot the Kaplan-Meier Survival Curve**.
+
+### Create a dataset
+
+To create a dataset similar to the `lung` dataset in the {survival} package, we'll simulate survival data with random values for survival time, event status, and other variables such as age, sex, and treatment. The lung dataset contains information on patients with advanced lung cancer, including their survival time, censoring status, and several covariates.
+
+Variables typically included in a survival dataset like **lung**:
+
+1.  **time**: Survival time (numeric).
+
+2.  **status**: Censoring indicator (0 = censored, 1 = event).
+
+3.  **age**: Age of the patient (numeric).
+
+4.  **sex**: Gender of the patient (1 = male, 2 = female).
+
+5.  **ph.ecog**: ECOG performance score (0 to 5).
+
+6.  **treatment**: Treatment group (1 = standard, 2 = experimental).
+
+```{r}
+
+# Set the seed for reproducibility
+set.seed(123)
+
+# Number of observations
+n <- 228  # same as the original lung dataset
+
+# Simulate survival time (in days)
+time <- round(runif(n, min = 1, max = 1000))  # random survival time between 1 and 1000 days
+
+# Simulate censoring indicator (0 = censored, 1 = event)
+status <- rbinom(n, size = 1, prob = 0.7)  # 70% of events, 30% censored
+
+# Simulate age (between 40 and 80 years)
+age <- round(runif(n, min = 40, max = 80))
+
+# Simulate sex (1 = male, 2 = female)
+sex <- sample(c(1, 2), size = n, replace = TRUE)
+
+# Simulate ECOG performance score (0 to 4)
+ph_ecog <- sample(0:4, size = n, replace = TRUE)
+
+# Simulate treatment group (1 = standard, 2 = experimental)
+treatment <- sample(c(1, 2), size = n, replace = TRUE)
+
+# Create the data frame
+simulated_lung<- data.frame(time = time,
+                             status = status,
+                             age = age,
+                             sex = sex,
+                             ph_ecog = ph_ecog,
+                             treatment = treatment)
+
+# Inspect the first few rows of the simulated dataset
+head(simulated_lung)
+```
+
+### Sort data by time and event status
+
+We need to sort the dataset by survival time
+
+```{r}
+# Sort data by 'time'
+simulated_lung <- simulated_lung[order(simulated_lung$time), ]
+head(simulated_lung)
+```
+
+### Calculate Kaplan-Meier estimates
+
+To calculate the Kaplan-Meier estimates manually, you can follow these steps:
+
+-   **Risk Set**: At each unique event time, count how many individuals are still at risk.
+
+-   **Event Occurrence**: At each unique event time, count how many events (deaths) occur.
+
+-   **Survival Probability**: Compute the survival probability at each step using the formula:
+
+$$  S(t_i) = S(t_{i-1}) \times \left(1 - \frac{d_i}{n_i}\right) $$
+
+where: - $d$ is the number of events at time $t_i$, - $n_i$ is the number of individuals at risk at time $i$.
+
+```{r}
+# Initialize survival probability
+n <- nrow(simulated_lung)  # total number of individuals
+S_t <- 1              # start with a survival probability of 1 (i.e., 100% survival at t = 0)
+km_table <- data.frame(time = numeric(0), n_risk = numeric(0), events = numeric(0), survival = numeric(0))
+
+# Loop through each unique event time
+unique_times <- unique(simulated_lung$time[simulated_lung$status == 1])  # only times where events occurred
+
+for (t in unique_times) {
+  # Calculate the number of individuals at risk at this time point
+  n_risk <- sum(simulated_lung$time >= t)
+  
+  # Calculate the number of events at this time point
+  d_i <- sum(simulated_lung$time == t & simulated_lung$status == 1)
+  
+  # Update the survival probability
+  S_t <- S_t * (1 - d_i / n_risk)
+  
+  # Add this to the Kaplan-Meier table
+  km_table <- rbind(km_table, data.frame(time = t, n_risk = n_risk, events = d_i, survival = S_t))
+}
+
+# Print the resulting Kaplan-Meier estimates
+head(km_table)
+```
+
+### Plot the Kaplan-Meier survival curve
+
+Once you have manually computed the Kaplan-Meier estimates, you can plot the survival curve using base R plotting functions:
+
+```{r}
+#| fig.width: 5
+#| fig.height: 4
+# Plot the survival curve
+plot(km_table$time, km_table$survival, type = "s", col = "blue", lwd = 2,
+     xlab = "Time (days)", ylab = "Survival Probability",
+     main = "Manual Kaplan-Meier Estimate - Lung Dataset")
+```
+
+## Kaplan-Meier Estimator in R
+
+This tutorial introduces survival analysis and how to conduct it in R. It primarily follows the Survival Analysis in R tutorials by [Emily C. Zabor](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html) and [Joseph Rickert's](https://rviews.rstudio.com/2017/09/25/survival-analysis-with-r/) Survival Analysis in R tutorials.
+
+This tutorial is mostly used two R packages [{survival}](https://cran.r-project.org/web/packages/survival/index.html) and [{ggsurvfit}](https://www.danieldsjoberg.com/ggsurvfit/). The survival package in R is a powerful and widely used tool for survival analysis, which deals with the analysis of time-to-event data. It provides a suite of functions to handle various types of survival data, fit survival models, and visualize survival curves. This package is widely applied in medical research, reliability engineering, and many other fields where time-to-event data is of interest.
+
+![](Image/survival.png){width="272"}
+
+The {ggsurvfit} package eases the creation of time-to-event (aka survival) summary figures with {ggplot2}. The concise and modular code creates images that are ready for publication or sharing. Competing risks cumulative incidence is also supported via `ggcuminc()`.
+
+![](Image/ggsurvfit.png){width="270"}
+
+Additionally we will use [{ggfortify}](https://github.com/sinhrks/ggfortify) which offers `fortify` and `autoplot` functions to allow automatic `ggplot2` to visualize Kaplan-Meier plots.
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'report',
+		 'performance',
+		 'gtsummary',
+		 'MASS',
+		 'epiDisplay',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'riskRegression'
+		 )
+
+```
+
+``` 
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+ devtools::install_github("ItziarI/WeDiBaDis")
+ ``` 
+
+### Vwerify Installation
+ 
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+We will be utilizing the `lung` dataset from the {survival} package, which serves as a valuable resource for analyzing survival data. This dataset comprises information from subjects diagnosed with advanced lung cancer, specifically gathered from the North Central Cancer Treatment Group, a prominent clinical trial network dedicated to cancer research.
+
+Throughout this tutorial, we will concentrate on the following key variables that provide insight into the patients' demographics and clinical outcomes:
+
+-   **Time**: This variable denotes the observed survival time in days, measuring the duration from the start of treatment until the event of interest occurs, whether that be death or censoring.
+
+-   **Status**: This variable represents the censoring status of each patient. A value of 1 indicates that the patient is censored, meaning they either withdrew from the study or were still alive at the end of the observation period. A value of 2 signifies that the patient has died, marking the occurrence of the event being studied.
+
+-   **Sex**: This variable captures the gender of the subjects, providing crucial demographic information. A value of 1 corresponds to Male and a value of 2 corresponds to Female. This distinction may be important for understanding potential differences in survival rates between genders.
+
+```{r}
+#| warning: false
+#| error: false
+# Load lung cancer dataset
+data(lung)
+glimpse(lung)
+```
+
+### Data processing
+
+Now we will re-code the data as 1=event, 0=censored:
+
+```{r}
+#| warning: false
+#| error: false
+lung <- 
+  lung |> 
+  mutate(
+    status = recode(status, `1` = 0, `2` = 1)
+  )
+```
+
+Now we have:
+
+-   time: Observed survival time in days
+-   status: censoring status 0=censored, 1=dead
+-   sex: 1=Male, 2=Female
+
+```{r}
+#| warning: false
+#| error: false
+head(lung[, c("time", "status", "sex")])
+```
+
+### Kaplan Meier Analysis
+
+The Kaplan-Meier method is the most common technique for estimating survival times and probabilities. It is a non-parametric approach that produces a step function, with a drop occurring each time an event takes place.
+
+The {survival} package is fundamental to the entire R survival analysis framework. It is not only feature-rich but also essential for creating the object produced by the `Surv()` function, which includes data on failure times and censoring. Each subject will have a single entry representing their survival time, followed by a "+" sign if the subject was censored. Let’s examine the first 15 observations:
+
+```{r}
+#| warning: false
+#| error: false
+Surv(lung$time, lung$status)[1:15]
+```
+
+Subject 1 experienced a notable event at 306 days of observation, indicating a significant outcome in their progression. Subject 2 had a similar event occur later, at 455 days, suggesting varying timelines in their responses. Meanwhile, subject 3 was censored at 1010 days, meaning that their outcome could not be fully assessed due to the study's conclusion or loss to follow-up. This variation among subjects highlights the differences in individual experiences and response times within the study.
+
+::: callout-note
+the `Surv()` function in the {survival} package accepts by default `TRUE/FALSE`, where `TRUE` is event and `FALSE` is censored; 1/0 where 1 is event and 0 is censored; or 2/1 where 2 is event and 1 is censored.
+:::
+
+The `survfit()` function plays a crucial role in survival analysis by generating survival curves based on the Kaplan-Meier method. This method is particularly useful for estimating the probability of survival over a specified time period, especially when dealing with censored data, which is common in medical research.
+
+To initiate our analysis, we start with the formula `Surv(futime, status) ~ 1`, where `time` represents the follow-up time until the event of interest or censoring occurs, and `status` indicates whether the event happened (usually coded as 1) or if the data is censored (coded as 0). The `survfit()` function utilizes this formula to calculate the Kaplan-Meier estimates, providing a stepwise approximation of the survival function. Additionally, the `summary()` function complements this analysis by offering a detailed summary of the survival estimates. Within this function, the `times` parameter allows researchers to specify particular time points at which they wish to view the survival probabilities. This feature is beneficial for focusing on time intervals of interest, enhancing the interpretability of the survival curves. Overall, these tools are essential for understanding patient survival trajectories and can inform clinical decision-making and research developments.
+
+```{r}
+#| warning: false
+#| error: false
+km.fit<- survfit(Surv(time, status) ~ 1, data = lung)
+str(km.fit)
+```
+
+This model is designed to generate estimates for 1, 30, 60, and 90 days, and then every 90 days thereafter. It is the simplest possible model, requiring just three lines of R code to fit and produce both numerical and graphical summaries.
+
+```{r}
+summary(km.fit, times = c(1,30,60,90*(1:10)))
+```
+
+### Kaplan-Meier plots
+
+We will use the {ggsurvfit} package to generate Kaplan-Meier plots. This package simplifies the plotting of time-to-event endpoints by leveraging the capabilities of the {ggplot2} package. The {ggsurvfit} package works best when you create the survival object using the included `ggsurvfit::survfit2()` function. This function uses the same syntax as `survival::survfit()`, but `ggsurvfit::survfit2()` tracks the environment from the function call, which helps the plot have better default values for labeling and p-value reporting.
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+survfit2(Surv(time, status) ~ 1, data = lung) |> 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  )
+
+```
+
+The default plot in `ggsurvfit()` shows the step function only. We can add the confidence interval using `add_confidence_interval()`:
+
+```{r}
+#| fig.width: 5
+#| fig.height: 4
+survfit2(Surv(time, status) ~ 1, data = lung) |> 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) +
+ add_confidence_interval()
+```
+
+If we want to display the numbers at risk below the x-axis, we can achieve this by using `add_risktable()` :
+
+```{r}
+#| fig.width: 5
+#| fig.height: 4.5
+survfit2(Surv(time, status) ~ 1, data = lung)  |>  
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) +
+ add_confidence_interval() +
+    add_risktable() 
+```
+
+Alternatively, the **ggfortify** package allows you to create a simple survival plot with CI using the `autoplot()` function.
+
+```{r}
+#| fig.width: 5
+#| fig.height: 4
+autoplot(km.fit)
+```
+
+### Estimating $x$-year survival
+
+In survival analysis, one key point of interest is the probability of surviving beyond a specific number of years. For instance, to estimate the probability of surviving up to one year, you can use the summary function with the times argument. Note that the time variable in the lung dataset is measured in days, so you should set times to 365.25.
+
+```{r}
+summary(survfit(Surv(time, status) ~ 1, data = lung), times = 365.25)
+```
+
+```{r}
+#| fig.width: 5
+#| fig.height: 4.5
+survfit2(Surv(time, status) ~ 1, data = lung)  |>  
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) +
+ add_confidence_interval() + 
+   add_risktable() +
+  geom_segment(x = 365.25, xend = 365.25, y = -0.05, yend = 0.4092416, 
+               linewidth = 1.0) +
+  geom_segment(x = 365.25, xend = -40, y = 0.4092416, yend = 0.4092416,
+               linewidth = 1.0, 
+               arrow = arrow(length = unit(0.2, "inches"))) 
+
+
+```
+
+By one year, 121 of the 228 lung patients had died, and if we ignore censoring, the one year probability of survival:
+
+```{r}
+(1-121/228)*100
+```
+
+Ignoring the fact that 42 patients were censored before the one-year mark can lead to an inaccurate estimate of the one-year probability of survival (47%). The correct estimate, which takes censoring into account using the Kaplan-Meier method, is 41%. Ignoring censoring results in an overestimation of the overall survival probability. Consider two studies, each with 228 subjects, where both have 165 deaths. In one study (represented by the blue line), censoring is ignored, while in the other (shown by the yellow line), censoring is taken into account. Censored subjects only provide information for part of the follow-up period and then drop out of the risk set, which leads to a lower cumulative probability of survival. Ignoring censoring incorrectly assumes that censored patients remain part of the risk set for the entire follow-up period.
+
+```{r}
+#| warning: false
+#| error: false
+#| fig.width: 5
+#| fig.height: 4.5
+lung2 <- 
+  lung |> 
+  mutate(
+    time = ifelse(status == 1, time, 1022), 
+    group = "Ignoring censoring") |>  
+  full_join(mutate(lung, group = "With censoring"))
+
+survfit2(Surv(time, status) ~ group, data = lung2) |> 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+    ) + 
+  add_confidence_interval() +
+  add_risktable(risktable_stats = "n.risk")
+```
+
+We can produce nice tables of $x$-time survival probability estimates using the `tbl_survfit()` function from the {gtsummary} package:
+
+```{r}
+tbl_survfit(
+  survfit(Surv(time, status) ~ 1, data = lung),
+  times = 365.25,
+  label_header = "**1-year survival (95% CI)**"
+)
+```
+
+### Median survival time
+
+In survival analysis, one important point to consider is the average survival time, which we typically measure using the median. Since survival times are usually not normally distributed, using the mean is not an appropriate way to summarize this data.
+
+The median survival time can be directly obtained from the `survfit()` object.
+
+```{r}
+survfit(Surv(time, status) ~ 1, data = lung)
+```
+
+We can create appealing tables displaying the median survival time estimates using the `tbl_survfit()` function from the {gtsummary} package.
+
+```{r}
+survfit(Surv(time, status) ~ 1, data = lung) %>% 
+  tbl_survfit(
+    probs = 0.5,
+    label_header = "**Median survival (95% CI)**"
+  )
+```
+
+### Survival times between groups (male/female) using log-rank test
+
+The log-rank test is a non-parametric statistical method used to compare the survival distributions of two or more groups. It assesses whether there is a significant difference between the survival curves by giving equal weight to observations throughout the entire follow-up period.
+
+To calculate the log-rank p-value, we can use the **survdiff()** function. For example, we can test for differences in survival time based on sex using the **lung** dataset.
+
+```{r}
+survdiff(Surv(time, status) ~ sex, data = lung)
+```
+
+There is a significant difference in overall survival by sex in the lung data, with a p-value of 0.001.
+
+Next, we look at survival curves by sex.
+
+```{r}
+#| warning: false
+#| error: false
+#| fig.width: 5
+#| fig.height: 4.5
+survfit2(Surv(time, status) ~ sex, data = lung) |> 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) +
+  add_confidence_interval() +
+  add_risktable()
+```
+
+## Summary and Conclusion
+
+**Nonparametric survival analysis**, especially using the **Kaplan-Meier estimator** and **log-rank test**, is a powerful tool for analyzing time-to-event data, particularly in situations where the distribution of survival times is unknown and when censoring is present. These techniques allow researchers to estimate and compare survival probabilities between groups, providing a foundation for more advanced survival analysis methods.
+
+These methods are fundamental in fields like clinical research, reliability engineering, and economics, where time-to-event outcomes and censored data are prevalent.
+
+## References
+
+1.  [Survival Analysis with R](https://rviews.rstudio.com/2017/09/25/survival-analysis-with-r/)
+
+2.  [Survival data analysis](https://www.karlin.mff.cuni.cz/~pesta/NMFM404/survival.html)
+
+3.  [Survival Analysis in R](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html)
+
+4.  [Survival Analysis with R](https://bioconnector.github.io/workshops/r-survival.html)
+
+5.  [Survival Analysis in R Companion](https://www.drizopoulos.com/courses/emc/basic_surivival_analysis_in_r)
+
+6.  [Survival Analysis in R](https://www.themillerlab.io/posts/survival_analysis/)

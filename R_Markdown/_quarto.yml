@@ -1,0 +1,136 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Survival Analysis"
+  page-navigation: true
+  search: 
+    location: sidebar
+    type: textbox
+  page-footer:
+    right: "This page is built with [Quarto](https://quarto.org/)."
+    left: "&copy; CC-By Zia Ahmed, Unversity at Buffalo 2025"
+  navbar:
+    background: primary
+    left: 
+      - icon: house
+        href: https://sites.google.com/view/r-data-sci-env/home
+    right:
+      - icon: github
+        href: https://github.com/zia207/r-colab
+      - icon: linkedin
+        href: https://www.linkedin.com/in/zia-ahmed207
+      - icon: mailbox
+      - href: zia207@gmail.com
+ 
+  sidebar:
+    logo: "Image/chapter_logo_survival_analysis_r.png"
+    pinned: true
+    border: true
+    align: center
+    search: true
+    style: "docked"
+    contents:
+      - section: "**Survival Analysis**"
+        contents: 
+            - href: index.qmd
+              text: Introduction 
+      - section: "**Non-Parametric Methods**"
+        contents: 
+         - href: 02-07-01-00-survival-analysis-non-parametric-introduction-r.qmd
+           text: Introduction to Non-Parametric Survival Models 
+         - href: 02-07-01-01-survival-analysis-kaplan-meier-r.qmd
+           text: Kaplan-Meier Estimator
+         - href: 02-07-01-02-survival-analysis-nelson-aalen-r.qmd
+           text: Nelson-Aalen Estimator
+      - section: "**Semi-Parametric Methods**"
+        contents: 
+         - href: 02-07-02-00-survival-analysis-semi-parametric-introduction-r.qmd
+           text: Introduction to Semi-Parametric Survival Models    
+         - href: 02-07-02-01-survival-analysis-cox-regression-r.qmd
+           text: Cox Proportional Hazards Model
+         - href: 02-07-02-02-survival-analysis-time-dependent-covariates-r.qmd
+           text: Survival Analysis with Time-Dependent Covariates
+         - href: 02-07-02-03-survival-analysis-stratified-cox-model-r.qmd
+           text: Stratified Cox Model
+      - section: "**Parametric Methods**"
+        contents: 
+         - href: 02-07-03-00-survival-analysis-parametric-introduction-r.qmd
+           text: Introduction to Parametric Survival Models        
+         - href: 02-07-03-01-survival-analysis-exponential-model-r.qmd
+           text: Exponential Survival Model 
+         - href: 02-07-03-02-survival-analysis-weibull-model-r.qmd
+           text: Weibull Model for Survival Analysis 
+         - href: 02-07-03-03-survival-analysis-log-normal-model-r.qmd
+           text: Log-Normal Survival Model f 
+         - href: 02-07-03-04-survival-analysis-log-logistic-model-r.qmd
+           text: Log-Logistic Survival Model  
+         - href: 02-07-03-05-survival-analysis-generalized-gamma-model-r.qmd
+           text: Generalized Gamma Survival Model
+         - href: 02-07-03-06-survival-analysis-gompertz-model-r.qmd
+           text: Gompertz Survival Model
+      - section: "**Recurrent Event Models**"
+        contents: 
+         - href: 02-07-04-00-survival-analysis-recurrent-event-models-r.qmd
+           text: Introduction to Recurrent Event Models       
+         - href: 02-07-04-01-survival-analysis-andersen-gill-model-r.qmd
+           text: Andersen-Gill (AG) Model      
+         - href: 02-07-04-02-survival-analysis-prentice-williams-peterson-model-r.qmd
+           text: Prentice-Williams-Peterson (PWP) Models      
+         - href: 02-07-04-03-survival-analysis-frailty-models-r.qmd
+           text: Frailty Models
+         - href: 02-07-04-04-survival-analysis-marginal-models-r.qmd
+           text: Marginal Models 
+      - section: "**Risk Regression**"
+        contents: 
+         - href: 02-07-05-00-survival-analysi-risk-regression-introduction-r.qmd
+           text: Introduction to Risk Regression      
+         - href: 02-07-05-01-survival-analysis-cause-specific-hazard-regression.qmd
+           text: Cause-Specific Hazard Regression 
+         - href: 02-07-05-02-survival-analysis-subdistribution-hazard-regression.qmd
+           text: Subdistribution Hazard Regression (Fine-Gray Model)  
+         - href: 02-07-05-03-survival-analysis-absolute-risk-regression-r.qmd
+           text: Absolute Risk Regression (Direct CIF Modeling)  
+         - href: 02-07-05-04-survival-analysis-aalen-model-r.qmd
+           text: Aalen's Additive Regression Model
+      - section: "**Joint Models**"
+        contents: 
+         - href: 02-07-06-00-survival-analysis-joint-modeling-introduction-r.qmd
+           text: Introduction to Joint Modeling in Survival Analysis    
+         - href: 02-07-06-01-survival-analysis-standard-joint-model-r.qmd
+           text: Standard (Shared Random Effects) Joint Model
+         - href: 02-07-06-02-survival-analysis-baseline-hazard-function-r.qmd
+           text: Baseline Hazard Function of Joint Models 
+         - href: 02-07-06-03-survival-analysis-causal-effects-r.qmd
+           text: Causal Effects from Joint Models
+         - href: 02-07-06-04-survival-analysis-competing-risks-r.qmd
+           text: Competing Risks of Joint Models
+         - href: 02-07-06-05-survival-analysis-dynamic-joint-model-r.qmd
+           text: Dynamic Joint Model
+         - href: 02-07-06-06-survival-analysis-joint-frailty-modeling-r.qmd
+           text: Joint Frailty Models For Recurrent and Terminal Events
+  
+           
+
+tbl-cap-location: top
+title-block-banner: true
+
+format:
+  html:
+    theme: cosmo
+    fontsize: 1.25em
+    title-fontsize: 40  
+    linestretch: 1.5
+    code-fold: show
+    code-tools: false
+    toc: true
+    toc-font-size: 1.5em
+    toc-depth: 4
+    toc-title: Contents
+    quarto-title-banner: true
+    grid:
+      sidebar-width: 350px
+      body-width: 1200px
+      margin-width: 250px
+      gutter-width: 1.5rem

@@ -1,0 +1,350 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_06_05_survival_analysis_dynamic_joint_model_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_06_05_survival_analysis_dynamic_joint_model_python.ipynb)
+:::
+
+# 6.5 Dynamic Joint Models {.unnumbered}
+
+
+A **Dynamic Joint Model (Dynamic JM)** is an extension of the standard **shared random effects joint model** that enables real-time, individualized risk prediction for a future event (e.g., death, disease progression) by updating predictions as new longitudinal data (eg. biomarker measurements) become available. In other words, it turns the joint model into a **dynamic prediction tool**, not just a static association estimator.
+
+At any time point $t$ during follow-up, after observing a patient’s longitudinal history $\mathcal{Y}_i(t) = \{ y_i(s) : 0 \leq s \leq t \}$, we can compute the conditional probability of surviving beyond a future time $u > t$\*\*:
+
+$$
+\pi_i(u \mid t) = P(T_i > u \mid T_i > t, \mathcal{Y}_i(t), \mathcal{D}_n)
+$$
+
+-   $T_i$: event time for subject $i$
+-   $\mathcal{Y}_i(t)$: all longitudinal measurements up to time $t$
+-   $\mathcal{D}_n$: full dataset used to fit the joint model (provides parameter estimates)
+-   $u - t$: prediction horizon (e.g., 6 months, 1 year)
+
+This probability **dynamically updates** as $t$ increases and more biomarker data are collected.
+
+### Why “Dynamic”?
+
+-   **Static models** (e.g., baseline Cox) give one risk estimate at enrollment.
+-   **Time-dependent Cox** uses observed biomarker values but ignores measurement error and trajectory.
+-   **Dynamic JM** uses the **entire history** of noisy measurements to infer the **true underlying trajectory** (via the mixed model) and **propagates uncertainty** into the survival prediction.
+
+### Mathematical Foundation
+
+Under the standard joint model with **current-value association**, the dynamic survival probability is:
+
+$$
+\pi_i(u \mid t) = \frac{
+  \int P(T_i > u \mid b_i, \theta_S) \cdot p(b_i \mid T_i > t, \mathcal{Y}_i(t), \theta)
+  \, db_i
+}{
+  \int P(T_i > t \mid b_i, \theta_S) \cdot p(b_i \mid \mathcal{Y}_i(t), \theta_L)
+  \, db_i
+}
+$$
+
+-   The numerator: probability of surviving beyond $u$, given survival to $t$ and biomarker history.
+-   The denominator: ensures proper conditioning on survival to $t$.
+-   $p(b_i \mid \cdot)$: posterior distribution of random effects given observed data (updated via Bayes’ rule).
+-   $\theta$: model parameters estimated from the full cohort.
+
+This integral is computed numerically (e.g., Monte Carlo or Gauss-Hermite quadrature).
+
+### ️ Key Features of Dynamic JM
+
+| Feature | Description |
+|----------------------------|--------------------------------------------|
+| **Personalized** | Tailored to each patient’s biomarker trajectory |
+| **Uncertainty-aware** | Accounts for measurement error, parameter uncertainty, and random effects |
+| **Time-adaptive** | Risk estimate evolves as new data arrive |
+| **Clinically actionable** | Supports decisions like treatment escalation or screening intensity |
+
+### Clinical Use Case Example
+
+> **Context**: Heart failure patients monitored via repeated **NT-proBNP** (a cardiac biomarker).\
+> **Goal**: Predict 6-month risk of hospitalization or death.
+>
+> -   At baseline: risk = 15%\
+> -   After 3 months: NT-proBNP rising → dynamic JM updates risk to 38%\
+> -   Clinician intensifies therapy based on updated risk\
+> -   After 6 months: biomarker stabilizes → risk drops to 22%
+
+This **feedback loop** between monitoring and prediction is the power of dynamic JM.
+
+###️ Practical Considerations
+
+-   **Model must be well-calibrated**—poor longitudinal fit → poor predictions.
+-   **Prediction horizon matters**: short horizons (3–6 months) are more reliable.
+-   **Computation**: Real-time use may require pre-fitting and caching.
+-   **Missing data**: Handled naturally by the mixed model (under MAR assumption).
+
+### Relation to Standard JM
+
+| Aspect | Standard JM | Dynamic JM |
+|------------------|-----------------------------|-------------------------|
+| Goal | Estimate association ( $\alpha$) | Predict individual risk over time |
+| Output | Parameter estimates, p-values | Time-varying survival probabilities |
+| Usage | Inference | Decision support, monitoring |
+| Built on | Same joint model framework | Same model, but used for prediction |
+
+> Dynamic JM is not a different model—it’s a *use* of the standard joint model for personalized, time-updated prediction.
+
+### Advanced Extensions
+
+-   **Multiple biomarkers**: Multivariate dynamic predictions
+-   **Landmarking + JM**: Hybrid approaches for robustness
+-   **Deep joint models**: Using RNNs or GPs for nonlinear trajectories (research frontier)
+
+## Dynamic Joint Model in R
+
+This tutorial explains how to **fit**, **analyze**, and **interpret** a *Dynamic Joint Model* — that is, a joint model where the association between a longitudinal biomarker and survival outcome **changes over time**.
+
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression',
+		 'prodlim',
+		 'lava',
+		 'mstate',
+		 'regplot',
+		 'cmprskcoxmsm',
+		 'GLMMadaptive',
+		 'nlme',
+		 'lme4',
+		 'lattice',
+		 'JM',
+		 'joineR',
+		 'joineRML',
+		 'JMbayes2'
+		 
+		 )
+
+```
+
+```{r
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+#devtools::install_github("ItziarI/WeDiBaDis")
+```
+
+### Verify Installation
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+The `aids` dataset in `JMbayes2` includes:
+
+* Repeated CD4 cell counts over time (longitudinal marker)
+* Survival data (time to death or censoring)
+
+Let’s inspect it:
+
+```{r}
+data("aids", package = "JMbayes2")
+str(aids)
+```
+```{r}
+is.numeric(aids$Time)
+is.numeric(aids$event)
+```
+
+
+###  Fit Longitudinal Submodel
+
+We first model the trajectory of CD4 counts over time:
+
+```{r}
+# Longitudinal submodel: CD4 trajectory
+lmeFit<- lme(sqrt(CD4) ~ ns(obstime, 2) * drug,
+          data = aids,
+          random = list(patient = pdDiag(~ ns(obstime, 2))))
+summary(lmeFit)
+```
+
+### Fit a Cox Survival Model  (Survival Submodel)
+
+We model time to death using baseline covariates:
+
+```{r}
+# Survival submodel
+CoxFit <- coxph(Surv(Time, death) ~ drug+gender, data = aids.id)
+summary(CoxFit)
+```
+
+
+###  Fit a Standard Joint Model
+
+The standard JM links the two submodels assuming a **constant association** between CD4 level and hazard.
+
+```{r}
+# default baseline hazard
+jmFit_static<- jm(CoxFit, lmeFit, time_var = "obstime")
+summary(jmFit_static)
+```
+
+Here, the association parameter `Assoct` (α) represents how CD4 level affects death risk.
+
+## Fit a Dynamic Joint Model (Time-Varying Association)
+
+Now we allow the **association parameter α(t)** to vary with time.
+
+This can be done by specifying a **time-varying functional form** using B-splines:
+
+```{r}
+# Dynamic (time-varying) association joint model
+jmFit_dynamic <- jm(CoxFit, lmeFit, time_var = "obstime",
+# Functional form for time-varying association
+  functional_forms = ~ value(CD4, form = "splines")
+)
+summary(jmFit_dynamic)
+```
+
+>  Interpretation:
+
+* In the **standard JM**, α is constant → one global effect of CD4 on survival.
+* In the **dynamic JM**, α(t) is modeled as a smooth spline → it can change over follow-up time.
+
+
+###  Dynamic (Real-Time) Predictions
+
+Once fitted, you can make **personalized survival predictions** that update as new data arrives.
+
+Example for a specific patient:
+
+```{r}
+#| warning: false
+# Select one patient’s data
+patientData <- aids[aids$patient == "100", ]
+
+# Predict survival probability beyond 10 years, given data up to time = 5
+pred_dynamic <- predict(
+  object = jmFit_dynamic,
+  newdata = patientData,
+  process = "event",
+  Times = seq(5, 10, by = 0.5),  # times at which to predict survival
+  return_newdata = TRUE
+)
+
+```
+
+You can visualize the predicted survival curves:
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+plot(pred_dynamic)
+```
+
+This curve updates as the patient’s CD4 history is extended — illustrating **dynamic (real-time) prediction**.
+
+
+### Dynamic predictive accuracy
+
+Using the available longitudinal information up to a starting time point, `tvROV` fuctions compute estimates of the ROC curve and the AUC, the Brier score and expected predictive cross-entropy at a horizon time point based on joint models.
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+
+# Evaluate Time-dependent ROC curve
+roc <- tvROC(
+  jmFit_static,
+  newdata = aids,
+  Tstart = 5,   # Landmark time (e.g., year 5)
+  Dt = 3,       # Prediction horizon (5 → 8 years)
+  cores = 1L
+)
+```
+
+
+```{r}
+# Print results
+roc
+tvAUC(roc)
+```
+
+
+```{r}
+#| fig.width: 6
+#| fig.height: 5
+# Plot ROC curve
+plot(roc, legend = TRUE, optimal_cutoff = "Youden")
+```
+
+
+
+### Concept Recap
+
+| Model Type             | Association                                                 | Purpose                                       |
+| ---------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| **Standard JM**        | Constant ( $\alpha$ )                                         | Simple, assumes biomarker effect constant     |
+| **Dynamic JM**         | ( $\alpha(t)$) varies with time                              | Captures changing biomarker–risk relationship |
+| **Dynamic Prediction** | Updated survival probability using recent biomarker history | Personalized forecasts                        |
+
+
+
+## Summary and Conclusion
+
+The Dynamic Joint Model extends the standard joint modeling framework by allowing the association between longitudinal biomarkers and survival risk to vary over time. This flexibility enables more accurate and personalized risk predictions that adapt as new biomarker data are collected. This tutorial demonstrated how to fit and interpret a **Dynamic Joint Model** in R using the `JMbayes2` package. At the end of tutorial you should be able to:
+
+-  Understand the concept of dynamic joint modeling and its advantages over standard joint models.
+-  Fit a dynamic joint model with time-varying association using R.
+-  Generate and interpret dynamic survival predictions that update with new longitudinal data.
+-  Evaluate the predictive accuracy of dynamic joint models using time-dependent ROC curves and AUC.
+-  Appreciate the clinical utility of dynamic joint models for personalized medicine.
+
+##  Resources
+
+* Rizopoulos D. (2012). *Joint Models for Longitudinal and Time-to-Event Data*. Chapman & Hall/CRC.
+* Rizopoulos D. (2023). *JMbayes2: Joint Models for Longitudinal and Survival Data using Bayesian Methods.*
+* Proust-Lima, C., et al. (2014). *Joint modelling of multivariate longitudinal outcomes and time-to-event: a review.* Statistical Methods in Medical Research.
+8 [JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data](https://drizopoulos.github.io/JMbayes2/index.html)
+
+
+
+
+
+
+
+

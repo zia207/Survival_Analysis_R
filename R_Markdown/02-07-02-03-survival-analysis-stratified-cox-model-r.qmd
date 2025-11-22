@@ -1,0 +1,299 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right"
+width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_02_03_survival_analysis_stratified_cox_model_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right"
+width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_02_03_survival_analysis_stratified_cox_model_python.ipynb)
+:::
+
+# 2.3 Stratified Cox Model {.unnumbered}
+
+This tutorial explains the concept of **Stratified Cox Model** in
+survival analysis, why they are important, how to implement them, and
+the assumptions involved. It also provides practical examples and code
+snippets in R.
+
+## Overview
+
+The Stratified Cox Proportional Hazards Model is a modification of the
+standard Cox Proportional Hazards (PH) model, which is a semi-parametric
+method used in survival analysis to assess the impact of covariates on
+the hazard rate of an event (e.g., death, failure) over time. The
+standard Cox model assumes that the hazard ratios are constant over time
+(the PH assumption), meaning the effect of covariates on the hazard is
+proportional and does not change.
+
+However, this assumption can be violated for certain covariates, such as
+categorical factors like treatment group or tumor type, where the hazard
+functions cross or diverge non-proportionally. The stratified version
+addresses this by dividing the data into strata based on the levels of
+the violating covariate (e.g., different categories of a variable).
+Within each stratum, a separate baseline hazard function ( h\_{0j}(t) )
+is estimated, allowing it to vary across strata. The model takes the
+form:
+
+$$
+h_{ij}(t) = h_{0j}(t) \exp(\mathbf{x}_i^T \boldsymbol{\beta})
+$$
+
+where: - $i$ indexes individuals, - $j$ indexes strata, - $h_{0j}(t)$ is
+the stratum-specific baseline hazard, - $\mathbf{x}_i$ are the
+covariates (excluding the stratification variable), -
+$\boldsymbol{\beta}$ are the regression coefficients, assumed to be the
+same across all strata.
+
+This approach controls for the stratifying variable without estimating a
+coefficient for it, meaning you cannot directly test or quantify its
+effect on the hazard. The partial likelihood is the product of
+stratum-specific likelihoods, and estimation proceeds by summing
+contributions from each stratum (e.g., via Newton-Raphson optimization).
+
+### Key advantages
+
+-   Handles non-PH for the stratifying variable without needing
+    time-dependent covariates.
+-   Useful for sensitivity analyses or when the stratifying factor is a
+    confounder (e.g., study site in multi-center trials).
+
+## Limitations
+
+-   Reduces statistical efficiency slightly if stratification is
+    unnecessary.
+-   No inference (e.g., p-values) for the stratification variable.
+-   Best for categorical variables with few levels; challenging for
+    continuous or many-level variables.
+
+The PH assumption must still hold within each stratum for the remaining
+covariates. Diagnostics like Schoenfeld residuals (via `cox.zph()` in R)
+or plots of log cumulative hazards can check for violations before
+deciding to stratify.
+
+### Stratified Cox Model in R
+
+We uses the `survival` package in R to fit and interpret a stratified
+Cox model. We'll use the built-in `lung` dataset from the package, which
+contains survival data for 228 patients with advanced lung cancer. Key
+variables include: - `time`: Survival time in days. - `status`:
+Censoring indicator (1 = censored, 2 = dead). - `age`: Age in years. -
+`sex`: Sex (1 = male, 2 = female). - `wt.loss`: Weight loss in the last
+six months (in pounds).
+
+(Note: In practice, recode `status` to 0/1 for censored/event if needed,
+but here it's already suitable after adjustment.)
+
+### Install Required R Packages
+
+Following R packages are required to run this notebook. If any of these
+packages are not installed, you can install them using the code below:
+
+```{r}
+packages <-c(
+		 'tidyverse',
+		 'performance',
+		 'gtsummary',
+		 'survival',
+		 'survminer',
+		 'ggsurvfit',
+		 'tidycmprsk',
+		 'ggfortify',
+		 'timereg',
+		 'cmprsk',
+		 'condSURV',
+		 'riskRegression',
+		 'joineR'
+		 )
+
+```
+
+```         
+#| warning: false
+#| error: false
+
+# Install missing packages
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+devtools::install_github("ItziarI/WeDiBaDis")
+```
+
+### Verify installation
+
+```{r}
+# Verify installation
+cat("Installed packages:\n")
+print(sapply(packages, requireNamespace, quietly = TRUE))
+```
+
+### Load Packages
+
+```{r}
+#| warning: false
+#| error: false
+# Load packages with suppressed messages
+invisible(lapply(packages, function(pkg) {
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}))
+```
+
+```{r}
+# Check loaded packages
+cat("Successfully loaded packages:\n")
+print(search()[grepl("package:", search())])
+```
+
+### Data
+
+We will be utilizing the `lung` dataset from the {survival} package,
+which serves as a valuable resource for analyzing survival data. This
+dataset comprises information from subjects diagnosed with advanced lung
+cancer, specifically gathered from the North Central Cancer Treatment
+Group, a prominent clinical trial network dedicated to cancer research.
+This dataset has 228 observations and 10 variables. For analysis, we'll
+focus on `time`, `status`, `age`, `sex`, and `wt.loss`.
+
+```{r}
+#| warning: false
+#| error: false
+# Load veteran  dataset
+data(lung)
+glimpse(lung)
+```
+
+### Fit a Standard (Unstratified) Cox Model
+
+First, fit a standard Cox model to assess covariates and check the PH
+assumption.
+
+```{r}
+# Fit the model
+lung_cox <- coxph(Surv(time, status == 2) ~ age + sex + wt.loss, data = lung)
+# Summary of results
+summary(lung_cox)
+```
+
+Interpretation: Age and sex are significant predictors (higher age
+increases hazard; females have lower hazard). Weight loss is not
+significant.
+
+### Check the Proportional Hazards Assumption
+
+Use Schoenfeld residuals to test PH.
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Test PH assumption
+ph_test <- cox.zph(lung_cox)
+ph_test
+plot(ph_test)  # Visual check for each covariate
+```
+
+If the p-values in `ph_test` are low (e.g., \<0.05 for `sex`), it
+indicates a violation. Plots should show flat lines around zero for
+residuals vs. time if PH holds. Suppose `sex` violates PH; this
+motivates stratification.
+
+### Fit the Stratified Cox Model
+
+Stratify by the violating variable (e.g., `sex`). This allows different
+baseline hazards for males and females.
+
+```{r}
+# Fit stratified model
+lung_strat_sex <- coxph(Surv(time, status == 2) ~ age + wt.loss + strata(sex), data = lung)
+# Summary of results
+summary(lung_strat_sex)
+```
+
+Interpretation: No coefficient for `sex` (the stratifying variable).
+Estimates for `age` and `wt.loss` are similar to the unstratified model,
+with age borderline significant. This serves as a sensitivity check; if
+results differ substantially, the PH violation may bias the original
+model.
+
+### Predict and Plot Survival Curves
+
+Estimate stratum-specific survival curves.
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+# Survival curves by stratum
+strat_surv <- survfit(lung_strat_sex)
+# Plot
+plot(strat_surv, col = 1:2, xlab = "Time (days)", ylab = "Survival Probability")
+legend("topright", legend = c("Male", "Female"), col = 1:2, lty = 1)
+```
+
+This plots separate curves for each sex stratum, adjusted for
+covariates. For predictions with new data:
+
+```{r}
+#| fig.width: 5.5
+#| fig.height: 4.5
+new_data <- data.frame(age = 60, wt.loss = 10, sex = c(1, 2))  # Example for male and female
+predict_surv <- survfit(lung_strat_sex, newdata = new_data)
+plot(predict_surv)
+```
+
+### Additional Considerations
+
+-   If multiple variables violate PH, stratify on one and use
+    time-dependent terms (e.g., `tt()`) for others.
+-   Compare models using ANOVA: `anova(lung_cox, lung_strat_sex)`.
+-   For large datasets or more diagnostics, explore packages like
+    `survminer` for enhanced plotting (e.g., `ggcoxzph()` for PH
+    checks).
+-   Always validate with domain knowledge; stratification is ideal when
+    the variable is a nuisance factor rather than of primary interest.
+
+This tutorial provides a basic workflow. Adapt it to your data, and run
+diagnostics thoroughly. For more examples, see the `survival` package
+vignette: `vignette("survival")`.
+
+## Summary and Conclusion
+
+The Stratified Cox Proportional Hazards Model is a powerful extension of
+the standard Cox model that allows for the accommodation of
+non-proportional hazards by stratifying the analysis based on
+categorical variables that violate the proportional hazards assumption.
+This approach enables researchers to control for confounding factors
+without estimating their effects directly, thus providing more accurate
+estimates for other covariates of interest. This tutorial demonstrated
+how to implement a stratified Cox model in R, including fitting the
+model, checking assumptions, and interpreting results. By following
+these steps, researchers can effectively analyze survival data while
+addressing potential violations of model assumptions.
+
+## Resources
+
+1.  "Modeling Survival Data: Extending the Cox Model" by
+    Therneau and Grambsch**
+    Covers stratification in depth with R examples; Springer, ISBN:
+    978-0387987842.
+
+2.  **R survival Package Vignette**
+    Official docs with stratified Cox code; access via
+    vignette("survival") or
+    [CRAN](https://cran.r-project.org/package=survival).
+
+3   **UCLA Tutorial: Survival Analysis in R**
+    Practical guide including stratified models; [UCLA
+    IDRE](https://stats.idre.ucla.edu/r/seminars/survival-analysis-in-r/).
+
+4.  **survminer Package**
+    Visualization tools for stratified Cox (e.g., diagnostics); CRAN
+    vignette at
+    [survminer](https://cran.r-project.org/package=survminer).
+
+5. **YouTube: MarinStatsLectures Survival Series**
+    Video tutorials on Cox models and stratification in R;
+    [Playlist](https://www.youtube.com/c/MarinStatsLectures-RProgrammingStatistics/playlists).
+
+6. **Coursera: Survival Analysis in R**
+    Course with stratified Cox labs; by Imperial College
+    [Coursera](https://www.coursera.org/learn/survival-analysis-r-public-health).
+
+

@@ -1,0 +1,132 @@
+::: {layout-ncol="3"}
+[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_r.ipynb)
+
+[![](Image/github_Python.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_python.ipynb)
+:::
+
+# 1. Nonparametric Survival Analysis {.unnumbered}
+
+The Nonparametric Survival Analysis is a technique used to analyze and estimate survival data without making assumptions about the underlying distribution of survival times. These methods are especially useful when you don't know the form of the hazard function or the distribution of survival times. This tutorial introduces survival analysis and how to conduct it in R without using any R package and then using the {survival} package.
+
+## Overview
+
+**Nonparametric survival analysis** refers to techniques used to analyze and estimate survival data without making assumptions about the underlying distribution of survival times. These methods are especially useful when you don't know the form of the hazard function or the distribution of survival times. The main non-parametric methods include the **Kaplan-Meier estimator** and the **log-rank test**.
+
+**Non-parametric Methods of Survival Analysis**
+
+Survival analysis is a branch of statistics used to analyze the expected duration of time until one or more events happen — such as death in biological organisms or failure in mechanical systems. Non-parametric methods in survival analysis make **no assumptions** about the underlying probability distribution of survival times. They are flexible, robust, and widely used for exploratory data analysis and when the shape of the survival distribution is unknown.
+
+These methods estimate the survival function (S(t) = P(T \> t), the probability of surviving beyond time t) directly from the observed data, without assuming a specific parametric form (e.g., exponential, Weibull).
+
+## Key Features of Non-parametric Methods:
+
+-   No assumption about the functional form of the survival or hazard function.
+-   Use actual observed event and censoring times.
+-   Provide step-function estimates of survival probabilities.
+-   Ideal for small to moderate sample sizes or when distributional assumptions are questionable.
+
+## Major Non-parametric Methods in Survival Analysis:
+
+### Kaplan-Meier Estimator (Product-Limit Estimator)
+
+-   **Most widely used** non-parametric method.
+-   Estimates the survival function from lifetime data, handling **right-censored** observations.
+-   Produces a **step function** that changes value only at the time of each event.
+-   Formula: $$
+    \hat{S}(t) = \prod_{t_i \leq t} \left(1 - \frac{d_i}{n_i}\right)
+    $$ where:
+    -   $t_i$ = distinct event time
+    -   $d_i$ = number of events at time $t_i$
+    -   $n_i$ = number at risk just before time $t_i$
+-   **Advantages**:
+    -   Handles censored data naturally.
+    -   Easy to compute and interpret.
+    -   Can be plotted for visual comparison between groups.
+-   **Limitations**:
+    -   Becomes unstable with small sample sizes at later time points.
+    -   Not smooth — stepwise function.
+
+### Nelson-Aalen Estimator
+
+-   Estimates the **cumulative hazard function** $H(t) = \int_0^t h(u) du$.
+
+-   Also handles censored data.
+
+-   Formula: $$
+    \hat{H}(t) = \sum_{t_i \leq t} \frac{d_i}{n_i}
+    $$ (same notation as Kaplan-Meier)
+
+-   The survival function can be derived from it: $$
+    \hat{S}(t) = \exp(-\hat{H}(t))
+    $$ — this is called the **Breslow estimator** or **exponential of Nelson-Aalen**.
+
+-   **Use case**: When interest is in hazard rates or when comparing hazard functions.
+
+-   **Advantages**:
+
+    -   More stable than Kaplan-Meier for estimating hazard.
+    -   Useful for model diagnostics (e.g., checking proportional hazards).
+
+### Life Table (Actuarial) Method
+
+-   Older method, used when data are **grouped into intervals** (e.g., yearly, monthly).
+
+-   Common in demography, insurance, and actuarial science.
+
+-   For each interval, it calculates:
+
+    -   Number entering the interval
+    -   Number censored in the interval
+    -   Effective number at risk
+    -   Conditional probability of surviving the interval
+    -   Cumulative survival probability
+
+-   Assumes censoring occurs uniformly within intervals (or at midpoint).
+
+-   For interval $t_i, t_{i+1})$: $$
+    \hat{S}(t_{i+1}) = \hat{S}(t_i) \times \left(1 - \frac{d_i}{n'_i}\right)
+    $$ where $n'_i$ = adjusted number at risk (accounting for censoring).
+
+-   **Advantages**:
+
+    -   Good for large datasets with grouped times.
+    -   Easy to communicate to non-statisticians.
+
+-   **Disadvantages**:
+
+    -   Loss of information due to grouping.
+    -   Less precise than Kaplan-Meier when exact event times are known.
+
+## Comparison Summary:
+
+| Method | Estimates | Handles Censoring? | Data Format | Use Case |
+|----|----|----|----|----|
+| **Kaplan-Meier** | Survival Function | Yes | Exact event times | Most common; group comparisons |
+| **Nelson-Aalen** | Cumulative Hazard | Yes | Exact event times | Hazard analysis, model checking |
+| **Life Table** | Survival Function | Yes (approximate) | Grouped intervals | Actuarial, demographic studies |
+
+## Visualization & Inference
+
+-   **Kaplan-Meier curves** are typically plotted to visualize survival over time.
+-   **Log-rank test** (non-parametric) is often used to compare survival distributions between two or more groups using Kaplan-Meier estimates.
+-   Confidence intervals for survival estimates can be calculated using Greenwood’s formula (for KM) or other variance estimators.
+
+## When to Use Non-parametric Methods?
+
+-   Initial exploratory analysis.
+-   When parametric assumptions are not met or unknown.
+-   Small sample sizes.
+-   Comparing survival between groups without modeling covariates.
+-   Presenting results visually to non-technical audiences.
+
+## ️ Limitations
+
+-   Cannot adjust for covariates (unlike Cox regression).
+-   Do not provide smooth functions — may be jagged or unstable with sparse data.
+-   Not suitable for extrapolation beyond observed time range.
+
+## Summary and Conclusion
+
+Non-parametric survival methods — especially **Kaplan-Meier** — are foundational tools in survival analysis. They offer intuitive, assumption-free estimates of survival probabilities and form the basis for hypothesis testing (e.g., log-rank test) and more advanced modeling (e.g., semi-parametric Cox models). Understanding these methods is essential for any survival data analysis. The next sections will demonstrate how to implement these methods in R, both manually and using the {survival} package.
