@@ -1,7 +1,6 @@
 ::: {layout-ncol="2"}
 [![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
-
-[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_00_survival_analysis_introduction_r.ipynb)
+[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_00_survival_analysis_introduction_r.ipynb)
 :::
 
 # Survival Analysis {.unnumbered}
@@ -54,25 +53,25 @@ Survival analysis is a branch of statistics that focuses on analyzing time-to-ev
 
 1.  **Survival Function** $(S(t))$
 
-  -   This gives the probability that the time to event is greater than some time $t$.
+-   This gives the probability that the time to event is greater than some time $t$.
 
-    -   Mathematically: $S(t)=P(T>t)$
+-   Mathematically: $S(t)=P(T>t)$
 
-    -   It starts at 1 (all subjects are "surviving" at time $(0)$ and decreases over time.
+-   It starts at 1 (all subjects are "surviving" at time $(0)$ and decreases over time.
 
 2.  **Hazard Function** $(h(t))$
 
-   -   This describes the instantaneous rate at which events occur, given that the subject has survived up to time $t$.
+ -   This describes the instantaneous rate at which events occur, given that the subject has survived up to time $t$.
 
-    -   Mathematically: $h(t)=\frac{f(t)}{S(t)}$, where $f(t)$ is the probability density function of the event time.
+-   Mathematically: $h(t)=\frac{f(t)}{S(t)}$, where $f(t)$ is the probability density function of the event time.
 
-    -   It's a measure of the event risk over time.
+-   It's a measure of the event risk over time.
 
 3.  **Cumulative Hazard Function** $(H(t))$
 
-    -   It sums the hazard over time, giving a total risk of experiencing the event by time $t$.
+-   It sums the hazard over time, giving a total risk of experiencing the event by time $t$.
 
-   -   Mathematically: $H(t) = \int_0^t h(u) \, du$
+-   Mathematically: $H(t) = \int_0^t h(u) \, du$
 
 The survival function is generally considered to be smooth in a theoretical context; however, when examining real-world data, we find that events often occur at discrete points in time.
 

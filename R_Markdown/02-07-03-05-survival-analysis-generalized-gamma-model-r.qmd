@@ -1,11 +1,17 @@
-::: {layout-ncol="2"}
-[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+::: {layout-ncol=2}
+<div style="text-align: left;">
+[![](Image/RENEW_logo.png){width=320 fig-alt="RENEW logo"}](https://www.buffalo.edu/renew.html)
+</div>
 
-[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_03_05_survival_analysis_generalized_gamma_model_r.ipynb)
+<div style="text-align: right;">
+[![](Image/github_Python.png){width=220 fig-alt="GitHub Python notebook"}](https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_03_05_survival_analysis_generalized_gamma_model_r.ipynb)
+</div>
 :::
 
 # 3.5 Generalized Gamma Survival Model {.unnumbered}
 
+
+Generalized Gamma Survival Model is a flexible parametric model that encompasses several common survival distributions as special cases. This tutorial provides an overview of the generalized gamma model, its properties, and how to implement it in R using the `flexsurv` package. We will use the `lung` dataset from the `survival` package for demonstration. 
 
 ### Overview
 

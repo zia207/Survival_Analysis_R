@@ -1,8 +1,13 @@
-::: {layout-ncol="2"}
-[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+::: {layout-ncol=2}
+<div style="text-align: left;">
+[![](Image/RENEW_logo.png){width=320 fig-alt="RENEW logo"}](https://www.buffalo.edu/renew.html)
+</div>
 
-[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_01_survival_analysis_non_parametric_kaplan_meier_r.ipynb)
+<div style="text-align: right;">
+[![](Image/github_Python.png){width=220 fig-alt="GitHub Python notebook"}](https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_01_01_survival_analysis_kaplan_meier_r.ipynb))
+</div>
 :::
+
 
 # 1.1 Kaplan-Meier Estimator {.unnumbered}
 
@@ -15,9 +20,16 @@ The **Kaplan-Meier estimator** is a non-parametric statistic used to estimate th
 
 The survival function $S(t)$ estimates the probability that an individual survives beyond time $t$. The Kaplan-Meier estimator provides a step function that drops at each event time (e.g., death, failure). The survival probability at a given time is calculated as:
 
-$$ \hat{S}(t) = \prod_{t_i \leq t} \left( \frac{n_i - d_i}{n_i} \right) $$
+$$ 
+\hat{S}(t) = \prod_{t_i \leq t} \left( \frac{n_i - d_i}{n_i} \right)
+$$
 
-Where: - $t_i$ is the time of the $i$-th event (e.g., death). - $n_i$ is the number of subjects still at risk just before time $t_i$. - $d_i$ is the number of events (e.g., deaths) at time $t_i$. - The product of the ratios $\frac{n_i - d_i}{n_i}$ across all event times up to $t$ gives the estimated survival probability at time ( t ).
+Where: 
+
+- $t_i$ is the time of the $i$-th event (e.g., death). 
+- $n_i$ is the number of subjects still at risk just before time $t_i$.
+- $d_i$ is the number of events (e.g., deaths) at time $t_i$. 
+- The product of the ratios $\frac{n_i - d_i}{n_i}$ across all event times up to $t$ gives the estimated survival probability at time $t$.
 
 ### Features of Kaplan-Meier Estimation
 

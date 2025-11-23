@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-3e0287c6c42128026c316e6e81ca3353.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-6a3c7add2da6d1460021a694b965a515.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -434,6 +434,12 @@ window.Quarto = {
  <span class="menu-text">Dynamic Joint Model</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-06-survival-analysis-joint-frailty-modeling-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint Frailty Models For Recurrent and Terminal Events</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -456,11 +462,12 @@ window.Quarto = {
   <li><a href="#nelson-aalen-estimator" id="toc-nelson-aalen-estimator" class="nav-link" data-scroll-target="#nelson-aalen-estimator">Nelson-Aalen Estimator</a></li>
   <li><a href="#life-table-actuarial-method" id="toc-life-table-actuarial-method" class="nav-link" data-scroll-target="#life-table-actuarial-method">Life Table (Actuarial) Method</a></li>
   </ul></li>
-  <li><a href="#comparison-summary" id="toc-comparison-summary" class="nav-link" data-scroll-target="#comparison-summary">Comparison Summary:</a></li>
+  <li><a href="#comparison-summary" id="toc-comparison-summary" class="nav-link" data-scroll-target="#comparison-summary">Comparison Summary</a></li>
   <li><a href="#visualization-inference" id="toc-visualization-inference" class="nav-link" data-scroll-target="#visualization-inference">Visualization &amp; Inference</a></li>
   <li><a href="#when-to-use-non-parametric-methods" id="toc-when-to-use-non-parametric-methods" class="nav-link" data-scroll-target="#when-to-use-non-parametric-methods">When to Use Non-parametric Methods?</a></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">️ Limitations</a></li>
   <li><a href="#summary-and-conclusion" id="toc-summary-and-conclusion" class="nav-link" data-scroll-target="#summary-and-conclusion">Summary and Conclusion</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -471,28 +478,13 @@ window.Quarto = {
 
 
 
-<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
-</figure>
+<div class="quarto-layout-cell" style="flex-basis: 59.3%;justify-content: center;">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid" alt="RENEW logo" width="320"></a></p>
 </div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-right">
-<figure class="figure">
-<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-right">
-<figure class="figure">
-<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
-</figure>
-</div>
+<div class="quarto-layout-cell" style="flex-basis: 40.7%;justify-content: center;">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_01_00_survival_analysis_non_parametric_introduction_r.ipynb"><img src="Image/github_Python.png" class="img-fluid" alt="GitHub Python notebook" width="220"></a></p>
 </div>
 </div>
 </div>
@@ -504,7 +496,7 @@ window.Quarto = {
 <p><strong>Nonparametric survival analysis</strong> refers to techniques used to analyze and estimate survival data without making assumptions about the underlying distribution of survival times. These methods are especially useful when you don’t know the form of the hazard function or the distribution of survival times. The main non-parametric methods include the <strong>Kaplan-Meier estimator</strong> and the <strong>log-rank test</strong>.</p>
 <p><strong>Non-parametric Methods of Survival Analysis</strong></p>
 <p>Survival analysis is a branch of statistics used to analyze the expected duration of time until one or more events happen — such as death in biological organisms or failure in mechanical systems. Non-parametric methods in survival analysis make <strong>no assumptions</strong> about the underlying probability distribution of survival times. They are flexible, robust, and widely used for exploratory data analysis and when the shape of the survival distribution is unknown.</p>
-<p>These methods estimate the survival function (S(t) = P(T &gt; t), the probability of surviving beyond time t) directly from the observed data, without assuming a specific parametric form (e.g., exponential, Weibull).</p>
+<p>These methods estimate the survival function <span class="math inline">\(S(t) = P(T \&gt; t)\)</span>, the probability of surviving beyond time <span class="math inline">\(t\)</span> directly from the observed data, without assuming a specific parametric form (e.g., exponential, Weibull).</p>
 </section>
 <section id="key-features-of-non-parametric-methods" class="level2">
 <h2 class="anchored" data-anchor-id="key-features-of-non-parametric-methods">Key Features of Non-parametric Methods:</h2>
@@ -525,19 +517,20 @@ window.Quarto = {
 <li>Produces a <strong>step function</strong> that changes value only at the time of each event.</li>
 <li>Formula: <span class="math display">\[
 \hat{S}(t) = \prod_{t_i \leq t} \left(1 - \frac{d_i}{n_i}\right)
-\]</span> where:
+\]</span></li>
+</ul>
+<p>where:</p>
 <ul>
-<li><span class="math inline">\(t_i\)</span> = distinct event time</li>
-<li><span class="math inline">\(d_i\)</span> = number of events at time <span class="math inline">\(t_i\)</span></li>
-<li><span class="math inline">\(n_i\)</span> = number at risk just before time <span class="math inline">\(t_i\)</span></li>
-</ul></li>
-<li><strong>Advantages</strong>:
+<li><p><span class="math inline">\(t_i\)</span> = distinct event time</p></li>
+<li><p><span class="math inline">\(d_i\)</span> = number of events at time <span class="math inline">\(t_i\)</span></p></li>
+<li><p><span class="math inline">\(n_i\)</span> = number at risk just before time <span class="math inline">\(t_i\)</span></p></li>
+<li><p><strong>Advantages</strong>:</p>
 <ul>
 <li>Handles censored data naturally.</li>
 <li>Easy to compute and interpret.</li>
 <li>Can be plotted for visual comparison between groups.</li>
 </ul></li>
-<li><strong>Limitations</strong>:
+<li><p><strong>Limitations</strong>:</p>
 <ul>
 <li>Becomes unstable with small sample sizes at later time points.</li>
 <li>Not smooth — stepwise function.</li>
@@ -549,12 +542,19 @@ window.Quarto = {
 <ul>
 <li><p>Estimates the <strong>cumulative hazard function</strong> <span class="math inline">\(H(t) = \int_0^t h(u) du\)</span>.</p></li>
 <li><p>Also handles censored data.</p></li>
-<li><p>Formula: <span class="math display">\[
+<li><p>Formula:</p></li>
+</ul>
+<p><span class="math display">\[
 \hat{H}(t) = \sum_{t_i \leq t} \frac{d_i}{n_i}
-\]</span> (same notation as Kaplan-Meier)</p></li>
-<li><p>The survival function can be derived from it: <span class="math display">\[
-\hat{S}(t) = \exp(-\hat{H}(t))
-\]</span> — this is called the <strong>Breslow estimator</strong> or <strong>exponential of Nelson-Aalen</strong>.</p></li>
+\]</span></p>
+<p>(same notation as Kaplan-Meier)</p>
+<ul>
+<li>The survival function can be derived from it:</li>
+</ul>
+<p><span class="math display">\[
+hat{S}(t) = \exp(-\hat{H}(t))
+\]</span> — this is called the <strong>Breslow estimator</strong> or <strong>exponential of Nelson-Aalen</strong>.</p>
+<ul>
 <li><p><strong>Use case</strong>: When interest is in hazard rates or when comparing hazard functions.</p></li>
 <li><p><strong>Advantages</strong>:</p>
 <ul>
@@ -577,9 +577,12 @@ window.Quarto = {
 <li>Cumulative survival probability</li>
 </ul></li>
 <li><p>Assumes censoring occurs uniformly within intervals (or at midpoint).</p></li>
-<li><p>For interval <span class="math inline">\(t_i, t_{i+1})\)</span>: <span class="math display">\[
+<li><p>For interval <span class="math inline">\(t_i, t_{i+1})\)</span>:</p></li>
+</ul>
+<p><span class="math display">\[
 \hat{S}(t_{i+1}) = \hat{S}(t_i) \times \left(1 - \frac{d_i}{n'_i}\right)
-\]</span> where <span class="math inline">\(n'_i\)</span> = adjusted number at risk (accounting for censoring).</p></li>
+\]</span> where <span class="math inline">\(n'_i\)</span> = adjusted number at risk (accounting for censoring).</p>
+<ul>
 <li><p><strong>Advantages</strong>:</p>
 <ul>
 <li>Good for large datasets with grouped times.</li>
@@ -594,7 +597,7 @@ window.Quarto = {
 </section>
 </section>
 <section id="comparison-summary" class="level2">
-<h2 class="anchored" data-anchor-id="comparison-summary">Comparison Summary:</h2>
+<h2 class="anchored" data-anchor-id="comparison-summary">Comparison Summary</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 20%">
@@ -666,6 +669,16 @@ window.Quarto = {
 <section id="summary-and-conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="summary-and-conclusion">Summary and Conclusion</h2>
 <p>Non-parametric survival methods — especially <strong>Kaplan-Meier</strong> — are foundational tools in survival analysis. They offer intuitive, assumption-free estimates of survival probabilities and form the basis for hypothesis testing (e.g., log-rank test) and more advanced modeling (e.g., semi-parametric Cox models). Understanding these methods is essential for any survival data analysis. The next sections will demonstrate how to implement these methods in R, both manually and using the {survival} package.</p>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ol type="1">
+<li><p><strong>Klein &amp; Moeschberger — <em>Survival Analysis</em></strong> Excellent treatment of Kaplan–Meier, Nelson–Aalen, and log-rank tests.</p></li>
+<li><p><strong>Collett — <em>Modelling Survival Data in Medical Research</em></strong> Clear, applied introduction to nonparametric estimators.</p></li>
+<li><p><strong>Hosmer, Lemeshow &amp; May — <em>Applied Survival Analysis</em></strong> Practical guide to KM curves, comparisons, and assumptions.</p></li>
+<li><p><strong>Therneau’s <em>survival</em> Package Documentation (R)</strong> Concise explanations of KM and NA estimators with examples.</p></li>
+<li><p><strong>Penn State STAT 507 Lecture Notes</strong> Free, easy-to-follow notes covering KM, NA, and nonparametric tests.</p></li>
+</ol>
 
 
 </section>

@@ -1,7 +1,11 @@
-::: {layout-ncol="2"}
-[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+::: {layout-ncol=2}
+<div style="text-align: left;">
+[![](Image/RENEW_logo.png){width=320 fig-alt="RENEW logo"}](https://www.buffalo.edu/renew.html)
+</div>
 
-[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_03_01_survival_analysis_exponential_model_r.ipynb)
+<div style="text-align: right;">
+[![](Image/github_Python.png){width=220 fig-alt="GitHub Python notebook"}](https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_03_01_survival_analysis_exponential_model_r.ipynb)
+</div>
 :::
 
 # 3.1 The Exponential Survival Model {.unnumbered}
@@ -79,7 +83,6 @@ $$
 ### Practical Notes
 
 - The constant hazard assumption ($h(t) = \lambda$) is often unrealistic in practice (e.g., in medical or reliability data, where risks may increase or decrease over time). Thus, the exponential model is best for scenarios like radioactive decay or certain mechanical systems with constant failure rates.
-
 
 
 ## Implementation in R

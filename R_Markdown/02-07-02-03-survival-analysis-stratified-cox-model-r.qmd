@@ -1,8 +1,11 @@
-::: {layout-ncol="2"}
-[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+::: {layout-ncol=2}
+<div style="text-align: left;">
+[![](Image/RENEW_logo.png){width=320 fig-alt="RENEW logo"}](https://www.buffalo.edu/renew.html)
+</div>
 
-[![](Image/github_R.png){fig-align="right"
-width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_02_03_survival_analysis_stratified_cox_model_r.ipynb)
+<div style="text-align: right;">
+[![](Image/github_Python.png){width=220 fig-alt="GitHub Python notebook"}](https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_02_03_survival_analysis_stratified_cox_model_r.ipynb)
+</div>
 :::
 
 # 2.3 Stratified Cox Model {.unnumbered}
@@ -54,7 +57,7 @@ contributions from each stratum (e.g., via Newton-Raphson optimization).
 -   Useful for sensitivity analyses or when the stratifying factor is a
     confounder (e.g., study site in multi-center trials).
 
-## Limitations
+### Limitations
 
 -   Reduces statistical efficiency slightly if stratification is
     unnecessary.
@@ -67,7 +70,7 @@ covariates. Diagnostics like Schoenfeld residuals (via `cox.zph()` in R)
 or plots of log cumulative hazards can check for violations before
 deciding to stratify.
 
-### Stratified Cox Model in R
+## Stratified Cox Model in R
 
 We uses the `survival` package in R to fit and interpret a stratified
 Cox model. We'll use the built-in `lung` dataset from the package, which

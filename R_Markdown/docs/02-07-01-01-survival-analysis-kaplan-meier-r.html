@@ -469,6 +469,12 @@ window.Quarto = {
  <span class="menu-text">Dynamic Joint Model</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-06-survival-analysis-joint-frailty-modeling-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint Frailty Models For Recurrent and Terminal Events</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -509,7 +515,7 @@ window.Quarto = {
   <li><a href="#survival-times-between-groups-malefemale-using-log-rank-test" id="toc-survival-times-between-groups-malefemale-using-log-rank-test" class="nav-link" data-scroll-target="#survival-times-between-groups-malefemale-using-log-rank-test">Survival times between groups (male/female) using log-rank test</a></li>
   </ul></li>
   <li><a href="#summary-and-conclusion" id="toc-summary-and-conclusion" class="nav-link" data-scroll-target="#summary-and-conclusion">Summary and Conclusion</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -520,28 +526,13 @@ window.Quarto = {
 
 
 
-<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
-</figure>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid" alt="RENEW logo" width="320"></a></p>
 </div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-right">
-<figure class="figure">
-<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_01_01_survival_analysis_non_parametric_kaplan_meier_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-right">
-<figure class="figure">
-<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_01_01_survival_analysis_non_parametric_kaplan_meier_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
-</figure>
-</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_01_01_survival_analysis_kaplan_meier_r.ipynb"><img src="Image/github_Python.png" class="img-fluid" alt="GitHub Python notebook" width="220"></a>)</p>
 </div>
 </div>
 </div>
@@ -552,8 +543,16 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
 <p>The <strong>Kaplan-Meier estimator</strong> is a non-parametric statistic used to estimate the survival function from time-to-event data. It is particularly valuable when some data points are <strong>censored</strong>, meaning the event of interest (e.g., death, equipment failure) has not occurred for some subjects at the end of the study period.</p>
 <p>The survival function <span class="math inline">\(S(t)\)</span> estimates the probability that an individual survives beyond time <span class="math inline">\(t\)</span>. The Kaplan-Meier estimator provides a step function that drops at each event time (e.g., death, failure). The survival probability at a given time is calculated as:</p>
-<p><span class="math display">\[ \hat{S}(t) = \prod_{t_i \leq t} \left( \frac{n_i - d_i}{n_i} \right) \]</span></p>
-<p>Where: - <span class="math inline">\(t_i\)</span> is the time of the <span class="math inline">\(i\)</span>-th event (e.g., death). - <span class="math inline">\(n_i\)</span> is the number of subjects still at risk just before time <span class="math inline">\(t_i\)</span>. - <span class="math inline">\(d_i\)</span> is the number of events (e.g., deaths) at time <span class="math inline">\(t_i\)</span>. - The product of the ratios <span class="math inline">\(\frac{n_i - d_i}{n_i}\)</span> across all event times up to <span class="math inline">\(t\)</span> gives the estimated survival probability at time ( t ).</p>
+<p><span class="math display">\[
+\hat{S}(t) = \prod_{t_i \leq t} \left( \frac{n_i - d_i}{n_i} \right)
+\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(t_i\)</span> is the time of the <span class="math inline">\(i\)</span>-th event (e.g., death).</li>
+<li><span class="math inline">\(n_i\)</span> is the number of subjects still at risk just before time <span class="math inline">\(t_i\)</span>.</li>
+<li><span class="math inline">\(d_i\)</span> is the number of events (e.g., deaths) at time <span class="math inline">\(t_i\)</span>.</li>
+<li>The product of the ratios <span class="math inline">\(\frac{n_i - d_i}{n_i}\)</span> across all event times up to <span class="math inline">\(t\)</span> gives the estimated survival probability at time <span class="math inline">\(t\)</span>.</li>
+</ul>
 <section id="features-of-kaplan-meier-estimation" class="level3">
 <h3 class="anchored" data-anchor-id="features-of-kaplan-meier-estimation">Features of Kaplan-Meier Estimation</h3>
 <ul>
@@ -2186,8 +2185,8 @@ sex=2  90       53     73.4      5.68      10.3
 <p><strong>Nonparametric survival analysis</strong>, especially using the <strong>Kaplan-Meier estimator</strong> and <strong>log-rank test</strong>, is a powerful tool for analyzing time-to-event data, particularly in situations where the distribution of survival times is unknown and when censoring is present. These techniques allow researchers to estimate and compare survival probabilities between groups, providing a foundation for more advanced survival analysis methods.</p>
 <p>These methods are fundamental in fields like clinical research, reliability engineering, and economics, where time-to-event outcomes and censored data are prevalent.</p>
 </section>
-<section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References</h2>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
 <ol type="1">
 <li><p><a href="https://rviews.rstudio.com/2017/09/25/survival-analysis-with-r/">Survival Analysis with R</a></p></li>
 <li><p><a href="https://www.karlin.mff.cuni.cz/~pesta/NMFM404/survival.html">Survival data analysis</a></p></li>

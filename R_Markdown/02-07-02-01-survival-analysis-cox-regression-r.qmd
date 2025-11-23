@@ -1,7 +1,11 @@
-::: {layout-ncol="2"}
-[![](Image/RENEW_logo.png){fig-align="left"}](https://www.buffalo.edu/renew.html)
+::: {layout-ncol=2}
+<div style="text-align: left;">
+[![](Image/RENEW_logo.png){width=320 fig-alt="RENEW logo"}](https://www.buffalo.edu/renew.html)
+</div>
 
-[![](Image/github_R.png){fig-align="right" width="200"}](https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_02_01_survival_analysis_cox_regression_r.ipynb)
+<div style="text-align: right;">
+[![](Image/github_Python.png){width=220 fig-alt="GitHub Python notebook"}](https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_02_01_survival_analysis_cox_regression_r.ipynb)
+</div>
 :::
 
 
@@ -310,7 +314,12 @@ baseline_df <- data.frame(time = unique_times,
                           baseline_hazard = baseline_hazard[match(unique_times, unique_times)],
                           cumulative_hazard = cumulative_hazard,
                           baseline_survival = baseline_survival)
+```
 
+
+```{r}
+#| fig.width: 5
+#| fig.height: 4
 # Plotting the baseline survival function
 plot(baseline_df$time, baseline_df$baseline_survival, type = "s", 
      col = "blue", lwd = 2, 
@@ -467,13 +476,7 @@ coxph(Surv(time, status) ~ sex, data = lung) %>%
   tbl_regression(exp = TRUE) 
 ```
 
-You may use `report()` function of {report} package to get a brief summary of fitted Cox regression model:
 
-```{r}
-#| warning: false
-#| error: false
-report::report(cox.fit.uni)
-```
 
 ```{r}
 #| warning: false

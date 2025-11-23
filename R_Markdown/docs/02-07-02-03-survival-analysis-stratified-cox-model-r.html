@@ -469,6 +469,12 @@ window.Quarto = {
  <span class="menu-text">Dynamic Joint Model</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-07-06-06-survival-analysis-joint-frailty-modeling-r.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint Frailty Models For Recurrent and Terminal Events</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -486,10 +492,10 @@ window.Quarto = {
   <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
   <ul class="collapse">
   <li><a href="#key-advantages" id="toc-key-advantages" class="nav-link" data-scroll-target="#key-advantages">Key advantages</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
   </ul></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a>
+  <li><a href="#stratified-cox-model-in-r" id="toc-stratified-cox-model-in-r" class="nav-link" data-scroll-target="#stratified-cox-model-in-r">Stratified Cox Model in R</a>
   <ul class="collapse">
-  <li><a href="#stratified-cox-model-in-r" id="toc-stratified-cox-model-in-r" class="nav-link" data-scroll-target="#stratified-cox-model-in-r">Stratified Cox Model in R</a></li>
   <li><a href="#install-required-r-packages" id="toc-install-required-r-packages" class="nav-link" data-scroll-target="#install-required-r-packages">Install Required R Packages</a></li>
   <li><a href="#verify-installation" id="toc-verify-installation" class="nav-link" data-scroll-target="#verify-installation">Verify installation</a></li>
   <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load Packages</a></li>
@@ -512,28 +518,13 @@ window.Quarto = {
 
 
 
-<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
-</figure>
+<div class="quarto-layout-cell" style="flex-basis: 59.3%;justify-content: center;">
+<p><a href="https://www.buffalo.edu/renew.html"><img src="Image/RENEW_logo.png" class="img-fluid" alt="RENEW logo" width="320"></a></p>
 </div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-right">
-<figure class="figure">
-<p><a href="https://github.com/zia207/Survival_Analysis_R/tree/main/Notebook/02_07_02_03_survival_analysis_stratified_cox_model_r.ipynb"><img src="Image/github_R.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
-<div class="quarto-figure quarto-figure-right">
-<figure class="figure">
-<p><a href="https://github.com/zia207/Survival_Analysis_Python/tree/main/Notebook/02_07_02_03_survival_analysis_stratified_cox_model_python.ipynb"><img src="Image/github_Python.png" class="img-fluid quarto-figure quarto-figure-right figure-img" width="200"></a></p>
-</figure>
-</div>
+<div class="quarto-layout-cell" style="flex-basis: 40.7%;justify-content: center;">
+<p><a href="https://github.com/zia207/Survival_Analysis_R/blob/main/Colab_Notebook/02_07_02_03_survival_analysis_stratified_cox_model_r.ipynb"><img src="Image/github_Python.png" class="img-fluid" alt="GitHub Python notebook" width="220"></a></p>
 </div>
 </div>
 </div>
@@ -556,20 +547,20 @@ h_{ij}(t) = h_{0j}(t) \exp(\mathbf{x}_i^T \boldsymbol{\beta})
 <li>Useful for sensitivity analyses or when the stratifying factor is a confounder (e.g., study site in multi-center trials).</li>
 </ul>
 </section>
-</section>
-<section id="limitations" class="level2">
-<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<section id="limitations" class="level3">
+<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
 <ul>
 <li>Reduces statistical efficiency slightly if stratification is unnecessary.</li>
 <li>No inference (e.g., p-values) for the stratification variable.</li>
 <li>Best for categorical variables with few levels; challenging for continuous or many-level variables.</li>
 </ul>
 <p>The PH assumption must still hold within each stratum for the remaining covariates. Diagnostics like Schoenfeld residuals (via <code>cox.zph()</code> in R) or plots of log cumulative hazards can check for violations before deciding to stratify.</p>
-<section id="stratified-cox-model-in-r" class="level3">
-<h3 class="anchored" data-anchor-id="stratified-cox-model-in-r">Stratified Cox Model in R</h3>
+</section>
+</section>
+<section id="stratified-cox-model-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="stratified-cox-model-in-r">Stratified Cox Model in R</h2>
 <p>We uses the <code>survival</code> package in R to fit and interpret a stratified Cox model. We’ll use the built-in <code>lung</code> dataset from the package, which contains survival data for 228 patients with advanced lung cancer. Key variables include: - <code>time</code>: Survival time in days. - <code>status</code>: Censoring indicator (1 = censored, 2 = dead). - <code>age</code>: Age in years. - <code>sex</code>: Sex (1 = male, 2 = female). - <code>wt.loss</code>: Weight loss in the last six months (in pounds).</p>
 <p>(Note: In practice, recode <code>status</code> to 0/1 for censored/event if needed, but here it’s already suitable after adjustment.)</p>
-</section>
 <section id="install-required-r-packages" class="level3">
 <h3 class="anchored" data-anchor-id="install-required-r-packages">Install Required R Packages</h3>
 <p>Following R packages are required to run this notebook. If any of these packages are not installed, you can install them using the code below:</p>
